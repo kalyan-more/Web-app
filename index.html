@@ -59,7 +59,6 @@
       overscroll-behavior-y: contain;
     }
 
-    /* Unified iOS Liquid Glass design system across cards, headers, tab bars, and modals */
     .liquid-glass {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(20, 20, 24, 0.62) 100%);
       -webkit-backdrop-filter: blur(22px) saturate(180%);
@@ -113,7 +112,7 @@
     @keyframes iosViewEnter {
       0% {
         opacity: 0;
-        transform: translate3d(14px, 0, 0);
+        transform: translate3d(10px, 0, 0);
       }
       100% {
         opacity: 1;
@@ -122,22 +121,22 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.42s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+      animation: iosSheetSlideUp 0.38s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosBackdropFadeIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: opacity;
     }
 
     .ios-view-enter {
-      animation: iosViewEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosViewEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-card-press {
-      transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.22s ease, border-color 0.22s ease, opacity 0.2s ease;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
       will-change: transform;
     }
     .ios-card-press:active {
@@ -145,7 +144,7 @@
     }
 
     button {
-      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.22s ease, color 0.22s ease, opacity 0.2s ease;
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, color 0.2s ease, opacity 0.18s ease;
       will-change: transform;
     }
     button:active {
@@ -944,7 +943,7 @@ const getCricketMatchStatus = (match, selectedDate) => {
   let color = THEME.accent;
   const isViewingToday = !selectedDate || isSameDay(selectedDate, new Date());
 
-  if ((match.status === 'IN' || statUpper.includes('LIVE')) && isViewingToday) {
+  if ((match.status === 'IN' || statUpper.includes('LIVE')) && (isViewingToday || Boolean(match?._isLive))) {
     isLive = true;
     isActionLive = true;
     const checkText = statUpper === 'LIVE' && primaryUpdate ? primaryUpdate : statUpper;
@@ -1509,8 +1508,12 @@ const getCricketStageTemplate = (leagueTitle) => {
 
 const classifyKnockoutStage = (text) => {
   const t = String(text || '').toLowerCase();
+  if (!t.trim()) return null;
+  if (/(group\s+[a-h]|league\s+phase|league\s+stage|\d+(st|nd|rd|th)\s+match|match\s+\d+|regular\s+season)/i.test(t) && !/(semi-?final|quarter-?final|eliminator|qualifier|final|round of \d+|last \d+|wild\s*card)/i.test(t)) {
+    return null;
+  }
   if (/(round of 32|last 32|r32|1\/16)/i.test(t)) return 'R32';
-  if (/(wild card|wildcard)/i.test(t)) return 'WC';
+  if (/(wild\s*card)/i.test(t)) return 'WC';
   if (/(knockout round play-offs|knockout play-off)/i.test(t)) return 'KPO';
   if (/(round one|round 1)/i.test(t) && !t.includes('quarter') && !t.includes('semi')) return 'R1';
   if (/(round of 16|last 16|r16|1\/8|eighth)/i.test(t) && !t.includes('quarter') && !t.includes('semi')) return 'R16';
@@ -1519,9 +1522,9 @@ const classifyKnockoutStage = (text) => {
   if (/(qualifier 1|1st qualifier)/i.test(t)) return 'Q1';
   if (/(eliminator)/i.test(t)) return 'EL';
   if (/(qualifier 2|2nd qualifier|challenger)/i.test(t)) return 'Q2';
-  if (/(quarter-final|quarterfinal|quarter final|quarters|\bqf\b|1\/4|conference semifinal)/i.test(t)) return 'QF';
-  if (/(semi-final|semifinal|semi final|semis|\bsf\b|1\/2|conference final)/i.test(t) && !t.includes('conference semifinal')) return 'SF';
-  if (/(\bfinal\b|championship|mls cup|summit clash)/i.test(t) && !t.includes('quarter') && !t.includes('semi') && !t.includes('1/') && !t.includes('conference')) return 'FINAL';
+  if (/(quarter-?final|quarters|qf|1\/4|conference semifinal)/i.test(t)) return 'QF';
+  if (/(semi-?final|semis|sf|1\/2|conference final)/i.test(t) && !t.includes('conference semifinal')) return 'SF';
+  if (/(final|championship|mls cup|summit clash)/i.test(t) && !t.includes('quarter') && !t.includes('semi') && !t.includes('1/') && !t.includes('conference')) return 'FINAL';
   return null;
 };
 
@@ -1593,7 +1596,7 @@ const getSoccerSeasonDateRange = (seasonLabel) => {
 };
 
 const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = false) => {
-  const cacheKey = `soccer_v3|${leagueId}|${seasonLabel}`;
+  const cacheKey = `soccer_v4|${leagueId}|${seasonLabel}`;
   if (!forceRefresh && knockoutCache.has(cacheKey)) return knockoutCache.get(cacheKey);
 
   const template = TOURNAMENT_STAGE_TEMPLATES[leagueId];
@@ -1679,16 +1682,19 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
   );
 
   const built = template.map(st => {
-    const liveTies = (stageMap[st.id] || []).filter(m => !(isFinalCompleted && m.isTBD));
-    const filledTies = (!isFinalCompleted && liveTies.length < st.slots)
-      ? [...liveTies, ...buildTbdKnockouts(st, liveTies.length, false)]
-      : liveTies;
+    const liveTies = (stageMap[st.id] || [])
+      .filter(m => !(isFinalCompleted && m.isTBD))
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    const cappedTies = st.id === 'FINAL' && liveTies.length > 1 ? liveTies.slice(-1) : liveTies;
+    const filledTies = (!isFinalCompleted && cappedTies.length < st.slots)
+      ? [...cappedTies, ...buildTbdKnockouts(st, cappedTies.length, false)]
+      : cappedTies;
     return {
       id: st.id,
       label: st.label,
       short: st.short,
       matches: filledTies,
-      hasScheduled: liveTies.length > 0
+      hasScheduled: cappedTies.length > 0
     };
   }).filter(st => !isFinalCompleted || st.matches.length > 0);
 
@@ -1698,7 +1704,7 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
 
 const extractCricketKnockouts = (selectedLeague) => {
   if (!selectedLeague) return [];
-  const cacheKey = `cricket_v3|${selectedLeague.id}|${selectedLeague.seasonLabel}|${selectedLeague.allSched?.length || 0}`;
+  const cacheKey = `cricket_v4|${selectedLeague.id}|${selectedLeague.seasonLabel}|${selectedLeague.allSched?.length || 0}`;
   if (knockoutCache.has(cacheKey)) return knockoutCache.get(cacheKey);
 
   const template = getCricketStageTemplate(selectedLeague.cleanTitle || selectedLeague.title);
@@ -1713,7 +1719,7 @@ const extractCricketKnockouts = (selectedLeague) => {
     if (!m?.match_id || seenMatchIds.has(m.match_id)) return;
     const mLeague = String(m.league || m.series || '').toLowerCase();
     if (!mLeague.includes(lTitle) && !lTitle.includes(mLeague) && (!shortL || !mLeague.includes(shortL))) return;
-    const stageId = classifyKnockoutStage(`${m.title || ''} ${m.match_title || ''} ${m.status_text || ''}`);
+    const stageId = classifyKnockoutStage(`${m.title || ''} ${m.match_title || ''}`);
     if (!stageId || !stageMap[stageId] || !m.teams || m.teams.length < 2) return;
 
     seenMatchIds.add(m.match_id);
@@ -1737,6 +1743,7 @@ const extractCricketKnockouts = (selectedLeague) => {
       id: m.match_id,
       stageId,
       note: stripSeasonYear(m.title || stageId),
+      date: m.start_time,
       isPost,
       status: isPre ? (m.start_time ? getFavFormattedDate(m.start_time, false) : 'TBD') : (m.status_text || m.status || 'LIVE'),
       isTBD: hIsTbd && aIsTbd,
@@ -1764,16 +1771,19 @@ const extractCricketKnockouts = (selectedLeague) => {
   const isFinalCompleted = finalMatches.length > 0 && finalMatches.every(m => !m.isTBD && m.isPost);
 
   const built = template.map(st => {
-    const liveTies = (stageMap[st.id] || []).filter(m => !(isFinalCompleted && m.isTBD));
-    const filledTies = (!isFinalCompleted && liveTies.length < st.slots)
-      ? [...liveTies, ...buildTbdKnockouts(st, liveTies.length, false)]
-      : liveTies;
+    const liveTies = (stageMap[st.id] || [])
+      .filter(m => !(isFinalCompleted && m.isTBD))
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    const cappedTies = st.id === 'FINAL' && liveTies.length > 1 ? liveTies.slice(-1) : liveTies;
+    const filledTies = (!isFinalCompleted && cappedTies.length < st.slots)
+      ? [...cappedTies, ...buildTbdKnockouts(st, cappedTies.length, false)]
+      : cappedTies;
     return {
       id: st.id,
       label: st.label,
       short: st.short,
       matches: filledTies,
-      hasScheduled: liveTies.length > 0
+      hasScheduled: cappedTies.length > 0
     };
   }).filter(st => !isFinalCompleted || st.matches.length > 0);
 
@@ -2187,7 +2197,7 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
   const a = comps.find(c => c.homeAway === 'away');
   const state = match?.status?.type?.state;
   const isViewingToday = !selectedDate || isSameDay(selectedDate, new Date());
-  const isLive = state === 'in' && isViewingToday;
+  const isLive = state === 'in' && (isViewingToday || Boolean(match?._isLive));
   const isPre = state === 'pre';
   const leagueName = getSoccerMatchLeagueName(match);
   const leagueLogo = getSoccerLeagueLogo(match, leagueName);
@@ -2395,9 +2405,44 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
   );
 });
 
+const getSoccerStatNum = (item, names) => {
+  for (const n of names) {
+    const found = item?.stats?.find(s => s.name === n);
+    if (found !== undefined && found !== null) {
+      const val = parseFloat(found.value ?? found.displayValue);
+      if (!isNaN(val)) return val;
+    }
+  }
+  return 0;
+};
+
+const sortSoccerEntries = (entries = []) => {
+  return [...entries].sort((a, b) => {
+    const ptsA = getSoccerStatNum(a, ['points']);
+    const ptsB = getSoccerStatNum(b, ['points']);
+    if (ptsB !== ptsA) return ptsB - ptsA;
+
+    const gdA = getSoccerStatNum(a, ['pointDifferential', 'goalDifference']);
+    const gdB = getSoccerStatNum(b, ['pointDifferential', 'goalDifference']);
+    if (gdB !== gdA) return gdB - gdA;
+
+    const gfA = getSoccerStatNum(a, ['pointsFor', 'goalsFor']);
+    const gfB = getSoccerStatNum(b, ['pointsFor', 'goalsFor']);
+    if (gfB !== gfA) return gfB - gfA;
+
+    const wA = getSoccerStatNum(a, ['wins']);
+    const wB = getSoccerStatNum(b, ['wins']);
+    if (wB !== wA) return wB - wA;
+
+    return String(a?.team?.shortDisplayName || a?.team?.name || '').localeCompare(
+      String(b?.team?.shortDisplayName || b?.team?.name || '')
+    );
+  });
+};
+
 const parseSoccerStandingsCached = (leagueId, leagueName, json) => {
   if (!json) return [];
-  const cacheKey = `soccer_std_v2|${leagueId}|${json?.children?.length || 0}|${json?.standings?.entries?.length || json?.entries?.length || 0}`;
+  const cacheKey = `soccer_std_v3|${leagueId}|${json?.children?.length || 0}|${json?.standings?.entries?.length || json?.entries?.length || 0}`;
   if (standingsParsedCache.has(cacheKey)) return standingsParsedCache.get(cacheKey);
 
   const parsedGroups = [];
@@ -2408,7 +2453,7 @@ const parseSoccerStandingsCached = (leagueId, leagueName, json) => {
     const key = cleanName.toLowerCase();
     if (seenGroupNames.has(key)) return;
     seenGroupNames.add(key);
-    parsedGroups.push({ name: cleanName, entries });
+    parsedGroups.push({ name: cleanName, entries: sortSoccerEntries(entries) });
   };
 
   if (json?.children && json.children.length > 0) {
@@ -2505,7 +2550,6 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   return (
     <div className="flex-1 p-4 pt-2.5 w-full">
-      {/* League Selector Pills: Clean Name Only (No Duplicate Year/League Title) */}
       <div className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
         {availableLeagues.map(l => {
           const active = league.id === l.id;
@@ -2513,7 +2557,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
             <button
               key={l.id}
               onClick={() => setLeague(l)}
-              className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'bg-[#121212] border-[rgba(255,255,255,0.08)]'}`}
+              className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'liquid-glass'}`}
             >
               <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.short || l.cleanName)} className="w-4 h-4 object-contain shrink-0" style={{ opacity: active ? 1 : 0.65 }} alt="" />
               <span className={`text-[12px] font-bold whitespace-nowrap ${active ? 'text-[#000000]' : 'text-[#8E8E93]'}`}>
@@ -2609,6 +2653,26 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
   );
 });
 
+const sortCricketRows = (rows = []) => {
+  return [...rows].sort((a, b) => {
+    const ptsA = parseFloat(a?.stats?.matchpoints ?? a?.stats?.points ?? 0) || 0;
+    const ptsB = parseFloat(b?.stats?.matchpoints ?? b?.stats?.points ?? 0) || 0;
+    if (ptsB !== ptsA) return ptsB - ptsA;
+
+    const nrrA = parseFloat(a?.stats?.netrr ?? a?.stats?.nrr ?? 0) || 0;
+    const nrrB = parseFloat(b?.stats?.netrr ?? b?.stats?.nrr ?? 0) || 0;
+    if (nrrB !== nrrA) return nrrB - nrrA;
+
+    const wA = parseFloat(a?.stats?.matcheswon ?? a?.stats?.wins ?? 0) || 0;
+    const wB = parseFloat(b?.stats?.matcheswon ?? b?.stats?.wins ?? 0) || 0;
+    if (wB !== wA) return wB - wA;
+
+    return String(a?.short_name || a?.team_name || '').localeCompare(
+      String(b?.short_name || b?.team_name || '')
+    );
+  });
+};
+
 const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
   const stdUrl = `${API_CRICKET_BASE}/standings`;
   const schedUrl = `${API_CRICKET_BASE}/schedule?days_past=120&days_ahead=30`;
@@ -2616,7 +2680,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
   const buildCurrentLeagues = useCallback((json, sched = []) => {
     if (!Array.isArray(json) || json.length === 0) return [];
     const safeSched = Array.isArray(sched) ? sched : [];
-    const cacheKey = `cricket_std_v2|${json.length}|${safeSched.length}`;
+    const cacheKey = `cricket_std_v3|${json.length}|${safeSched.length}`;
     if (standingsParsedCache.has(cacheKey)) return standingsParsedCache.get(cacheKey);
 
     const now = new Date();
@@ -2628,20 +2692,20 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
       const validGroups = (item.tables || [])
         .filter(t => t.rows && t.rows.length > 0)
-        .map(t => ({ name: t.name || 'Standings', rows: t.rows }));
+        .map(t => ({ name: t.name || 'Standings', rows: sortCricketRows(t.rows) }));
 
       if (validGroups.length === 0) return;
 
       const canonicalClean = titleCase(check.cleanTitle)
-        .replace(/\bIpl\b/g, 'IPL')
-        .replace(/\bWpl\b/g, 'WPL')
-        .replace(/\bPsl\b/g, 'PSL')
-        .replace(/\bBbl\b/g, 'BBL')
-        .replace(/\bCpl\b/g, 'CPL')
-        .replace(/\bOdi\b/g, 'ODI')
-        .replace(/\bT20i?\b/g, m => m.toUpperCase())
-        .replace(/\bIcc\b/g, 'ICC')
-        .replace(/\bWtc\b/g, 'WTC')
+        .replace(/Ipl/g, 'IPL')
+        .replace(/Wpl/g, 'WPL')
+        .replace(/Psl/g, 'PSL')
+        .replace(/Bbl/g, 'BBL')
+        .replace(/Cpl/g, 'CPL')
+        .replace(/Odi/g, 'ODI')
+        .replace(/T20i?/g, m => m.toUpperCase())
+        .replace(/Icc/g, 'ICC')
+        .replace(/Wtc/g, 'WTC')
         .trim();
 
       const conciseYear = extractSeasonYear(check.seasonLabel) || String(now.getFullYear());
@@ -2722,7 +2786,6 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   return (
     <div className="flex-1 p-4 pt-2.5 w-full">
-      {/* Tournament Selector Pills: Clean Title Only (No Duplicate Year/League Title) */}
       {data.length > 0 && (
         <div className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
           {data.map(l => {
@@ -2731,7 +2794,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
               <button
                 key={l.id}
                 onClick={() => setSelectedLeague(l)}
-                className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'bg-[#121212] border-[rgba(255,255,255,0.08)]'}`}
+                className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'liquid-glass'}`}
               >
                 <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.cleanTitle)} className="w-4 h-4 object-contain rounded-sm shrink-0" style={{ opacity: active ? 1 : 0.75 }} alt="" />
                 <span className={`text-[12px] font-bold whitespace-nowrap ${active ? 'text-[#000000]' : 'text-[#8E8E93]'}`}>
@@ -2786,7 +2849,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                   <span className="w-[30px] text-center text-[10px] text-[#8E8E93] font-bold">Pts</span>
                 </div>
                 {group.rows.map((item, index) => {
-                  const rank = item.stats?.rank || index + 1;
+                  const rank = index + 1;
                   const played = item.stats?.matchesplayed || 0;
                   const won = item.stats?.matcheswon || 0;
                   const lost = item.stats?.matcheslost || 0;
@@ -4600,14 +4663,12 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
-  // Pull-to-refresh state
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [activeMatch, setActiveMatch] = useState(null);
   const [activeTeam, setActiveTeam] = useState(null);
 
-  // Unified Favorites List: [{ id, sport }] with automatic migration from legacy localStorage keys
   const [favoritesList, setFavoritesList] = useState(() => {
     try {
       const savedUnified = JSON.parse(localStorage.getItem('sideline_unified_favorites') || 'null');
@@ -4620,7 +4681,6 @@ function App() {
           }
         });
       }
-      // Migrate legacy keys if present
       const legacySoccer = JSON.parse(localStorage.getItem('fav_teams') || '[]');
       if (Array.isArray(legacySoccer)) {
         legacySoccer.forEach(id => {
@@ -4781,7 +4841,6 @@ function App() {
     }
   }, [date]);
 
-  // Unified Favorites Schedule: fetches BOTH soccer and cricket favorite fixtures together regardless of activeSport
   const fetchFavSchedule = useCallback(async (forceRefresh = false) => {
     if (soccerFavs.length === 0 && cricketFavs.length === 0) {
       setFavMatches([]);
@@ -4789,12 +4848,13 @@ function App() {
     }
     setLoading(true);
     try {
+      const nowMs = Date.now();
       const [soccerResults, cricketSched] = await Promise.all([
         soccerFavs.length > 0
           ? Promise.all(soccerFavs.map(id => fetchWithCache(`${API_SOCCER_SCORE_BASE}/all/teams/${id}`, forceRefresh).catch(() => null)))
           : Promise.resolve([]),
         cricketFavs.length > 0
-          ? fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=2&days_ahead=30`, forceRefresh).catch(() => [])
+          ? fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=1&days_ahead=30`, forceRefresh).catch(() => [])
           : Promise.resolve([])
       ]);
 
@@ -4804,14 +4864,21 @@ function App() {
       soccerResults.forEach(res => {
         const events = res?.team?.nextEvent || [];
         events.forEach(event => {
-          if (event && event.id && !seenIds.has(`soccer:${event.id}`) && event.competitions?.length > 0) {
-            seenIds.add(`soccer:${event.id}`);
-            combined.push({
-              ...event,
-              _favSport: 'soccer',
-              _sortTs: new Date(event.date || 0).getTime() || Number.MAX_SAFE_INTEGER
-            });
-          }
+          if (!event || !event.id || seenIds.has(`soccer:${event.id}`) || !event.competitions?.length) return;
+          const comp = event.competitions[0];
+          const state = String(comp?.status?.type?.state || event?.status?.type?.state || '').toLowerCase();
+          const evTime = new Date(event.date || 0).getTime();
+          const isLive = state === 'in';
+          const isUpcoming = state === 'pre' || (!state && evTime >= nowMs);
+          if (!isLive && !isUpcoming) return;
+
+          seenIds.add(`soccer:${event.id}`);
+          combined.push({
+            ...event,
+            _favSport: 'soccer',
+            _isLive: isLive,
+            _sortTs: isNaN(evTime) ? Number.MAX_SAFE_INTEGER : evTime
+          });
         });
       });
 
@@ -4820,17 +4887,32 @@ function App() {
         const matched = (m.teams || []).some(t =>
           cricketFavs.some(fav => doesCricketTeamMatch(t, { id: fav, name: fav, short_name: fav }))
         );
-        if (matched) {
-          seenIds.add(`cricket:${m.match_id}`);
-          combined.push({
-            ...m,
-            _favSport: 'cricket',
-            _sortTs: new Date(m.start_time || 0).getTime() || Number.MAX_SAFE_INTEGER
-          });
-        }
+        if (!matched) return;
+
+        const stUpper = String(m.status || '').toUpperCase();
+        const stTxtUpper = String(m.status_text || '').toUpperCase();
+        const evTime = new Date(m.start_time || 0).getTime();
+        const isFinished = stUpper === 'POST' || stUpper === 'FINAL' || stUpper === 'COMPLETED' || stUpper === 'RESULT' ||
+          stTxtUpper.includes('FINAL') || stTxtUpper.includes('WON') || stTxtUpper.includes('FT') || stTxtUpper.includes('RESULT');
+        if (isFinished) return;
+
+        const isLive = stUpper === 'IN' || stUpper === 'LIVE' || stTxtUpper.includes('LIVE') || stTxtUpper.includes('STUMPS') || stTxtUpper.includes('INNINGS BREAK');
+        const isUpcoming = !isLive && (stUpper === 'PRE' || stUpper === 'SCHEDULED' || (!isNaN(evTime) && evTime >= nowMs - 3600000));
+        if (!isLive && !isUpcoming) return;
+
+        seenIds.add(`cricket:${m.match_id}`);
+        combined.push({
+          ...m,
+          _favSport: 'cricket',
+          _isLive: isLive,
+          _sortTs: isNaN(evTime) ? Number.MAX_SAFE_INTEGER : evTime
+        });
       });
 
-      combined.sort((a, b) => a._sortTs - b._sortTs);
+      combined.sort((a, b) => {
+        if (a._isLive !== b._isLive) return a._isLive ? -1 : 1;
+        return a._sortTs - b._sortTs;
+      });
       setFavMatches(combined);
     } catch {
       setFavMatches([]);
@@ -4839,7 +4921,6 @@ function App() {
     }
   }, [soccerFavs, cricketFavs]);
 
-  // Force-refresh current view data via fetchWithCache(url, true)
   const triggerForceRefresh = useCallback(async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
@@ -4879,20 +4960,20 @@ function App() {
         setRefreshTick(t => t + 1);
       }
     } finally {
-      setTimeout(() => setIsRefreshing(false), 320);
+      setTimeout(() => setIsRefreshing(false), 280);
     }
   }, [isRefreshing, view, activeSport, fetchFavSchedule, fetchSoccerMatches, fetchCricketMatches]);
 
-  // Combined iOS Pull-to-Refresh (top vertical pull) + Swipe-to-Go-Back (horizontal right swipe)
   const navHistoryRef = useRef([]);
   const prevViewRef = useRef(view);
   const gestureRef = useRef({
     active: false,
-    mode: null, // 'back' | 'pull' | null
+    mode: null,
     startX: 0,
     startY: 0,
     dx: 0,
     dy: 0,
+    atTop: true,
     targetSheet: null
   });
 
@@ -5050,7 +5131,6 @@ function App() {
         .animate-bounce-bar { animation: bounceBar 1.2s ease-in-out infinite; }
       `}} />
 
-      {/* GLOBAL iOS PULL-TO-REFRESH INDICATOR */}
       <div
         style={{
           height: `${pullVisibleHeight}px`,
@@ -5072,7 +5152,6 @@ function App() {
         </div>
       </div>
 
-      {/* SPORT TOGGLE */}
       <div className="flex liquid-glass rounded-[20px] mx-4 mt-3 mb-3.5 p-1">
         <button
           onClick={() => startTransition(() => {
@@ -5092,7 +5171,6 @@ function App() {
         </button>
       </div>
 
-      {/* MAIN VIEW AREA */}
       <div key={`${activeSport}-${view}-${refreshTick}`} className="flex-1 flex flex-col ios-view-enter">
         {view === 'home' && (
           <div className="flex-1 px-4 pt-2.5 pb-36">
@@ -5100,13 +5178,13 @@ function App() {
             {loading && favMatches.length === 0 ? (
               <div className="flex justify-center mt-10"><div className="w-6 h-6 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" /></div>
             ) : favMatches.length === 0 ? (
-              <EmptyState icon={Calendar} title="No Matches" message="Your favorite soccer and cricket teams don't have any upcoming fixtures right now." />
+              <EmptyState icon={Calendar} title="No Live or Upcoming Matches" message="Your favorite teams don't have any live or upcoming fixtures right now." />
             ) : (
               favMatches.map((m, idx) =>
                 m._favSport === 'soccer' ? (
-                  <SoccerMatchCard key={`fav-s-${m.id || idx}`} match={m} selectedDate={new Date()} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
+                  <SoccerMatchCard key={`fav-s-${m.id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
                 ) : (
-                  <CricketMatchCard key={`fav-c-${m.match_id || idx}`} match={m} selectedDate={new Date()} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
+                  <CricketMatchCard key={`fav-c-${m.match_id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
                 )
               )
             )}
@@ -5155,7 +5233,6 @@ function App() {
         )}
       </div>
 
-      {/* FLOATING BOTTOM NAVBAR */}
       <div className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
         {favoritesList.length > 0 && (
           <button onClick={() => startTransition(() => setView('home'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
@@ -5173,7 +5250,6 @@ function App() {
         </button>
       </div>
 
-      {/* MODALS */}
       {activeMatch && activeMatch._sport === 'soccer' && (
         <SoccerMatchModal match={activeMatch} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
       )}
@@ -5268,7 +5344,7 @@ function App() {
         if (!window.React || !window.ReactDOM || !window.Babel) {
           attempts++;
           if (attempts < 40) {
-            setTimeout(startApp, 150);
+            setTimeout(startApp, 120);
             return;
           }
           showBootError(
@@ -5280,7 +5356,16 @@ function App() {
         started = true;
         try {
           const jsxSource = document.getElementById('sideline-jsx').textContent;
-          const compiled = window.Babel.transform(jsxSource, { presets: ['react'] }).code;
+          const sig = 'sideline_compiled_v11_' + jsxSource.length;
+          let compiled = null;
+          try { compiled = sessionStorage.getItem(sig); } catch {}
+          if (!compiled) {
+            compiled = window.Babel.transform(jsxSource, { presets: ['react'] }).code;
+            try {
+              sessionStorage.clear();
+              sessionStorage.setItem(sig, compiled);
+            } catch {}
+          }
           const runFn = new Function(compiled);
           runFn();
         } catch (err) {
@@ -5290,7 +5375,7 @@ function App() {
       }
 
       if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(startApp, 30);
+        setTimeout(startApp, 15);
       } else {
         window.addEventListener('DOMContentLoaded', startApp);
       }
