@@ -3570,9 +3570,9 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.16)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -3701,9 +3701,9 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.16)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4103,9 +4103,9 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
   const isFav = favorites.includes(favKey);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.16)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4425,9 +4425,9 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
   const isFav = favorites.includes(favId);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.16)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4531,6 +4531,15 @@ function App() {
   const [view, setView] = useState('scores');
   const [date, setDate] = useState(() => new Date());
   const [, startTransition] = useTransition();
+
+  const [soccerMatches, setSoccerMatches] = useState([]);
+  const [cricketMatches, setCricketMatches] = useState([]);
+  const [favMatches, setFavMatches] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [activeMatch, setActiveMatch] = useState(null);
+  const [activeTeam, setActiveTeam] = useState(null);
+
   const navHistoryRef = useRef([]);
   const prevViewRef = useRef(view);
   const gestureRef = useRef({ active: false, startX: 0, startY: 0, dx: 0, targetSheet: null });
@@ -4620,14 +4629,6 @@ function App() {
     };
   }, [activeMatch, activeTeam, handleGoBack]);
 
-
-  const [soccerMatches, setSoccerMatches] = useState([]);
-  const [cricketMatches, setCricketMatches] = useState([]);
-  const [favMatches, setFavMatches] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const [activeMatch, setActiveMatch] = useState(null);
-  const [activeTeam, setActiveTeam] = useState(null);
 
   const [soccerFavs, setSoccerFavs] = useState(() => {
     try { return JSON.parse(localStorage.getItem('fav_teams') || '[]'); } catch { return []; }

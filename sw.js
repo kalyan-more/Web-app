@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sideline-pwa-v8';
+const CACHE_NAME = 'sideline-pwa-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -34,7 +34,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first for index.html and sw.js so updates always take effect promptly
   if (url.pathname.endsWith('index.html') || url.pathname.endsWith('sw.js') || url.pathname.endsWith('/')) {
     event.respondWith(
       fetch(req).then((res) => {
