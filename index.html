@@ -61,11 +61,32 @@
       overscroll-behavior-y: contain;
     }
 
-    /* Native iOS spring animations & tactile press physics */
+    /* iOS Liquid Glass surfaces */
+    .liquid-glass {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.085) 0%, rgba(22, 22, 26, 0.62) 100%);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      backdrop-filter: blur(22px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.24), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .liquid-glass-pill {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.11) 0%, rgba(20, 20, 24, 0.72) 100%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.28), 0 16px 36px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Fluid iOS spring keyframes */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.6;
+        opacity: 0.45;
         transform: translate3d(0, 100%, 0);
+      }
+      68% {
+        opacity: 1;
+        transform: translate3d(0, -1.2%, 0);
       }
       100% {
         opacity: 1;
@@ -74,14 +95,22 @@
     }
 
     @keyframes iosBackdropFadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-
-    @keyframes iosViewFade {
       0% {
         opacity: 0;
-        transform: translate3d(0, 6px, 0);
+        -webkit-backdrop-filter: blur(0px);
+        backdrop-filter: blur(0px);
+      }
+      100% {
+        opacity: 1;
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+      }
+    }
+
+    @keyframes iosViewEnter {
+      0% {
+        opacity: 0;
+        transform: translate3d(14px, 0, 0);
       }
       100% {
         opacity: 1;
@@ -90,28 +119,34 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.42s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosBackdropFadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: opacity;
     }
 
+    .ios-view-enter {
+      animation: iosViewEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
     .ios-card-press {
-      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, opacity 0.2s ease;
+      transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.22s ease, border-color 0.22s ease, opacity 0.2s ease;
       will-change: transform;
     }
     .ios-card-press:active {
-      transform: scale(0.975);
+      transform: scale3d(0.972, 0.972, 1);
     }
 
     button {
-      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, color 0.2s ease, opacity 0.18s ease;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.22s ease, color 0.22s ease, opacity 0.2s ease;
+      will-change: transform;
     }
     button:active {
-      transform: scale(0.96);
+      transform: scale3d(0.955, 0.955, 1);
     }
   </style>
 </head>
@@ -3547,9 +3582,9 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -3678,9 +3713,9 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4080,9 +4115,9 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
   const isFav = favorites.includes(favKey);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4402,9 +4437,9 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
   const isFav = favorites.includes(favId);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4508,6 +4543,97 @@ function App() {
   const [view, setView] = useState('scores');
   const [date, setDate] = useState(() => new Date());
   const [, startTransition] = useTransition();
+  // Native-feeling iOS swipe-to-go-back (swipe right from left edge or anywhere on screen)
+  const navHistoryRef = useRef([]);
+  const prevViewRef = useRef(view);
+  const gestureRef = useRef({ active: false, startX: 0, startY: 0, dx: 0, targetSheet: null });
+
+  useEffect(() => {
+    if (prevViewRef.current !== view) {
+      navHistoryRef.current.push(prevViewRef.current);
+      if (navHistoryRef.current.length > 20) navHistoryRef.current.shift();
+      prevViewRef.current = view;
+    }
+  }, [view]);
+
+  const handleGoBack = useCallback(() => {
+    if (activeMatch) {
+      setActiveMatch(null);
+      return true;
+    }
+    if (activeTeam) {
+      setActiveTeam(null);
+      return true;
+    }
+    if (navHistoryRef.current.length > 0) {
+      const prev = navHistoryRef.current.pop();
+      prevViewRef.current = prev;
+      startTransition(() => setView(prev));
+      return true;
+    }
+    return false;
+  }, [activeMatch, activeTeam, startTransition]);
+
+  useEffect(() => {
+    const onTouchStart = (e) => {
+      if (!e.touches || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      gestureRef.current = {
+        active: true,
+        startX: t.clientX,
+        startY: t.clientY,
+        dx: 0,
+        targetSheet: document.querySelector('.ios-sheet-up')
+      };
+    };
+
+    const onTouchMove = (e) => {
+      const g = gestureRef.current;
+      if (!g.active || !e.touches || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const dx = t.clientX - g.startX;
+      const dy = t.clientY - g.startY;
+
+      // Only engage horizontal back-swipe when horizontal travel dominates vertical scroll
+      if (dx > 12 && Math.abs(dx) > Math.abs(dy) * 1.45) {
+        g.dx = dx;
+        if (g.targetSheet && (activeMatch || activeTeam)) {
+          const clamped = Math.min(dx, 260);
+          g.targetSheet.style.transition = 'none';
+          g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
+          g.targetSheet.style.opacity = String(Math.max(0.55, 1 - clamped / 520));
+        }
+      }
+    };
+
+    const onTouchEnd = () => {
+      const g = gestureRef.current;
+      if (!g.active) return;
+      g.active = false;
+      const dx = g.dx;
+      g.dx = 0;
+
+      if (g.targetSheet) {
+        g.targetSheet.style.transition = 'transform 0.34s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease';
+        g.targetSheet.style.transform = '';
+        g.targetSheet.style.opacity = '';
+      }
+
+      if (dx > 82) {
+        handleGoBack();
+      }
+    };
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [activeMatch, activeTeam, handleGoBack]);
+
 
   const [soccerMatches, setSoccerMatches] = useState([]);
   const [cricketMatches, setCricketMatches] = useState([]);
@@ -4710,7 +4836,7 @@ function App() {
       `}} />
 
       {/* SPORT TOGGLE */}
-      <div className="flex bg-[#121212] rounded-[20px] mx-4 mt-3 mb-3.5 p-1 border border-[rgba(255,255,255,0.08)]">
+      <div className="flex liquid-glass rounded-[20px] mx-4 mt-3 mb-3.5 p-1">
         <button
           onClick={() => startTransition(() => {
             setActiveSport('soccer');
@@ -4732,7 +4858,7 @@ function App() {
       </div>
 
       {/* MAIN VIEW AREA */}
-      <div className="flex-1 flex flex-col">
+      <div key={`${activeSport}-${view}`} className="flex-1 flex flex-col ios-view-enter">
         {view === 'home' && (
           <div className="flex-1 px-4 pt-2.5 pb-36">
             <h2 className="text-[28px] font-extrabold text-[#F5F5F7] mb-5 tracking-[-0.5px]">Favorites Schedule</h2>
@@ -4795,7 +4921,7 @@ function App() {
       </div>
 
       {/* FLOATING BOTTOM NAVBAR */}
-      <div className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex border border-[rgba(255,255,255,0.15)] bg-[rgba(20,20,20,0.75)] backdrop-blur-xl z-40 shadow-2xl">
+      <div className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
         {currentFavorites.length > 0 && (
           <button onClick={() => startTransition(() => setView('home'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
             <Star size={26} color={view === 'home' ? THEME.text : THEME.muted} />

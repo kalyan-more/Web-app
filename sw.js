@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sideline-pwa-v6';
+const CACHE_NAME = 'sideline-pwa-v7';
 const ASSETS = [
   './',
   './index.html',
