@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-scrollbar">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -16,19 +16,36 @@
   <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png" />
   <link rel="manifest" href="./manifest.json" />
 
-  <!-- Tailwind CSS & React + Babel Runtime (with jsDelivr + unpkg fallback) -->
+  <!-- Tailwind CSS & React + Babel Runtime -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
 
   <style>
+    /* Global scrollbar removal (vertical & horizontal) across WebKit / Safari / iOS PWA */
+    html, body, * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    *::-webkit-scrollbar,
+    .no-scrollbar::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      background: transparent !important;
+    }
+
     html, body {
       background-color: #000000;
       color: #F5F5F7;
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
       overscroll-behavior-y: none;
+      -webkit-overflow-scrolling: touch;
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
@@ -37,9 +54,68 @@
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
     }
+
+    /* Native iOS momentum scrolling */
+    .ios-momentum {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+
+    /* Native iOS spring animations & tactile press physics */
+    @keyframes iosSheetSlideUp {
+      0% {
+        opacity: 0.6;
+        transform: translate3d(0, 100%, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes iosBackdropFadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes iosViewFade {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 6px, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .ios-sheet-up {
+      animation: iosSheetSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .ios-backdrop-in {
+      animation: iosBackdropFadeIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: opacity;
+    }
+
+    .ios-card-press {
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, opacity 0.2s ease;
+      will-change: transform;
+    }
+    .ios-card-press:active {
+      transform: scale(0.975);
+    }
+
+    button {
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, color 0.2s ease, opacity 0.18s ease;
+    }
+    button:active {
+      transform: scale(0.96);
+    }
   </style>
 </head>
-<body>
+<body class="no-scrollbar">
   <div id="root">
     <div id="boot-status" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;color:#8E8E93;font-weight:700;font-size:13px;letter-spacing:1px;padding:24px;text-align:center;">
       <div style="width:26px;height:26px;border:2.5px solid #0A84FF;border-top-color:transparent;border-radius:50%;margin-bottom:14px;animation:spin 0.8s linear infinite;"></div>
@@ -1945,7 +2021,7 @@ const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
   return (
     <div className="px-4 pt-2.5 mb-2.5 w-full">
       <div className="bg-[#121212] h-[64px] rounded-[32px] px-3 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
-        <div ref={scrollRef} className="flex items-center overflow-x-auto [&::-webkit-scrollbar]:hidden w-full">
+        <div ref={scrollRef} className="flex items-center overflow-x-auto no-scrollbar ios-momentum w-full">
           {dates.map((d, i) => {
             const isSel = isSameDay(d, selectedDate);
             const isToday = isSameDay(d, new Date());
@@ -2032,7 +2108,7 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
   const leagueLogo = getSoccerLeagueLogo(match, leagueName);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full">
+    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
         <img src={getSafeSoccerLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{h?.team?.shortDisplayName || h?.team?.name}</span>
@@ -2074,7 +2150,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   const leagueLogo = getCricketLeagueLogo(match.league || match.series || match.title, match.league_logo);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full">
+    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
         <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{h.short_name || h.name}</span>
@@ -2156,7 +2232,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
         )}
       </div>
 
-      <div className="flex bg-[#121212] p-1 rounded-[16px] border border-[rgba(255,255,255,0.08)] gap-1 mb-3.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+      <div className="flex bg-[#121212] p-1 rounded-[16px] border border-[rgba(255,255,255,0.08)] gap-1 mb-3.5 overflow-x-auto no-scrollbar ios-momentum">
         {stages.map(s => {
           const active = s.id === currentStage.id;
           return (
@@ -2345,7 +2421,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
   return (
     <div className="flex-1 p-4 pt-2.5 w-full">
       {/* League Selector Pills: Clean Name Only (No Duplicate Year/League Title) */}
-      <div className="mb-5 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
+      <div className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
         {availableLeagues.map(l => {
           const active = league.id === l.id;
           return (
@@ -2425,7 +2501,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                       <div
                         key={item.team?.id || index}
                         onClick={() => onTeamPress(item.team, league.id, item.stats, 'soccer', index + 1)}
-                        className="flex items-center bg-[#121212] p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150"
+                        className="flex items-center bg-[#121212] p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press"
                       >
                         <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{index + 1}</span>
                         <div className="flex-1 flex items-center ml-2 min-w-0">
@@ -2563,7 +2639,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
     <div className="flex-1 p-4 pt-2.5 w-full">
       {/* Tournament Selector Pills: Clean Title Only (No Duplicate Year/League Title) */}
       {data.length > 0 && (
-        <div className="mb-5 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
+        <div className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
           {data.map(l => {
             const active = selectedLeague?.id === l.id;
             return (
@@ -2645,7 +2721,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                         logo: teamLogoUrl,
                         _leagueTitle: selectedLeague.cleanTitle
                       }, null, { ...item.stats, rank, _leagueTitle: selectedLeague.cleanTitle }, 'cricket')}
-                      className="flex items-center bg-[#121212] p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150"
+                      className="flex items-center bg-[#121212] p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press"
                     >
                       <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
                       <div className="flex-1 flex items-center ml-2 min-w-0">
@@ -3445,7 +3521,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               <span className="text-[10px] text-[#8E8E93] font-bold tabular-nums">{Math.floor(yMax / 2)}</span>
               <span className="text-[10px] text-[#8E8E93] font-bold tabular-nums">0</span>
             </div>
-            <div className="flex-1 overflow-x-auto flex items-end [&::-webkit-scrollbar]:hidden" style={{ height: GRAPH_HEIGHT }}>
+            <div className="flex-1 overflow-x-auto flex items-end no-scrollbar ios-momentum" style={{ height: GRAPH_HEIGHT }}>
               {validOvers.map((ov, index) => {
                 const barHeight = Math.max((ov.runs_this_over / yMax) * DRAW_HEIGHT, 5);
                 const isWicket = ov.wickets_this_over > 0;
@@ -3471,9 +3547,9 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -3519,7 +3595,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               })}
             </div>
 
-            <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+            <div className="flex-1 overflow-y-auto no-scrollbar ios-momentum">
               {activeTab === 'info' && renderInfoTab()}
               {activeTab === 'scorecard' && renderScorecardTab()}
               {activeTab === 'summary' && renderSummaryTab()}
@@ -3602,9 +3678,9 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -3646,7 +3722,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        <div className="flex-1 overflow-y-auto no-scrollbar ios-momentum">
           {tab === 'lineup' && (
             <div className="pb-10">
               <TacticalPitch summary={summary} home={hComp} away={aComp} />
@@ -4004,9 +4080,9 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
   const isFav = favorites.includes(favKey);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4041,7 +4117,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+          <div className="flex-1 overflow-y-auto px-4 pb-16 no-scrollbar ios-momentum">
             {teamTab === 'stats' && renderCricketTeamStats()}
             {teamTab === 'squad' && (
               squadGroups.length === 0 ? (
@@ -4326,9 +4402,9 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
   const isFav = favorites.includes(favId);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4366,7 +4442,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+            <div className="flex-1 overflow-y-auto px-4 pb-16 no-scrollbar ios-momentum">
               {teamTab === 'stats' && renderTeamSeasonStats()}
               {teamTab === 'squad' && squadGroups.map(g => {
                 const IconComp = g.icon;
@@ -4798,7 +4874,7 @@ function App() {
         if (!window.React || !window.ReactDOM || !window.Babel) {
           showBootError(
             'OFFLINE OR SANDBOXED PREVIEW',
-            'If you opened index.html inside the iPhone Files preview, iOS blocks external scripts. Open your live GitHub Pages link (https://...) in Safari instead.'
+            'Open your live GitHub Pages link (https://...) in Safari.'
           );
           return;
         }
