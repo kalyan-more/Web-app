@@ -23,6 +23,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/@babel/standalone@7.24.7/babel.min.js'"></script>
 
   <style>
+    /* Global scrollbar removal & crisp 120Hz rendering across iOS PWA */
     html, body, * {
       scrollbar-width: none !important;
       -ms-overflow-style: none !important;
@@ -59,53 +60,52 @@
     .ios-momentum {
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: contain;
-      transform: translateZ(0);
+      transform: translate3d(0, 0, 0);
     }
 
+    /* Sleek, crisp top sport switcher without milky blur */
     .sport-bar-crisp {
-      background: rgba(16, 16, 20, 0.94);
-      border: 1px solid rgba(255, 255, 255, 0.11);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 4px 16px rgba(0, 0, 0, 0.45);
+      background: rgba(16, 16, 20, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.45);
     }
 
+    /* Sleek, refined Liquid Glass surfaces */
     .liquid-glass {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.065) 0%, rgba(18, 18, 22, 0.72) 100%);
-      -webkit-backdrop-filter: blur(18px) saturate(165%);
-      backdrop-filter: blur(18px) saturate(165%);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 20px rgba(0, 0, 0, 0.34);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(16, 16, 20, 0.78) 100%);
+      -webkit-backdrop-filter: blur(16px) saturate(155%);
+      backdrop-filter: blur(16px) saturate(155%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 6px 18px rgba(0, 0, 0, 0.32);
     }
 
     .liquid-glass-header {
-      background: rgba(24, 24, 28, 0.88);
-      -webkit-backdrop-filter: blur(14px) saturate(150%);
-      backdrop-filter: blur(14px) saturate(150%);
+      background: rgba(22, 22, 26, 0.90);
+      -webkit-backdrop-filter: blur(12px) saturate(145%);
+      backdrop-filter: blur(12px) saturate(145%);
     }
 
     .liquid-glass-pill {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(16, 16, 20, 0.82) 100%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20), 0 14px 32px rgba(0, 0, 0, 0.55);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(15, 15, 18, 0.86) 100%);
+      -webkit-backdrop-filter: blur(22px) saturate(170%);
+      backdrop-filter: blur(22px) saturate(170%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 14px 30px rgba(0, 0, 0, 0.55);
     }
 
     .liquid-glass-sheet {
-      background: linear-gradient(180deg, rgba(20, 20, 24, 0.94) 0%, rgba(5, 5, 7, 0.98) 100%);
-      -webkit-backdrop-filter: blur(28px) saturate(175%);
-      backdrop-filter: blur(28px) saturate(175%);
-      border-top: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 -14px 36px rgba(0, 0, 0, 0.65);
+      background: linear-gradient(180deg, rgba(18, 18, 22, 0.95) 0%, rgba(4, 4, 6, 0.99) 100%);
+      -webkit-backdrop-filter: blur(26px) saturate(170%);
+      backdrop-filter: blur(26px) saturate(170%);
+      border-top: 1px solid rgba(255, 255, 255, 0.13);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
+    /* Sleek 120Hz GPU-accelerated spring transitions */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.55;
+        opacity: 0.6;
         transform: translate3d(0, 100%, 0);
-      }
-      75% {
-        opacity: 1;
-        transform: translate3d(0, -0.6%, 0);
       }
       100% {
         opacity: 1;
@@ -146,20 +146,20 @@
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
+      transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
       will-change: transform;
     }
     .ios-card-press:active {
-      transform: scale3d(0.975, 0.975, 1);
+      transform: scale3d(0.976, 0.976, 1);
     }
 
     button {
       touch-action: manipulation;
-      transition: transform 0.13s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.13s ease, color 0.13s ease, opacity 0.13s ease;
+      transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
       will-change: transform;
     }
     button:active {
-      transform: scale3d(0.958, 0.958, 1);
+      transform: scale3d(0.96, 0.96, 1);
     }
   </style>
 </head>
@@ -261,61 +261,66 @@ const SOCCER_LEAGUES = [
 
 // Comprehensive ICC Full & Associate Member Flag Mapping
 const CRICKET_COUNTRY_ALIASES = [
-  { code: 'in', keys: ['india', 'ind', 'india a', 'india w', 'india u19', 'bharat'] },
-  { code: 'au', keys: ['australia', 'aus', 'australia a', 'australia w', 'australia u19', 'southern stars'] },
-  { code: 'gb-eng', keys: ['england', 'eng', 'great britain', 'gb', 'england lions', 'england w', 'three lions'] },
-  { code: 'za', keys: ['south africa', 'rsa', 'sa', 'proteas', 'south africa a', 'south africa w'] },
-  { code: 'nz', keys: ['new zealand', 'nz', 'blackcaps', 'white ferns', 'new zealand a', 'kiwis'] },
-  { code: 'pk', keys: ['pakistan', 'pak', 'pakistan shaheens', 'pakistan a', 'pakistan w'] },
-  { code: 'lk', keys: ['sri lanka', 'sl', 'sri lanka a', 'sri lanka w', 'lions'] },
-  { code: 'bd', keys: ['bangladesh', 'ban', 'bangladesh a', 'bangladesh w', 'tigers'] },
-  { code: 'af', keys: ['afghanistan', 'afg', 'afghanistan a'] },
-  { code: 'ie', keys: ['ireland', 'ire', 'ireland wolves', 'ireland w'] },
-  { code: 'zw', keys: ['zimbabwe', 'zim', 'zimbabwe a'] },
-  { code: 'nl', keys: ['netherlands', 'ned', 'neth', 'dutch', 'oranje'] },
-  { code: 'gb-sct', keys: ['scotland', 'sco', 'scot'] },
-  { code: 'np', keys: ['nepal', 'nep', 'rhinos'] },
-  { code: 'us', keys: ['united states', 'usa', 'us', 'united states of america', 'american'] },
+  { code: 'in', keys: ['india', 'ind', 'india a', 'india w', 'india women', 'india u19', 'team india'] },
+  { code: 'au', keys: ['australia', 'aus', 'australia a', 'australia w', 'australia women', 'australia u19'] },
+  { code: 'gb-eng', keys: ['england', 'eng', 'great britain', 'gb', 'england lions', 'england w', 'england women'] },
+  { code: 'za', keys: ['south africa', 'rsa', 'sa', 'proteas', 'south africa a', 'south africa w', 'south africa women'] },
+  { code: 'nz', keys: ['new zealand', 'nz', 'blackcaps', 'white ferns', 'new zealand a', 'new zealand w', 'new zealand women'] },
+  { code: 'pk', keys: ['pakistan', 'pak', 'pakistan shaheens', 'pakistan a', 'pakistan w', 'pakistan women'] },
+  { code: 'lk', keys: ['sri lanka', 'sl', 'sri lanka a', 'sri lanka w', 'sri lanka women'] },
+  { code: 'bd', keys: ['bangladesh', 'ban', 'bangladesh a', 'bangladesh w', 'bangladesh women'] },
+  { code: 'af', keys: ['afghanistan', 'afg', 'afghanistan a', 'afghanistan w'] },
+  { code: 'ie', keys: ['ireland', 'ire', 'ireland wolves', 'ireland w', 'ireland women'] },
+  { code: 'zw', keys: ['zimbabwe', 'zim', 'zimbabwe a', 'zimbabwe w', 'zimbabwe women'] },
+  { code: 'nl', keys: ['netherlands', 'ned', 'neth', 'dutch', 'netherlands w'] },
+  { code: 'gb-sct', keys: ['scotland', 'sco', 'scot', 'scotland w'] },
+  { code: 'np', keys: ['nepal', 'nep', 'nepal w'] },
+  { code: 'us', keys: ['united states', 'usa', 'us', 'united states of america', 'usa w'] },
   { code: 'om', keys: ['oman', 'oma'] },
-  { code: 'ca', keys: ['canada', 'can'] },
-  { code: 'na', keys: ['namibia', 'nam', 'eagles'] },
-  { code: 'ug', keys: ['uganda', 'uga', 'cranes'] },
-  { code: 'pg', keys: ['papua new guinea', 'png', 'barramundis'] },
-  { code: 'ae', keys: ['united arab emirates', 'uae', 'emirates'] },
-  { code: 'hk', keys: ['hong kong', 'hk', 'hkg', 'hong kong china'] },
-  { code: 'ke', keys: ['kenya', 'ken'] },
+  { code: 'ca', keys: ['canada', 'can', 'canada w'] },
+  { code: 'na', keys: ['namibia', 'nam', 'namibia w'] },
+  { code: 'ug', keys: ['uganda', 'uga', 'uganda w'] },
+  { code: 'pg', keys: ['papua new guinea', 'png', 'png w'] },
+  { code: 'ae', keys: ['united arab emirates', 'uae', 'emirates', 'uae w'] },
+  { code: 'hk', keys: ['hong kong', 'hk', 'hkg', 'hong kong w'] },
+  { code: 'ke', keys: ['kenya', 'ken', 'kenya w'] },
   { code: 'bm', keys: ['bermuda', 'ber'] },
-  { code: 'it', keys: ['italy', 'ita'] },
+  { code: 'it', keys: ['italy', 'ita', 'italy w'] },
   { code: 'je', keys: ['jersey', 'jer'] },
   { code: 'gg', keys: ['guernsey', 'gue'] },
-  { code: 'my', keys: ['malaysia', 'mal', 'mas'] },
-  { code: 'kw', keys: ['kuwait', 'kuw'] },
+  { code: 'my', keys: ['malaysia', 'mal', 'mas', 'malaysia w'] },
+  { code: 'kw', keys: ['kuwait', 'kuw', 'kuwait w'] },
   { code: 'bh', keys: ['bahrain', 'bah', 'bhr'] },
-  { code: 'qa', keys: ['qatar', 'qat'] },
+  { code: 'qa', keys: ['qatar', 'qat', 'qatar w'] },
   { code: 'sa', keys: ['saudi arabia', 'ksa'] },
-  { code: 'tz', keys: ['tanzania', 'tan'] },
-  { code: 'ng', keys: ['nigeria', 'nig', 'nga', 'yellow greens'] },
-  { code: 'rw', keys: ['rwanda', 'rwa'] },
+  { code: 'tz', keys: ['tanzania', 'tan', 'tanzania w'] },
+  { code: 'ng', keys: ['nigeria', 'nig', 'nga', 'nigeria w'] },
+  { code: 'rw', keys: ['rwanda', 'rwa', 'rwanda w'] },
   { code: 'sg', keys: ['singapore', 'sin', 'sgp'] },
-  { code: 'th', keys: ['thailand', 'tha'] },
-  { code: 'dk', keys: ['denmark', 'den'] },
-  { code: 'de', keys: ['germany', 'ger'] },
-  { code: 'es', keys: ['spain', 'esp'] },
-  { code: 'fr', keys: ['france', 'fra'] },
-  { code: 'jp', keys: ['japan', 'jpn'] },
-  { code: 'kr', keys: ['south korea', 'korea', 'kor'] },
-  { code: 'cn', keys: ['china', 'chn'] },
-  { code: 'id', keys: ['indonesia', 'ina', 'idn'] }
+  { code: 'th', keys: ['thailand', 'tha', 'thailand w'] },
+  { code: 'dk', keys: ['denmark', 'den', 'denmark w'] },
+  { code: 'de', keys: ['germany', 'ger', 'germany w'] },
+  { code: 'es', keys: ['spain', 'esp', 'spain w'] },
+  { code: 'jp', keys: ['japan', 'jpn', 'japan w'] },
+  { code: 'kr', keys: ['south korea', 'kor'] },
+  { code: 'id', keys: ['indonesia', 'ina', 'indonesia w'] },
+  { code: 'bt', keys: ['bhutan', 'bhu', 'bhutan w'] },
+  { code: 'mv', keys: ['maldives', 'mdv', 'maldives w'] }
 ];
 
+// Comprehensive Franchise & League Team Logo Map
 const CRICKET_FRANCHISE_LOGOS = {
   "chennai super kings": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
   "csk": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
   "mumbai indians": "https://a.espncdn.com/i/teamlogos/cricket/500/335978.png",
+  "mumbai indians women": "https://a.espncdn.com/i/teamlogos/cricket/500/335978.png",
   "mi": "https://a.espncdn.com/i/teamlogos/cricket/500/335978.png",
+  "mi women": "https://a.espncdn.com/i/teamlogos/cricket/500/335978.png",
   "royal challengers bengaluru": "https://a.espncdn.com/i/teamlogos/cricket/500/335970.png",
   "royal challengers bangalore": "https://a.espncdn.com/i/teamlogos/cricket/500/335970.png",
+  "royal challengers bengaluru women": "https://a.espncdn.com/i/teamlogos/cricket/500/335970.png",
   "rcb": "https://a.espncdn.com/i/teamlogos/cricket/500/335970.png",
+  "rcb women": "https://a.espncdn.com/i/teamlogos/cricket/500/335970.png",
   "kolkata knight riders": "https://a.espncdn.com/i/teamlogos/cricket/500/335971.png",
   "kkr": "https://a.espncdn.com/i/teamlogos/cricket/500/335971.png",
   "rajasthan royals": "https://a.espncdn.com/i/teamlogos/cricket/500/335977.png",
@@ -324,35 +329,40 @@ const CRICKET_FRANCHISE_LOGOS = {
   "pbks": "https://a.espncdn.com/i/teamlogos/cricket/500/335973.png",
   "kings xi punjab": "https://a.espncdn.com/i/teamlogos/cricket/500/335973.png",
   "delhi capitals": "https://a.espncdn.com/i/teamlogos/cricket/500/335975.png",
+  "delhi capitals women": "https://a.espncdn.com/i/teamlogos/cricket/500/335975.png",
   "dc": "https://a.espncdn.com/i/teamlogos/cricket/500/335975.png",
+  "dc women": "https://a.espncdn.com/i/teamlogos/cricket/500/335975.png",
   "sunrisers hyderabad": "https://a.espncdn.com/i/teamlogos/cricket/500/628333.png",
   "srh": "https://a.espncdn.com/i/teamlogos/cricket/500/628333.png",
   "gujarat titans": "https://a.espncdn.com/i/teamlogos/cricket/500/1298769.png",
   "gt": "https://a.espncdn.com/i/teamlogos/cricket/500/1298769.png",
+  "gujarat giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1298769.png",
   "lucknow super giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1298768.png",
   "lsg": "https://a.espncdn.com/i/teamlogos/cricket/500/1298768.png",
   "west indies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "west indies women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
   "wi": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
-  "windies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
-  "sydney sixers": "https://a.espncdn.com/i/teamlogos/cricket/500/335979.png",
-  "sydney thunder": "https://a.espncdn.com/i/teamlogos/cricket/500/335980.png",
-  "melbourne stars": "https://a.espncdn.com/i/teamlogos/cricket/500/335975.png",
-  "melbourne renegades": "https://a.espncdn.com/i/teamlogos/cricket/500/335976.png",
-  "perth scorchers": "https://a.espncdn.com/i/teamlogos/cricket/500/335981.png",
-  "brisbane heat": "https://a.espncdn.com/i/teamlogos/cricket/500/335972.png",
-  "adelaide strikers": "https://a.espncdn.com/i/teamlogos/cricket/500/335969.png",
-  "hobart hurricanes": "https://a.espncdn.com/i/teamlogos/cricket/500/335973.png"
+  "wi women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "windies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png"
 };
 
 const CRICKET_TEAM_COLORS = {
   "sydney sixers": ["#EC2A90", "#111111", "SYS"],
-  "sydney thunder": ["#64B42D", "#141414", "SYT"],
+  "sydney sixers women": ["#EC2A90", "#111111", "SSW"],
+  "sydney thunder": ["#64B42D", "#151518", "SYT"],
+  "sydney thunder women": ["#64B42D", "#151518", "STW"],
   "melbourne stars": ["#287233", "#111111", "STA"],
+  "melbourne stars women": ["#287233", "#111111", "MSW"],
   "melbourne renegades": ["#E51837", "#111111", "REN"],
+  "melbourne renegades women": ["#E51837", "#111111", "MRW"],
   "perth scorchers": ["#FF6600", "#111111", "SCO"],
+  "perth scorchers women": ["#FF6600", "#111111", "PSW"],
   "brisbane heat": ["#009FA5", "#0E2D30", "HEA"],
+  "brisbane heat women": ["#009FA5", "#0E2D30", "BHW"],
   "adelaide strikers": ["#0084D6", "#052542", "STR"],
+  "adelaide strikers women": ["#0084D6", "#052542", "ASW"],
   "hobart hurricanes": ["#672E8F", "#250E38", "HUR"],
+  "hobart hurricanes women": ["#672E8F", "#250E38", "HHW"],
   "lahore qalandars": ["#E11D48", "#16A34A", "LQ"],
   "karachi kings": ["#1D4ED8", "#DC2626", "KK"],
   "islamabad united": ["#DC2626", "#991B1B", "IU"],
@@ -786,7 +796,7 @@ const getCricketLogo = (team) => {
   const rawName = team.team_name || team.name || team.short_name || team.displayName || 'Team';
   const shortRaw = team.short_name || team.abbreviation || '';
   const apiLogo = team.logo || team.team_logo || team.image_url || team.imageUrl || team.team_image || team.image_path || '';
-  const cacheKey = `v2|${rawName}|${shortRaw}|${apiLogo}`;
+  const cacheKey = `${rawName}|${shortRaw}|${apiLogo}`;
   if (cricketLogoCache.has(cacheKey)) return cricketLogoCache.get(cacheKey);
 
   const tName = normalizeCricketTeamName(rawName);
@@ -802,9 +812,17 @@ const getCricketLogo = (team) => {
   else if (CRICKET_TEAM_COLORS[rawLower]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[rawLower]);
 
   if (!resolved) {
+    // Token-aware country flag lookup so "Bangladesh A", "England Lions", "Australia W", etc. always get their crisp flag
+    const tokenWords = searchName.split(/[^a-z0-9]+/).filter(Boolean);
     outer: for (const { code, keys } of CRICKET_COUNTRY_ALIASES) {
       for (const key of keys) {
-        if (key === searchName || key === shortLower || key === rawLower || new RegExp(`\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`, 'i').test(searchName)) {
+        if (
+          key === searchName ||
+          key === shortLower ||
+          key === rawLower ||
+          tokenWords.includes(key) ||
+          new RegExp(`\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`, 'i').test(searchName)
+        ) {
           resolved = `https://flagcdn.com/w160/${code.toLowerCase()}.png`;
           break outer;
         }
@@ -813,12 +831,9 @@ const getCricketLogo = (team) => {
   }
 
   if (!resolved) {
-    const isDefaultLogo = !apiLogo || String(apiLogo).includes('default') || String(apiLogo).includes('placeholder') || String(apiLogo).includes('blank');
-    if (!isDefaultLogo && String(apiLogo).startsWith('http')) {
-      resolved = apiLogo;
-    } else {
-      resolved = getFallbackLogo(shortRaw || rawName);
-    }
+    const isDefaultLogo = apiLogo && (String(apiLogo).includes('default') || String(apiLogo).includes('placeholder'));
+    if (apiLogo && !isDefaultLogo && String(apiLogo).startsWith('http')) resolved = apiLogo;
+    else resolved = getFallbackLogo(shortRaw || rawName);
   }
 
   cricketLogoCache.set(cacheKey, resolved);
@@ -1533,24 +1548,28 @@ const getCricketStageTemplate = (leagueTitle) => {
 };
 
 const classifyKnockoutStage = (text) => {
-  const t = String(text || '').toLowerCase();
-  if (/(round of 32|last 32|r32|1\/16)/i.test(t)) return 'R32';
-  if (/(wild card|wildcard)/i.test(t)) return 'WC';
-  if (/(knockout round play-offs|knockout play-off)/i.test(t)) return 'KPO';
-  if (/(round one|round 1)/i.test(t) && !t.includes('quarter') && !t.includes('semi')) return 'R1';
-  if (/(round of 16|last 16|r16|1\/8|eighth)/i.test(t) && !t.includes('quarter') && !t.includes('semi')) return 'R16';
-  if (/(3rd place|third place|bronze medal)/i.test(t)) return '3RD';
-  if (/(super 8|super eight)/i.test(t)) return 'S8';
-  if (/(qualifier 1|1st qualifier)/i.test(t)) return 'Q1';
-  if (/(eliminator)/i.test(t)) return 'EL';
-  if (/(qualifier 2|2nd qualifier|challenger)/i.test(t)) return 'Q2';
-  if (/(quarter-final|quarterfinal|quarter final|quarters|\bqf\b|1\/4|conference semifinal)/i.test(t)) return 'QF';
-  if (/(semi-final|semifinal|semi final|semis|\bsf\b|1\/2|conference final)/i.test(t) && !t.includes('conference semifinal')) return 'SF';
-  if (/(\bfinal\b|championship|mls cup|summit clash)/i.test(t) && !t.includes('quarter') && !t.includes('semi') && !t.includes('1/') && !t.includes('conference')) return 'FINAL';
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return null;
+
+  if (/(round\s*of\s*32|last\s*32|\br32\b|1\/16)/i.test(t)) return 'R32';
+  if (/wild\s*card/i.test(t)) return 'WC';
+  if (/knockout\s*(round\s*)?play-?offs?/i.test(t)) return 'KPO';
+  if (/round\s*(one|1)\b/i.test(t) && !/quarter|semi/i.test(t)) return 'R1';
+  if (/(round\s*of\s*16|last\s*16|\br16\b|1\/8|eighth)/i.test(t) && !/quarter|semi/i.test(t)) return 'R16';
+  if (/(3rd\s*place|third\s*place|bronze\s*medal)/i.test(t)) return '3RD';
+  if (/super\s*(8|eight)/i.test(t)) return 'S8';
+  if (/qualifier\s*1|1st\s*qualifier/i.test(t)) return 'Q1';
+  if (/eliminator/i.test(t)) return 'EL';
+  if (/qualifier\s*2|2nd\s*qualifier|challenger/i.test(t)) return 'Q2';
+  if (/(quarter-?final|quarters|\bqf\b|1\/4|conference\s*semifinal)/i.test(t)) return 'QF';
+  if (/(semi-?final|semis|\bsf\b|1\/2|conference\s*final)/i.test(t) && !/conference\s*semifinal/i.test(t)) return 'SF';
+  if (/(\bfinal\b|championship|mls\s*cup|summit\s*clash)/i.test(t) && !/quarter|semi|1\/|conference/i.test(t)) return 'FINAL';
+
   return null;
 };
 
-const buildTbdKnockouts = (stageDef, startIndex) => {
+const buildTbdKnockouts = (stageDef, startIndex, isTournamentFinished = false) => {
+  if (isTournamentFinished) return [];
   const ties = [];
   const tbdLogo = getFallbackLogo('TBD', ['#1C1C1E', '#2C2C2E', 'TBD']);
   const prefix = stageDef.feeder === 'SF Loser' ? 'Loser SF' : stageDef.feeder ? `Winner ${stageDef.feeder}` : 'TBD';
@@ -1595,6 +1614,27 @@ const buildTbdKnockouts = (stageDef, startIndex) => {
   return ties;
 };
 
+const getSoccerSeasonDateRange = (seasonLabel) => {
+  const clean = extractSeasonYear(seasonLabel);
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  let startYear = currentYear;
+  let endYear = currentYear;
+  if (clean) {
+    const parts = clean.split('-');
+    startYear = parseInt(parts[0], 10) || currentYear;
+    if (parts.length === 2) {
+      const suffix = parseInt(parts[1], 10);
+      endYear = suffix < 100 ? (Math.floor(startYear / 100) * 100 + suffix) : suffix;
+    } else {
+      endYear = startYear;
+    }
+  }
+  const startStr = `${startYear}0101`;
+  const endStr = `${Math.max(endYear, currentYear)}1231`;
+  return `${startStr}-${endStr}`;
+};
+
 const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = false) => {
   const cacheKey = `soccer_v6|${leagueId}|${seasonLabel}`;
   if (!forceRefresh && knockoutCache.has(cacheKey)) return knockoutCache.get(cacheKey);
@@ -1611,30 +1651,25 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
       if (!ev?.id || seenEventIds.has(ev.id)) return;
       const comp = ev.competitions?.[0];
       const note = comp?.notes?.[0]?.headline || '';
-      const slug = ev.season?.slug || comp?.type?.text || comp?.type?.abbreviation || '';
+      const slug = ev.season?.slug || comp?.type?.text || '';
       const seriesTitle = comp?.series?.title || '';
-      const roundName = comp?.round?.displayName || ev.name || ev.shortName || '';
+      const roundName = comp?.round?.displayName || ev.name || '';
       const stageId = classifyKnockoutStage(`${note} ${slug} ${seriesTitle} ${roundName}`);
       if (!stageId || !stageMap[stageId]) return;
 
-      const h = comp?.competitors?.find(c => c.homeAway === 'home') || comp?.competitors?.[0];
-      const a = comp?.competitors?.find(c => c.homeAway === 'away') || comp?.competitors?.[1];
+      const h = comp?.competitors?.find(c => c.homeAway === 'home');
+      const a = comp?.competitors?.find(c => c.homeAway === 'away');
       if (!h || !a) return;
 
-      const state = String(ev.status?.type?.state || comp?.status?.type?.state || '').toLowerCase();
-      const completedFlag = Boolean(ev.status?.type?.completed || comp?.status?.type?.completed || state === 'post');
-      const isPre = !completedFlag && state === 'pre';
-      const isPost = completedFlag || state === 'post';
-
-      const hName = h.team?.shortDisplayName || h.team?.displayName || h.team?.name || h.athlete?.displayName || 'TBD';
-      const aName = a.team?.shortDisplayName || a.team?.displayName || a.team?.name || a.athlete?.displayName || 'TBD';
-      const hIsTbd = hName.toUpperCase() === 'TBD' || hName.toUpperCase() === 'TBC';
-      const aIsTbd = aName.toUpperCase() === 'TBD' || aName.toUpperCase() === 'TBC';
-
-      // Skip unplayed placeholder TBD ties when tournament has already completed matches
-      if (hIsTbd && aIsTbd) return;
-
       seenEventIds.add(ev.id);
+      const state = ev.status?.type?.state;
+      const isPre = state === 'pre';
+      const isPost = state === 'post';
+      const hName = h.team?.shortDisplayName || h.team?.name || 'TBD';
+      const aName = a.team?.shortDisplayName || a.team?.name || 'TBD';
+      const hIsTbd = !h.team?.id || hName.toUpperCase() === 'TBD';
+      const aIsTbd = !a.team?.id || aName.toUpperCase() === 'TBD';
+
       const hScore = isPre ? '—' : getSafeSoccerScore(h.score);
       const aScore = isPre ? '—' : getSafeSoccerScore(a.score);
       const aggH = !isPre ? (h.aggregateScore?.value ?? h.aggregateScore?.displayValue) : null;
@@ -1647,9 +1682,9 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
         stageId,
         note: stripSeasonYear(note || seriesTitle || roundName || stageId),
         date: ev.date,
-        state: isPost ? 'post' : state,
-        status: isPre ? (ev.date ? getFavFormattedDate(ev.date, false) : 'TBD') : (ev.status?.type?.shortDetail || comp?.status?.type?.shortDetail || 'FT'),
-        isTBD: false,
+        state,
+        status: isPre ? (ev.date ? getFavFormattedDate(ev.date, false) : 'TBD') : (ev.status?.type?.shortDetail || 'FT'),
+        isTBD: hIsTbd && aIsTbd,
         home: {
           name: hName,
           logo: hIsTbd ? getFallbackLogo('TBD', ['#1C1C1E', '#2C2C2E', 'TBD']) : getSafeSoccerLogo(h.team),
@@ -1666,7 +1701,7 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
           team: aIsTbd ? null : a.team,
           isTBD: aIsTbd
         },
-        rawEvent: { ...ev, _leagueId: leagueId }
+        rawEvent: hIsTbd && aIsTbd ? null : { ...ev, _leagueId: leagueId }
       });
     });
   };
@@ -1681,18 +1716,21 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
     ingestEvents(fullSeasonRes?.events || []);
   } catch {}
 
+  const hasAnyCompletedKnockout = Object.values(stageMap).some(list =>
+    list.some(m => !m.isTBD && (m.state === 'post' || /ft|final|aet|pen|won/i.test(String(m.status || ''))))
+  );
   const finalMatches = stageMap.FINAL || [];
-  const hasAnyCompletedKo = Object.values(stageMap).some(arr => arr.some(m => m.state === 'post'));
-  const isFinalCompleted = (finalMatches.length > 0 && finalMatches.every(
+  const isFinalCompleted = finalMatches.length > 0 && finalMatches.every(
     m => !m.isTBD && (m.state === 'post' || /ft|final|aet|pen|won/i.test(String(m.status || '')))
-  )) || (leagueId === 'fifa.world' && hasAnyCompletedKo);
+  );
+  const treatAsFinished = isFinalCompleted || (hasAnyCompletedKnockout && new Date().getFullYear() > 2026);
 
   const built = template.map(st => {
     const liveTies = (stageMap[st.id] || [])
       .filter(m => !m.isTBD)
       .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
     const cappedTies = st.id === 'FINAL' && liveTies.length > 1 ? liveTies.slice(-1) : liveTies;
-    const filledTies = (!isFinalCompleted && cappedTies.length < st.slots)
+    const filledTies = (!treatAsFinished && cappedTies.length < st.slots)
       ? [...cappedTies, ...buildTbdKnockouts(st, cappedTies.length, false)]
       : cappedTies;
     return {
@@ -1702,7 +1740,7 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
       matches: filledTies,
       hasScheduled: cappedTies.length > 0
     };
-  }).filter(st => !isFinalCompleted || st.matches.length > 0);
+  }).filter(st => !treatAsFinished || st.matches.length > 0);
 
   knockoutCache.set(cacheKey, built);
   return built;
@@ -1710,7 +1748,7 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel, forceRefresh = fals
 
 const extractCricketKnockouts = (selectedLeague) => {
   if (!selectedLeague) return [];
-  const cacheKey = `cricket|${selectedLeague.id}|${selectedLeague.seasonLabel}|${selectedLeague.allSched?.length || 0}`;
+  const cacheKey = `cricket_v6|${selectedLeague.id}|${selectedLeague.seasonLabel}|${selectedLeague.allSched?.length || 0}`;
   if (knockoutCache.has(cacheKey)) return knockoutCache.get(cacheKey);
 
   const template = getCricketStageTemplate(selectedLeague.cleanTitle || selectedLeague.title);
@@ -1719,17 +1757,20 @@ const extractCricketKnockouts = (selectedLeague) => {
 
   const stageMap = {};
   template.forEach(st => { stageMap[st.id] = []; });
+  const seenMatchIds = new Set();
 
   (selectedLeague.allSched || []).forEach(m => {
+    if (!m?.match_id || seenMatchIds.has(m.match_id)) return;
     const mLeague = String(m.league || m.series || '').toLowerCase();
     if (!mLeague.includes(lTitle) && !lTitle.includes(mLeague) && (!shortL || !mLeague.includes(shortL))) return;
-    const stageId = classifyKnockoutStage(`${m.title || ''} ${m.match_title || ''} ${m.status_text || ''}`);
+    const stageId = classifyKnockoutStage(`${m.title || ''} ${m.match_title || ''}`);
     if (!stageId || !stageMap[stageId] || !m.teams || m.teams.length < 2) return;
 
+    seenMatchIds.add(m.match_id);
     const h = m.teams[0];
     const a = m.teams[1];
     const isPre = m.status === 'PRE' || m.status === 'SCHEDULED' || (!h.score && !a.score);
-    const isPost = m.status === 'POST' || m.status === 'FINAL';
+    const isPost = m.status === 'POST' || m.status === 'FINAL' || m.status === 'COMPLETED' || /won by|match tied|super over|result/i.test(String(m.status_text || ''));
 
     const hName = h.short_name || h.name || 'TBD';
     const aName = a.short_name || a.name || 'TBD';
@@ -1746,6 +1787,8 @@ const extractCricketKnockouts = (selectedLeague) => {
       id: m.match_id,
       stageId,
       note: stripSeasonYear(m.title || stageId),
+      date: m.start_time,
+      isPost,
       status: isPre ? (m.start_time ? getFavFormattedDate(m.start_time, false) : 'TBD') : (m.status_text || m.status || 'LIVE'),
       isTBD: hIsTbd && aIsTbd,
       home: {
@@ -1768,19 +1811,25 @@ const extractCricketKnockouts = (selectedLeague) => {
     });
   });
 
+  const finalMatches = stageMap.FINAL || [];
+  const isFinalCompleted = finalMatches.length > 0 && finalMatches.every(m => !m.isTBD && m.isPost);
+
   const built = template.map(st => {
-    const liveTies = stageMap[st.id] || [];
-    const filledTies = liveTies.length < st.slots
-      ? [...liveTies, ...buildTbdKnockouts(st, liveTies.length)]
-      : liveTies;
+    const liveTies = (stageMap[st.id] || [])
+      .filter(m => !m.isTBD)
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    const cappedTies = st.id === 'FINAL' && liveTies.length > 1 ? liveTies.slice(-1) : liveTies;
+    const filledTies = (!isFinalCompleted && cappedTies.length < st.slots)
+      ? [...cappedTies, ...buildTbdKnockouts(st, cappedTies.length, false)]
+      : cappedTies;
     return {
       id: st.id,
       label: st.label,
       short: st.short,
       matches: filledTies,
-      hasScheduled: liveTies.length > 0
+      hasScheduled: cappedTies.length > 0
     };
-  });
+  }).filter(st => !isFinalCompleted || st.matches.length > 0);
 
   knockoutCache.set(cacheKey, built);
   return built;
@@ -1906,7 +1955,7 @@ const PitchMatchEventsSection = memo(({ summary, home, away }) => {
   if (goals.length === 0 && cards.length === 0 && subs.length === 0) return null;
 
   return (
-    <div className="mx-4 mt-5 bg-[#121212] rounded-[28px] p-5 border border-[rgba(255,255,255,0.08)]">
+    <div className="mx-4 mt-5 liquid-glass rounded-[28px] p-5 border border-[rgba(255,255,255,0.08)]">
       <span className="block text-[#8E8E93] text-[11px] font-extrabold tracking-[1.5px] uppercase mb-4">
         Match Events
       </span>
@@ -2110,8 +2159,8 @@ const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
 
   return (
     <div className="px-4 pt-2.5 mb-2.5 w-full">
-      <div className="bg-[#121212] h-[64px] rounded-[32px] px-3 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
-        <div ref={scrollRef} className="flex items-center overflow-x-auto [&::-webkit-scrollbar]:hidden w-full">
+      <div className="liquid-glass h-[64px] rounded-[32px] px-3 flex items-center overflow-hidden">
+        <div ref={scrollRef} className="flex items-center overflow-x-auto no-scrollbar ios-momentum w-full">
           {dates.map((d, i) => {
             const isSel = isSameDay(d, selectedDate);
             const isToday = isSameDay(d, new Date());
@@ -2150,7 +2199,7 @@ const NewsCard = memo(({ item }) => {
   const contentBody = stripHtml(item.story || item.description);
 
   return (
-    <div className="bg-[#121212] rounded-[24px] p-5 mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer transition-opacity active:opacity-80 w-full" onClick={() => setIsExpanded(!isExpanded)}>
+    <div className="liquid-glass rounded-[24px] p-5 mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer transition-opacity active:opacity-80 w-full" onClick={() => setIsExpanded(!isExpanded)}>
       <div className="flex justify-between items-center mb-3">
         <div className="px-2.5 py-1 rounded-[8px]" style={{ backgroundColor: tag.color + '20' }}>
           <span className="text-[10px] font-extrabold tracking-[0.5px] uppercase" style={{ color: tag.color }}>{tag.label}</span>
@@ -2198,7 +2247,7 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
   const leagueLogo = getSoccerLeagueLogo(match, leagueName);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full">
+    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="liquid-glass rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
         <img src={getSafeSoccerLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{h?.team?.shortDisplayName || h?.team?.name}</span>
@@ -2240,7 +2289,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   const leagueLogo = getCricketLeagueLogo(match.league || match.series || match.title, match.league_logo);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full">
+    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="liquid-glass rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
         <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{h.short_name || h.name}</span>
@@ -2322,7 +2371,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
         )}
       </div>
 
-      <div className="flex bg-[#121212] p-1 rounded-[16px] border border-[rgba(255,255,255,0.08)] gap-1 mb-3.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+      <div className="flex liquid-glass p-1 rounded-[18px] gap-1 mb-3.5 overflow-x-auto no-scrollbar ios-momentum">
         {stages.map(s => {
           const active = s.id === currentStage.id;
           return (
@@ -2349,7 +2398,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
             <div
               key={m.id || idx}
               onClick={() => clickable && onOpenMatch && onOpenMatch({ ...m.rawEvent, _sport: sport })}
-              className={`bg-[#121212] rounded-[24px] p-4 border border-[rgba(255,255,255,0.08)] transition-opacity ${clickable ? 'cursor-pointer active:opacity-80' : 'opacity-90'}`}
+              className={`liquid-glass rounded-[24px] p-4 border border-[rgba(255,255,255,0.08)] transition-opacity ${clickable ? 'cursor-pointer active:opacity-80' : 'opacity-90'}`}
             >
               <div className="flex justify-between items-center mb-3 pb-2 border-b border-[rgba(255,255,255,0.08)]">
                 <div className="flex items-center gap-1.5 min-w-0 pr-2">
@@ -2511,7 +2560,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
   return (
     <div className="flex-1 p-4 pt-2.5 w-full">
       {/* League Selector Pills: Clean Name Only (No Duplicate Year/League Title) */}
-      <div className="mb-5 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
+      <div className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
         {availableLeagues.map(l => {
           const active = league.id === l.id;
           return (
@@ -2591,7 +2640,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                       <div
                         key={item.team?.id || index}
                         onClick={() => onTeamPress(item.team, league.id, item.stats, 'soccer', index + 1)}
-                        className="flex items-center bg-[#121212] p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150"
+                        className="flex items-center liquid-glass p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press"
                       >
                         <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{index + 1}</span>
                         <div className="flex-1 flex items-center ml-2 min-w-0">
@@ -2729,7 +2778,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
     <div className="flex-1 p-4 pt-2.5 w-full">
       {/* Tournament Selector Pills: Clean Title Only (No Duplicate Year/League Title) */}
       {data.length > 0 && (
-        <div className="mb-5 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
+        <div className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
           {data.map(l => {
             const active = selectedLeague?.id === l.id;
             return (
@@ -2811,7 +2860,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                         logo: teamLogoUrl,
                         _leagueTitle: selectedLeague.cleanTitle
                       }, null, { ...item.stats, rank, _leagueTitle: selectedLeague.cleanTitle }, 'cricket')}
-                      className="flex items-center bg-[#121212] p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150"
+                      className="flex items-center liquid-glass p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press"
                     >
                       <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
                       <div className="flex-1 flex items-center ml-2 min-w-0">
@@ -2979,7 +3028,7 @@ const WormGraph = memo(({ graphs }) => {
   const c2 = THEME.accent;
 
   return (
-    <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-5">
+    <div className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-5">
       <span className="block text-[#8E8E93] text-[12px] font-extrabold tracking-[1.5px] mb-4 uppercase">Worm (Cumulative Runs)</span>
       <div className="flex items-center mb-5 gap-4">
         <div className="flex items-center min-w-0">
@@ -3328,7 +3377,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 
     return (
       <div className="px-4 pb-10">
-        <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-5">
+        <div className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-5">
           <span className="block text-[#8E8E93] text-[12px] font-extrabold tracking-[1.5px] mb-4 uppercase">Match Context</span>
           <div className="flex flex-wrap justify-between gap-3">
             <div className="w-full bg-[#1C1C1E] py-4 px-4 rounded-[16px] border border-[rgba(255,255,255,0.08)]">
@@ -3378,7 +3427,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
         </div>
 
         {importantNotes.length > 0 && (
-          <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-5">
+          <div className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-5">
             <span className="block text-[#8E8E93] text-[12px] font-extrabold tracking-[1.5px] mb-4 uppercase">Important Match Notes</span>
             <div className="mt-2.5">
               {importantNotes.map((item, i) => {
@@ -3437,8 +3486,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 
     return (
       <div className="px-4 pb-10">
-        <div className="bg-[#121212] rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)]">
-          <div className="flex bg-[#1C1C1E] p-4 border-b border-[rgba(255,255,255,0.08)]">
+        <div className="liquid-glass rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)]">
+          <div className="flex liquid-glass-header p-4 border-b border-[rgba(255,255,255,0.08)]">
             <span className="flex-[3] text-[#8E8E93] text-[11px] font-extrabold uppercase">Batter</span>
             <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">R</span>
             <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">B</span>
@@ -3467,8 +3516,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
           </div>
         </div>
 
-        <div className="bg-[#121212] rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)] mt-5">
-          <div className="flex bg-[#1C1C1E] p-4 border-b border-[rgba(255,255,255,0.08)]">
+        <div className="liquid-glass rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)] mt-5">
+          <div className="flex liquid-glass-header p-4 border-b border-[rgba(255,255,255,0.08)]">
             <span className="flex-[3] text-[#8E8E93] text-[11px] font-extrabold uppercase">Bowler</span>
             <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">O</span>
             <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">M</span>
@@ -3489,8 +3538,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
         </div>
 
         {partnerships.length > 0 && (
-          <div className="bg-[#121212] rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)] mt-5">
-            <div className="flex bg-[#1C1C1E] p-4 border-b border-[rgba(255,255,255,0.08)]">
+          <div className="liquid-glass rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)] mt-5">
+            <div className="flex liquid-glass-header p-4 border-b border-[rgba(255,255,255,0.08)]">
               <span className="flex-1 text-[#8E8E93] text-[11px] font-extrabold uppercase">Partnerships</span>
               <span className="w-[45px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">Runs</span>
               <span className="w-[45px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">Balls</span>
@@ -3513,8 +3562,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
         )}
 
         {fow.length > 0 && (
-          <div className="bg-[#121212] rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)] mt-5">
-            <div className="flex bg-[#1C1C1E] p-4 border-b border-[rgba(255,255,255,0.08)]">
+          <div className="liquid-glass rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)] mt-5">
+            <div className="flex liquid-glass-header p-4 border-b border-[rgba(255,255,255,0.08)]">
               <span className="flex-1 text-[#8E8E93] text-[11px] font-extrabold uppercase">Fall of Wickets</span>
               <span className="w-[55px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">Score</span>
               <span className="w-[45px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">Over</span>
@@ -3566,7 +3615,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 
     return (
       <div className="px-4 pb-10">
-        <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
+        <div className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
           <span className="block text-[#8E8E93] text-[12px] font-extrabold tracking-[1.5px] mb-4 uppercase">Match Analysis</span>
           <div className="flex justify-between mb-6 border-b border-[rgba(255,255,255,0.08)] pb-3">
             <span className="text-[13px] font-extrabold text-[#F5F5F7] flex-1 text-left truncate">{summaries[0].name}</span>
@@ -3603,7 +3652,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     return (
       <div className="px-4 pb-10">
         <WormGraph graphs={matchGraphs} />
-        <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
+        <div className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
           <span className="block text-[#8E8E93] text-[12px] font-extrabold tracking-[1.5px] mb-4 uppercase">Runs Per Over (Manhattan)</span>
           <div className="flex h-[270px]">
             <div className="flex flex-col justify-between pr-3 pt-10" style={{ height: DRAW_HEIGHT }}>
@@ -3611,7 +3660,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               <span className="text-[10px] text-[#8E8E93] font-bold tabular-nums">{Math.floor(yMax / 2)}</span>
               <span className="text-[10px] text-[#8E8E93] font-bold tabular-nums">0</span>
             </div>
-            <div className="flex-1 overflow-x-auto flex items-end [&::-webkit-scrollbar]:hidden" style={{ height: GRAPH_HEIGHT }}>
+            <div className="flex-1 overflow-x-auto flex items-end no-scrollbar ios-momentum" style={{ height: GRAPH_HEIGHT }}>
               {validOvers.map((ov, index) => {
                 const barHeight = Math.max((ov.runs_this_over / yMax) * DRAW_HEIGHT, 5);
                 const isWicket = ov.wickets_this_over > 0;
@@ -3637,9 +3686,9 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 liquid-glass-sheet rounded-t-[40px] flex flex-col overflow-hidden transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -3670,7 +3719,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
             )}
 
             {/* Equal 5-Column Grid Tab Bar so Info, Scorecard, Summary, Overs, and Graphs align symmetrically */}
-            <div className="grid grid-cols-5 items-center bg-[#1C1C1E] rounded-[16px] p-1 mx-4 mb-4 border border-[rgba(255,255,255,0.08)] shrink-0">
+            <div className="grid grid-cols-5 items-center liquid-glass rounded-[18px] p-1 mx-4 mb-4 shrink-0">
               {CRICKET_MATCH_TABS.map(t => {
                 const active = activeTab === t.id;
                 return (
@@ -3685,7 +3734,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               })}
             </div>
 
-            <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+            <div className="flex-1 overflow-y-auto no-scrollbar ios-momentum">
               {activeTab === 'info' && renderInfoTab()}
               {activeTab === 'scorecard' && renderScorecardTab()}
               {activeTab === 'summary' && renderSummaryTab()}
@@ -3696,7 +3745,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
                 ) : (
                   <div className="px-4 pb-10">
                     {groupedOvers.map((item, idx) => (
-                      <div key={idx} className="bg-[#121212] rounded-[24px] p-5 mb-4 border border-[rgba(255,255,255,0.08)]">
+                      <div key={idx} className="liquid-glass rounded-[24px] p-5 mb-4 border border-[rgba(255,255,255,0.08)]">
                         <div className="flex justify-between mb-3 border-b border-[rgba(255,255,255,0.08)] pb-2.5">
                           <span className="text-[#F5F5F7] text-[12px] font-extrabold">OVER {item.num}</span>
                           <span className="text-[#8E8E93] text-[12px] font-bold">{item.bowler}</span>
@@ -3768,9 +3817,9 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 liquid-glass-sheet rounded-t-[40px] flex flex-col overflow-hidden transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -3797,7 +3846,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 items-center bg-[#1C1C1E] rounded-[16px] p-1 mx-4 mb-4 border border-[rgba(255,255,255,0.08)] shrink-0">
+        <div className="grid grid-cols-3 items-center liquid-glass rounded-[18px] p-1 mx-4 mb-4 shrink-0">
           {['lineup', 'commentary', 'stats'].map(t => {
             const active = tab === t;
             return (
@@ -3812,7 +3861,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        <div className="flex-1 overflow-y-auto no-scrollbar ios-momentum">
           {tab === 'lineup' && (
             <div className="pb-10">
               <TacticalPitch summary={summary} home={hComp} away={aComp} />
@@ -3824,7 +3873,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
               {!summary?.boxscore?.teams?.[0]?.statistics ? (
                 <EmptyState icon={BarChart2} title="Stats Unavailable" message="Match statistics have not been populated yet." />
               ) : (
-                <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
+                <div className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
                   {summary.boxscore.teams[0].statistics.map((s, i) => (
                     <DuelStat key={i} label={s.label} homeVal={s.displayValue} awayVal={summary?.boxscore?.teams?.[1]?.statistics?.[i]?.displayValue} />
                   ))}
@@ -3861,7 +3910,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
                         <div className="w-[12px] h-[12px] rounded-full z-10 shrink-0" style={{ backgroundColor: meta.color }} />
                         <div className="flex-1 w-[2px] bg-[rgba(255,255,255,0.08)]" />
                       </div>
-                      <div className="flex-1 bg-[#121212] p-5 rounded-[24px] mb-6 border border-[rgba(255,255,255,0.08)]">
+                      <div className="flex-1 liquid-glass p-5 rounded-[24px] mb-6 border border-[rgba(255,255,255,0.08)]">
                         <div className="flex items-center gap-2 mb-2">
                           <IconComp size={14} color={meta.color} className="shrink-0" />
                           <span className="text-[11px] font-extrabold uppercase" style={{ color: meta.color }}>{meta.label}</span>
@@ -4018,7 +4067,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
 
     return (
       <div className="w-full">
-        <div className="bg-[#121212] p-5 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-6">
+        <div className="liquid-glass p-5 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-6">
           <div className="flex justify-between items-center mb-4 px-1">
             <span className="text-[#8E8E93] text-[12px] font-extrabold tracking-[1.5px] uppercase">Recent Form</span>
             <span className="text-[10px] font-bold text-[#8E8E93] uppercase tracking-[1px]">Latest First</span>
@@ -4072,7 +4121,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
         </div>
 
         {stats && (
-          <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-6">
+          <div className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-6">
             {teamData.leagueName && (
               <div className="w-full mb-5 flex flex-col items-center">
                 <span className="text-[#8E8E93] text-[11px] font-extrabold tracking-[1.5px] uppercase mb-1.5 text-center">{teamData.leagueName}</span>
@@ -4125,7 +4174,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                 <div
                   key={m.match_id || idx}
                   onClick={() => onOpenMatch({ ...m, _sport: 'cricket' })}
-                  className="bg-[#121212] rounded-[24px] p-4 mb-3 border border-[rgba(255,255,255,0.08)] cursor-pointer active:opacity-80"
+                  className="liquid-glass rounded-[24px] p-4 mb-3 border border-[rgba(255,255,255,0.08)] cursor-pointer active:opacity-80"
                 >
                   <div className="flex justify-between items-center mb-3 pb-2 border-b border-[rgba(255,255,255,0.08)]">
                     <span className="text-[10px] font-extrabold text-[#0A84FF] uppercase tracking-[0.5px] truncate">{getShortLeagueName(m.league || m.title)}</span>
@@ -4170,18 +4219,18 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
   const isFav = favorites.includes(favKey);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 liquid-glass-sheet rounded-t-[40px] flex flex-col overflow-hidden transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
 
         <div className="flex justify-between items-center px-5 pb-2 shrink-0">
-          <button onClick={onClose} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
+          <button onClick={onClose} className="w-[44px] h-[44px] rounded-full liquid-glass flex items-center justify-center">
             <ChevronDown size={28} color={THEME.text} />
           </button>
-          <button onClick={() => onToggleFavorite(favKey)} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
+          <button onClick={() => onToggleFavorite(favKey)} className="w-[44px] h-[44px] rounded-full liquid-glass flex items-center justify-center">
             <Star size={24} color={THEME.accent} fill={isFav ? THEME.accent : 'none'} />
           </button>
         </div>
@@ -4191,7 +4240,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
             <img src={getCricketLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
             <h2 className="text-[22px] font-black text-[#F5F5F7] mb-4 text-center">{teamData.displayName}</h2>
 
-            <div className="grid grid-cols-3 items-center bg-[#1C1C1E] rounded-[16px] p-1 w-full mb-5 border border-[rgba(255,255,255,0.08)]">
+            <div className="grid grid-cols-3 items-center liquid-glass rounded-[18px] p-1 w-full mb-5">
               {['squad', 'stats', 'matches'].map(t => {
                 const active = teamTab === t;
                 return (
@@ -4207,7 +4256,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+          <div className="flex-1 overflow-y-auto px-4 pb-16 no-scrollbar ios-momentum">
             {teamTab === 'stats' && renderCricketTeamStats()}
             {teamTab === 'squad' && (
               squadGroups.length === 0 ? (
@@ -4224,7 +4273,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                       {g.data.map((p, idx) => {
                         const detailsList = [p.batting_style, p.bowling_style].filter(Boolean);
                         return (
-                          <div key={p.id || idx} className="flex items-center bg-[#121212] p-4 rounded-[20px] mb-2.5 border border-[rgba(255,255,255,0.08)]">
+                          <div key={p.id || idx} className="flex items-center liquid-glass p-4 rounded-[20px] mb-2.5 border border-[rgba(255,255,255,0.08)]">
                             <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center mr-4 shrink-0" style={{ backgroundColor: `${g.color}20` }}>
                               <User size={16} color={g.color} />
                             </div>
@@ -4249,7 +4298,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   const h = m.teams[0];
                   const a = m.teams[1];
                   return (
-                    <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
+                    <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'cricket' })} className="liquid-glass rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
                       <div className="flex-1 flex flex-col items-center gap-1.5">
                         <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain" alt="" />
                         <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{h.short_name || h.name}</span>
@@ -4395,7 +4444,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
           const pts = getStat(['points']);
 
           return (
-            <div key={index} className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-6">
+            <div key={index} className="liquid-glass p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)] mb-6">
               <div className="w-full mb-5 flex flex-col items-center">
                 <span className="text-[#8E8E93] text-[11px] font-extrabold tracking-[1.5px] uppercase mb-2 text-center">{rec.leagueName}</span>
                 <span className="text-[#F5F5F7] text-[18px] font-extrabold">
@@ -4492,18 +4541,18 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
   const isFav = favorites.includes(favId);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-end ios-backdrop-in">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 liquid-glass-sheet rounded-t-[40px] flex flex-col overflow-hidden transform-gpu ios-sheet-up">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
 
         <div className="flex justify-between items-center px-5 pb-2 shrink-0">
-          <button onClick={onClose} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
+          <button onClick={onClose} className="w-[44px] h-[44px] rounded-full liquid-glass flex items-center justify-center">
             <ChevronDown size={28} color={THEME.text} />
           </button>
-          <button onClick={() => onToggleFavorite(favId)} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
+          <button onClick={() => onToggleFavorite(favId)} className="w-[44px] h-[44px] rounded-full liquid-glass flex items-center justify-center">
             <Star size={24} color={THEME.accent} fill={isFav ? THEME.accent : 'none'} />
           </button>
         </div>
@@ -4516,7 +4565,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
               <img src={getSafeSoccerLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
               <h2 className="text-[22px] font-black text-[#F5F5F7] mb-4 text-center">{teamData.displayName}</h2>
 
-              <div className="grid grid-cols-3 items-center bg-[#1C1C1E] rounded-[16px] p-1 w-full mb-5 border border-[rgba(255,255,255,0.08)]">
+              <div className="grid grid-cols-3 items-center liquid-glass rounded-[18px] p-1 w-full mb-5">
                 {['squad', 'stats', 'matches'].map(t => {
                   const active = teamTab === t;
                   return (
@@ -4532,7 +4581,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+            <div className="flex-1 overflow-y-auto px-4 pb-16 no-scrollbar ios-momentum">
               {teamTab === 'stats' && renderTeamSeasonStats()}
               {teamTab === 'squad' && squadGroups.map(g => {
                 const IconComp = g.icon;
@@ -4543,7 +4592,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
                       <span className="text-[14px] font-extrabold tracking-[1px] uppercase" style={{ color: g.color }}>{g.title}</span>
                     </div>
                     {g.data.map(p => (
-                      <div key={p.id} className="flex items-center bg-[#121212] p-4 rounded-[20px] mb-2.5 border border-[rgba(255,255,255,0.08)]">
+                      <div key={p.id} className="flex items-center liquid-glass p-4 rounded-[20px] mb-2.5 border border-[rgba(255,255,255,0.08)]">
                         <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center mr-4 shrink-0" style={{ backgroundColor: `${g.color}20` }}>
                           <span className="text-[14px] font-extrabold" style={{ color: g.color }}>{p.jersey || '#'}</span>
                         </div>
@@ -4563,7 +4612,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
                     const h = comps.find(c => c.homeAway === 'home');
                     const a = comps.find(c => c.homeAway === 'away');
                     return (
-                      <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
+                      <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'soccer' })} className="liquid-glass rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
                         <div className="flex-1 flex flex-col items-center gap-1.5">
                           <img src={getSafeSoccerLogo(h?.team)} onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain" alt="" />
                           <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{h?.team?.shortDisplayName}</span>
@@ -4611,7 +4660,6 @@ function App() {
   const [activeMatch, setActiveMatch] = useState(null);
   const [activeTeam, setActiveTeam] = useState(null);
 
-  // Unified Favorites List: [{ id, sport }] with automatic migration from legacy localStorage keys
   const [favoritesList, setFavoritesList] = useState(() => {
     try {
       const savedUnified = JSON.parse(localStorage.getItem('sideline_unified_favorites') || 'null');
@@ -4784,7 +4832,6 @@ function App() {
     }
   }, [date]);
 
-  // Unified Favorites Schedule: ALWAYS fetches both soccer & cricket favorite teams, showing LIVE at top and UPCOMING below
   const fetchFavSchedule = useCallback(async (forceRefresh = false) => {
     if (soccerFavs.length === 0 && cricketFavs.length === 0) {
       setFavMatches([]);
@@ -4793,64 +4840,61 @@ function App() {
     setLoading(true);
     try {
       const nowMs = Date.now();
-      const todayDs = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      const [soccerTeamResults, soccerTodayResults, cricketLive, cricketSched] = await Promise.all([
+      const [soccerResults, cricketSched, cricketLive] = await Promise.all([
         soccerFavs.length > 0
-          ? Promise.all(soccerFavs.map(id => fetchWithCache(`${API_SOCCER_SCORE_BASE}/all/teams/${id}`, forceRefresh).catch(() => null)))
-          : Promise.resolve([]),
-        soccerFavs.length > 0
-          ? Promise.all(SOCCER_LEAGUES.map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${todayDs}`, forceRefresh).catch(() => null)))
-          : Promise.resolve([]),
-        cricketFavs.length > 0
-          ? fetchWithCache(`${API_CRICKET_BASE}/live`, forceRefresh).catch(() => [])
+          ? Promise.all(
+              soccerFavs.map(async (id) => {
+                const res = await fetchWithCache(`${API_SOCCER_SCORE_BASE}/all/teams/${id}`, forceRefresh).catch(() => null);
+                const teamObj = res?.team || {};
+                const events = [...(teamObj.nextEvent || []), ...(teamObj.events || [])];
+                return { id, teamObj, events };
+              })
+            )
           : Promise.resolve([]),
         cricketFavs.length > 0
           ? fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=1&days_ahead=30`, forceRefresh).catch(() => [])
+          : Promise.resolve([]),
+        cricketFavs.length > 0
+          ? fetchWithCache(`${API_CRICKET_BASE}/live`, forceRefresh).catch(() => [])
           : Promise.resolve([])
       ]);
 
       const combined = [];
       const seenIds = new Set();
 
-      const processSoccerEvent = (event, leagueIdHint = null) => {
-        if (!event || !event.id || seenIds.has(`soccer:${event.id}`) || !event.competitions?.length) return;
-        const comp = event.competitions[0];
-        const competitors = comp.competitors || [];
-        const matchesFavTeam = competitors.some(c =>
-          soccerFavs.some(favId => String(c?.team?.id || c?.id || '') === String(favId))
-        );
-        if (!matchesFavTeam) return;
+      soccerResults.forEach(({ id, events }) => {
+        (events || []).forEach(event => {
+          if (!event || !event.id || seenIds.has(`soccer:${event.id}`) || !event.competitions?.length) return;
+          const comp = event.competitions[0];
+          const state = String(comp?.status?.type?.state || event?.status?.type?.state || '').toLowerCase();
+          const isCompleted = state === 'post' || Boolean(comp?.status?.type?.completed);
+          if (isCompleted) return;
 
-        const state = String(comp?.status?.type?.state || event?.status?.type?.state || '').toLowerCase();
-        const evTime = new Date(event.date || 0).getTime();
-        const isLive = state === 'in';
-        const isUpcoming = state === 'pre' || (!state && evTime >= nowMs);
-        if (!isLive && !isUpcoming) return;
+          const evTime = new Date(event.date || 0).getTime();
+          const isLive = state === 'in';
+          const isUpcoming = state === 'pre' || (!state && (isNaN(evTime) || evTime >= nowMs - 3600000));
+          if (!isLive && !isUpcoming) return;
 
-        seenIds.add(`soccer:${event.id}`);
-        combined.push({
-          ...event,
-          _leagueId: event._leagueId || leagueIdHint || null,
-          _favSport: 'soccer',
-          _isLive: isLive,
-          _sortTs: isNaN(evTime) ? Number.MAX_SAFE_INTEGER : evTime
+          seenIds.add(`soccer:${event.id}`);
+          combined.push({
+            ...event,
+            _favSport: 'soccer',
+            _favTeamId: id,
+            _isLive: isLive,
+            _sortTs: isNaN(evTime) ? Number.MAX_SAFE_INTEGER : evTime
+          });
         });
-      };
-
-      soccerTodayResults.forEach((res, idx) => {
-        const lid = SOCCER_LEAGUES[idx]?.id || null;
-        (res?.events || []).forEach(ev => processSoccerEvent(ev, lid));
-      });
-      soccerTeamResults.forEach(res => {
-        (res?.team?.nextEvent || []).forEach(ev => processSoccerEvent(ev, null));
       });
 
-      const cricketPool = [
-        ...(Array.isArray(cricketLive) ? cricketLive : []),
-        ...(Array.isArray(cricketSched) ? cricketSched : [])
-      ];
+      const cricketPool = new Map();
+      (Array.isArray(cricketSched) ? cricketSched : []).forEach(m => {
+        if (m?.match_id) cricketPool.set(String(m.match_id), m);
+      });
+      (Array.isArray(cricketLive) ? cricketLive : []).forEach(m => {
+        if (m?.match_id) cricketPool.set(String(m.match_id), { ...cricketPool.get(String(m.match_id)), ...m, _isLive: true });
+      });
 
-      cricketPool.forEach(m => {
+      cricketPool.forEach((m) => {
         if (!m?.match_id || seenIds.has(`cricket:${m.match_id}`)) return;
         const matched = (m.teams || []).some(t =>
           cricketFavs.some(fav => doesCricketTeamMatch(t, { id: fav, name: fav, short_name: fav }))
@@ -4864,7 +4908,7 @@ function App() {
           stTxtUpper.includes('FINAL') || stTxtUpper.includes('WON') || stTxtUpper.includes('FT') || stTxtUpper.includes('RESULT');
         if (isFinished) return;
 
-        const isLive = stUpper === 'IN' || stUpper === 'LIVE' || stTxtUpper.includes('LIVE') || stTxtUpper.includes('STUMPS') || stTxtUpper.includes('INNINGS BREAK');
+        const isLive = Boolean(m._isLive) || stUpper === 'IN' || stUpper === 'LIVE' || stTxtUpper.includes('LIVE') || stTxtUpper.includes('STUMPS') || stTxtUpper.includes('INNINGS BREAK');
         const isUpcoming = !isLive && (stUpper === 'PRE' || stUpper === 'SCHEDULED' || (!isNaN(evTime) && evTime >= nowMs - 3600000));
         if (!isLive && !isUpcoming) return;
 
@@ -4928,11 +4972,10 @@ function App() {
         setRefreshTick(t => t + 1);
       }
     } finally {
-      setTimeout(() => setIsRefreshing(false), 220);
+      setTimeout(() => setIsRefreshing(false), 240);
     }
   }, [isRefreshing, view, activeSport, fetchFavSchedule, fetchSoccerMatches, fetchCricketMatches]);
 
-  // 120Hz rAF-throttled touch gesture physics (pull-to-refresh + swipe-to-go-back)
   const navHistoryRef = useRef([]);
   const prevViewRef = useRef(view);
   const gestureRef = useRef({
@@ -5048,7 +5091,7 @@ function App() {
       g.mode = null;
 
       if (targetSheet) {
-        targetSheet.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease';
+        targetSheet.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.22s ease';
         targetSheet.style.transform = '';
         targetSheet.style.opacity = '';
       }
@@ -5115,14 +5158,14 @@ function App() {
     <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes bounceBar { 0% { transform: translate3d(-12px, 0, 0); } 50% { transform: translate3d(12px, 0, 0); } 100% { transform: translate3d(-12px, 0, 0); } }
-        .animate-bounce-bar { animation: bounceBar 0.95s cubic-bezier(0.32, 0.72, 0, 1) infinite; will-change: transform; }
+        .animate-bounce-bar { animation: bounceBar 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; will-change: transform; }
       `}} />
 
       <div
         style={{
           height: `${pullVisibleHeight}px`,
           opacity: pullVisibleHeight > 4 ? 1 : 0,
-          transition: pullDistance > 0 ? 'none' : 'height 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease'
+          transition: pullDistance > 0 ? 'none' : 'height 0.22s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.18s ease'
         }}
         className="w-full flex items-center justify-center overflow-hidden pointer-events-none shrink-0"
       >
@@ -5139,7 +5182,7 @@ function App() {
         </div>
       </div>
 
-      {/* CRISP NON-BLURRED SPORT TOGGLE AT TOP */}
+      {/* SLEEK NON-BLURRED SPORT TOGGLE AT TOP */}
       <div className="flex sport-bar-crisp rounded-[22px] mx-4 mt-3 mb-3.5 p-1">
         <button
           onClick={() => startTransition(() => {
