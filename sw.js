@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sideline-pwa-v7';
+const CACHE_NAME = 'sideline-pwa-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -30,6 +30,20 @@ self.addEventListener('fetch', (event) => {
   if (url.hostname.includes('espn.com') || url.hostname.includes('onrender.com') || url.hostname.includes('rss2json.com')) {
     event.respondWith(
       fetch(req).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Network-first for index.html and sw.js so updates always take effect promptly
+  if (url.pathname.endsWith('index.html') || url.pathname.endsWith('sw.js') || url.pathname.endsWith('/')) {
+    event.respondWith(
+      fetch(req).then((res) => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        }
+        return res;
+      }).catch(() => caches.match(req))
     );
     return;
   }
