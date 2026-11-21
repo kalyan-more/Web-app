@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sideline-pwa-v14';
+const CACHE_NAME = 'sideline-pwa-v15';
 const LOGO_CACHE_NAME = 'sideline-logos-swr-v1';
 const ASSETS = [
   './',
@@ -32,7 +32,6 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Stale-while-revalidate for flagcdn.com and espncdn.com team/league logos
   if (url.hostname === 'flagcdn.com' || url.hostname.endsWith('.flagcdn.com') || url.hostname.endsWith('.espncdn.com') || url.hostname === 'a.espncdn.com') {
     event.respondWith(
       caches.open(LOGO_CACHE_NAME).then((logoCache) =>
