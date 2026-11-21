@@ -20,7 +20,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/react@18.2.0/umd/react.production.min.js'"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js'"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/@babel/standalone@7.24.7/babel.min.js'"></script>
 
   <style>
     html, body, * {
@@ -62,18 +61,20 @@
       transform: translate3d(0, 0, 0);
     }
 
+    /* Sleek, crisp top sport switcher without milky blur */
     .sport-bar-crisp {
       background: rgba(16, 16, 20, 0.96);
       border: 1px solid rgba(255, 255, 255, 0.10);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.45);
     }
 
+    /* Sleek, refined Liquid Glass surfaces */
     .liquid-glass {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(16, 16, 20, 0.78) 100%);
-      -webkit-backdrop-filter: blur(16px) saturate(155%);
-      backdrop-filter: blur(16px) saturate(155%);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 6px 18px rgba(0, 0, 0, 0.32);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(15, 15, 19, 0.82) 100%);
+      -webkit-backdrop-filter: blur(18px) saturate(165%);
+      backdrop-filter: blur(18px) saturate(165%);
+      border: 1px solid rgba(255, 255, 255, 0.095);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 22px rgba(0, 0, 0, 0.34);
     }
 
     .liquid-glass-header {
@@ -98,42 +99,10 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Dynamic App-Icon Opening & Motion Keyframes */
-    @keyframes iosIconDynamicIntro {
-      0% {
-        opacity: 0;
-        transform: translate3d(0, 14px, 0) scale3d(0.78, 0.78, 1);
-        box-shadow: 0 0 0 rgba(10, 132, 255, 0);
-      }
-      45% {
-        opacity: 1;
-        transform: translate3d(0, -3px, 0) scale3d(1.06, 1.06, 1);
-        box-shadow: 0 12px 32px rgba(10, 132, 255, 0.28);
-      }
-      72% {
-        transform: translate3d(0, 1px, 0) scale3d(0.98, 0.98, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-        box-shadow: 0 8px 24px rgba(10, 132, 255, 0.16);
-      }
-    }
-
-    @keyframes iosIconFloatPulse {
-      0%, 100% {
-        transform: translate3d(0, 0, 0) scale3d(0.97, 0.97, 1);
-        box-shadow: 0 6px 18px rgba(10, 132, 255, 0.12);
-      }
-      50% {
-        transform: translate3d(0, -3px, 0) scale3d(1.04, 1.04, 1);
-        box-shadow: 0 12px 28px rgba(10, 132, 255, 0.26);
-      }
-    }
-
+    /* Sleek 120Hz GPU-accelerated spring transitions */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.45;
+        opacity: 0.6;
         transform: translate3d(0, 100%, 0);
       }
       100% {
@@ -150,67 +119,103 @@
     @keyframes iosViewEnter {
       0% {
         opacity: 0;
-        transform: translate3d(0, 8px, 0) scale3d(0.992, 0.992, 1);
+        transform: translate3d(6px, 0, 0);
       }
       100% {
         opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+        transform: translate3d(0, 0, 0);
       }
     }
 
-    .ios-opening-icon {
-      animation: iosIconDynamicIntro 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards, iosIconFloatPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.72s infinite;
-      will-change: transform, opacity, box-shadow;
+    @keyframes iosSplashReveal {
+      0% {
+        opacity: 0.65;
+        transform: scale3d(0.94, 0.94, 1);
+      }
+      50% {
+        opacity: 1;
+        transform: scale3d(1.02, 1.02, 1);
+      }
+      100% {
+        opacity: 0.65;
+        transform: scale3d(0.94, 0.94, 1);
+      }
     }
 
-    .ios-icon-dynamic {
-      animation: iosIconFloatPulse 1.65s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-      will-change: transform, box-shadow;
+    @keyframes whitePillBounce {
+      0% {
+        transform: translate3d(-18px, 0, 0) scaleX(0.9);
+      }
+      50% {
+        transform: translate3d(18px, 0, 0) scaleX(1.08);
+      }
+      100% {
+        transform: translate3d(-18px, 0, 0) scaleX(0.9);
+      }
+    }
+
+    .ios-splash-icon {
+      animation: iosSplashReveal 1.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+      will-change: transform, opacity;
+    }
+
+    .white-pill-bounce {
+      animation: whitePillBounce 0.95s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      will-change: transform;
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosBackdropFadeIn 0.16s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: opacity;
     }
 
     .ios-view-enter {
-      animation: iosViewEnter 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosViewEnter 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.20s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.20s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.20s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
       will-change: transform;
     }
     .ios-card-press:active {
-      transform: scale3d(0.974, 0.974, 1);
+      transform: scale3d(0.976, 0.976, 1);
     }
 
     button {
       touch-action: manipulation;
-      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1), color 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
       will-change: transform;
     }
     button:active {
-      transform: scale3d(0.956, 0.956, 1);
+      transform: scale3d(0.96, 0.96, 1);
     }
   </style>
 </head>
 <body class="no-scrollbar">
   <div id="root">
-    <div id="opening-splash" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;">
-      <img src="./apple-touch-icon.png" alt="Sideline" class="ios-opening-icon" style="width:76px;height:76px;border-radius:20px;" />
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;">
+      <img src="./icon-512.png" onerror="this.onerror=null;this.src='./apple-touch-icon.png';" alt="Sideline" class="ios-splash-icon" style="width:88px;height:88px;border-radius:22px;object-fit:contain;" />
     </div>
   </div>
 
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/@babel/standalone@7.24.7/babel.min.js'"></script>
   <script type="text/plain" id="sideline-jsx">
-    const { useState, useEffect, useCallback, useMemo, useRef, useTransition, memo } = React;
+const { useState, useEffect, useCallback, useMemo, useRef, useTransition, memo } = React;
 
     const Activity = ({ size = 24, color = "currentColor", fill = "none", strokeWidth = 2, className = "", style = {} }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={{ flexShrink: 0, ...style }}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>);
     const Newspaper = ({ size = 24, color = "currentColor", fill = "none", strokeWidth = 2, className = "", style = {} }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={{ flexShrink: 0, ...style }}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>);
@@ -380,6 +385,7 @@ const CRICKET_COUNTRY_ALIASES = [
   { code: 'ck', keys: ['cook islands', 'cok'] }
 ];
 
+// Comprehensive Franchise & League Team Logo Map (IPL, WPL, BBL, WBBL, PSL, SA20, CPL, The Hundred, BPL, MLC, ILT20, etc.)
 const CRICKET_FRANCHISE_LOGOS = {
   "chennai super kings": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
   "csk": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
@@ -1863,6 +1869,14 @@ const extractCricketKnockouts = (selectedLeague) => {
 // ⚡ CORE UI PRIMITIVES
 // ==========================================
 
+const WhitePillLoader = memo(({ className = "py-12" }) => (
+  <div className={`w-full flex items-center justify-center ${className}`}>
+    <div className="w-[56px] h-[6px] rounded-full bg-white/10 overflow-hidden flex items-center justify-center relative">
+      <div className="w-[20px] h-[6px] rounded-full bg-[#F5F5F7] shadow-[0_0_10px_rgba(255,255,255,0.45)] white-pill-bounce" />
+    </div>
+  </div>
+));
+
 const BlinkingTime = memo(({ time, color = THEME.success }) => (
   <div className="flex items-center justify-center mt-1.5 gap-1.5 w-full">
     <span className="text-[12px] font-extrabold tracking-[1px] animate-pulse" style={{ color }}>{time}</span>
@@ -2096,7 +2110,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
   const homePlayers = useSoccerFormations(summary, pitchSize.width, HALF_HEIGHT, true);
 
   if (!summary?.rosters) {
-    return <div className="flex justify-center items-center py-16"><div className="w-6 h-6 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" /></div>;
+    return <WhitePillLoader className="py-16" />;
   }
 
   return (
@@ -2475,14 +2489,15 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
 
 const getSoccerZoneAccent = (leagueId, rank, totalTeams) => {
   if (!leagueId || !rank) return null;
+  // Champions League / Top spots (#0A84FF)
   if (leagueId === 'eng.1' || leagueId === 'esp.1' || leagueId === 'ita.1') {
-    if (rank <= 4) return THEME.accent;
-    if (rank === 5 || rank === 6) return THEME.warning;
-    if (rank > Math.max(4, totalTeams - 3)) return THEME.danger;
+    if (rank <= 4) return THEME.accent; // #0A84FF
+    if (rank === 5 || rank === 6) return THEME.warning; // #FF9F0A (Europa / Play-offs)
+    if (rank > Math.max(4, totalTeams - 3)) return THEME.danger; // #FF453A (Relegation)
   } else if (leagueId === 'eng.2') {
-    if (rank <= 2) return THEME.accent;
-    if (rank <= 6) return THEME.warning;
-    if (rank > Math.max(2, totalTeams - 3)) return THEME.danger;
+    if (rank <= 2) return THEME.accent; // Automatic promotion
+    if (rank <= 6) return THEME.warning; // Play-offs
+    if (rank > Math.max(2, totalTeams - 3)) return THEME.danger; // Relegation
   } else if (leagueId === 'uefa.champions') {
     if (rank <= 8) return THEME.accent;
     if (rank <= 24) return THEME.warning;
@@ -2645,7 +2660,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
             <button
               key={l.id}
               onClick={() => setLeague(l)}
-              className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-all duration-200 ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'liquid-glass'}`}
+              className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'liquid-glass'}`}
             >
               <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.short || l.cleanName)} className="w-4 h-4 object-contain shrink-0" style={{ opacity: active ? 1 : 0.65 }} alt="" />
               <span className={`text-[12px] font-bold whitespace-nowrap ${active ? 'text-[#000000]' : 'text-[#8E8E93]'}`}>
@@ -2657,7 +2672,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
       </div>
 
       {loading && groups.length === 0 ? (
-        <div className="flex justify-center items-center py-20"><img src="./apple-touch-icon.png" alt="Sideline" className="w-12 h-12 rounded-[16px] ios-icon-dynamic" /></div>
+        <WhitePillLoader className="mt-10 py-6" />
       ) : !isCurrentSeasonActive ? (
         <EmptyState
           icon={Calendar}
@@ -2880,7 +2895,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
       )}
 
       {loading && data.length === 0 ? (
-        <div className="flex justify-center mt-10"><div className="w-6 h-6 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" /></div>
+        <WhitePillLoader className="mt-10 py-6" />
       ) : selectedLeague ? (
         <div className="pb-28">
           {knockoutStages.length > 0 && (
@@ -2992,7 +3007,7 @@ const SoccerIntelView = memo(() => {
     <div className="flex-1 p-4 pt-2.5 w-full">
       <h2 className="text-[28px] font-extrabold text-[#F5F5F7] mb-5 tracking-[-0.5px]">News</h2>
       {loading && news.length === 0 ? (
-        <div className="flex justify-center mt-10"><div className="w-6 h-6 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" /></div>
+        <WhitePillLoader className="mt-10 py-6" />
       ) : (
         <div className="pb-28">
           {news.length === 0 ? <EmptyState icon={Newspaper} title="News wire offline" message="Unable to fetch latest reports." /> : news.map((item, i) => <NewsCard key={i} item={item} />)}
@@ -3041,7 +3056,7 @@ const CricketIntelView = memo(() => {
     <div className="flex-1 p-4 pt-2.5 w-full">
       <h2 className="text-[28px] font-extrabold text-[#F5F5F7] mb-5 tracking-[-0.5px]">News</h2>
       {loading && news.length === 0 ? (
-        <div className="flex justify-center mt-10"><div className="w-6 h-6 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" /></div>
+        <WhitePillLoader className="mt-10 py-6" />
       ) : (
         <div className="pb-28">
           {news.length === 0 ? <EmptyState icon={Newspaper} title="News Wire Offline" message="Unable to fetch latest intelligence reports." /> : news.map((item, i) => <NewsCard key={i} item={item} />)}
@@ -3778,7 +3793,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
         {renderCricketModalHero()}
 
         {detailsLoading && !matchDetails ? (
-          <div className="flex justify-center mt-12"><div className="w-6 h-6 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" /></div>
+          <WhitePillLoader className="mt-12 py-6" />
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             {matchDetails?.innings && matchDetails.innings.length > 0 && (
@@ -4640,7 +4655,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
         </div>
 
         {!teamData ? (
-          <div className="flex justify-center mt-12"><div className="w-6 h-6 border-2 border-[#0A84FF] border-t-transparent rounded-full animate-spin" /></div>
+          <WhitePillLoader className="mt-12 py-6" />
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             <div className="flex flex-col items-center px-5 shrink-0">
@@ -4735,7 +4750,6 @@ function App() {
   const [favMatches, setFavMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
-  const [animPhase, setAnimPhase] = useState(0);
 
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -4781,25 +4795,6 @@ function App() {
     }
   });
 
-  // Subtle 45ms cushion so view & sport transitions glide smoothly without jarring layout jumps
-  const navigateSmooth = useCallback((fn) => {
-    setTimeout(() => {
-      startTransition(fn);
-    }, 45);
-  }, [startTransition]);
-
-  useEffect(() => {
-    let raf;
-    let timer;
-    timer = setTimeout(() => {
-      raf = requestAnimationFrame(() => setAnimPhase(p => p + 1));
-    }, 35);
-    return () => {
-      clearTimeout(timer);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [activeSport, view, date, refreshTick]);
-
   const persistUnifiedFavorites = useCallback((nextList) => {
     try {
       localStorage.setItem('sideline_unified_favorites', JSON.stringify(nextList));
@@ -4844,13 +4839,11 @@ function App() {
   }, []);
 
   const stepScoreDate = useCallback((deltaDays) => {
-    setTimeout(() => {
-      setDate(prev => {
-        const next = new Date(prev);
-        next.setDate(next.getDate() + deltaDays);
-        return next;
-      });
-    }, 35);
+    setDate(prev => {
+      const next = new Date(prev);
+      next.setDate(next.getDate() + deltaDays);
+      return next;
+    });
   }, []);
 
   const fetchSoccerMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
@@ -5084,7 +5077,7 @@ function App() {
         setRefreshTick(t => t + 1);
       }
     } finally {
-      setTimeout(() => setIsRefreshing(false), 260);
+      setTimeout(() => setIsRefreshing(false), 220);
     }
   }, [isRefreshing, view, activeSport, fetchFavSchedule, fetchSoccerMatches, fetchCricketMatches]);
 
@@ -5122,11 +5115,11 @@ function App() {
     if (navHistoryRef.current.length > 0) {
       const prev = navHistoryRef.current.pop();
       prevViewRef.current = prev;
-      navigateSmooth(() => setView(prev));
+      startTransition(() => setView(prev));
       return true;
     }
     return false;
-  }, [activeMatch, activeTeam, navigateSmooth]);
+  }, [activeMatch, activeTeam, startTransition]);
 
   useEffect(() => {
     const scheduleFrame = () => {
@@ -5135,7 +5128,7 @@ function App() {
       g.rafId = requestAnimationFrame(() => {
         g.rafId = null;
         if (!g.active) return;
-        if (g.mode === 'horiz' && g.dx > 0 && g.targetSheet && (activeMatch || activeTeam)) {
+        if (g.mode === 'back' && g.dx > 0 && g.targetSheet && (activeMatch || activeTeam)) {
           const clamped = Math.min(g.dx, 280);
           g.targetSheet.style.transition = 'none';
           g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
@@ -5184,7 +5177,12 @@ function App() {
 
       if (g.mode === 'horiz') {
         g.dx = dx;
-        scheduleFrame();
+        if (dx > 0 && g.targetSheet && (activeMatch || activeTeam)) {
+          const clamped = Math.min(dx, 280);
+          g.targetSheet.style.transition = 'none';
+          g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
+          g.targetSheet.style.opacity = String(Math.max(0.55, 1 - clamped / 540));
+        }
       } else if (g.mode === 'pull' && dy > 0) {
         g.dy = Math.min(96, Math.pow(dy, 0.84));
         scheduleFrame();
@@ -5203,7 +5201,7 @@ function App() {
       g.mode = null;
 
       if (targetSheet) {
-        targetSheet.style.transition = 'transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1)';
+        targetSheet.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease';
         targetSheet.style.transform = '';
         targetSheet.style.opacity = '';
       }
@@ -5212,6 +5210,7 @@ function App() {
         if (activeMatch || activeTeam) {
           if (dx > 72) handleGoBack();
         } else if (view === 'scores') {
+          // Swipe left -> next day (+1), swipe right -> previous day (-1)
           if (dx < -64) stepScoreDate(1);
           else if (dx > 64) stepScoreDate(-1);
         } else if (dx > 82) {
@@ -5256,20 +5255,18 @@ function App() {
   }, [view, activeSport, date, fetchSoccerMatches, fetchCricketMatches]);
 
   const openMatchModal = useCallback((m) => {
-    setTimeout(() => setActiveMatch(m), 35);
+    setActiveMatch(m);
   }, []);
 
   const openTeamHub = useCallback((team, leagueId = null, existingStats = null, sportOverride = null, rank = null) => {
     if (!team) return;
-    setTimeout(() => {
-      setActiveTeam({
-        team,
-        leagueId,
-        existingStats,
-        rank,
-        sport: sportOverride || activeSport
-      });
-    }, 35);
+    setActiveTeam({
+      team,
+      leagueId,
+      existingStats,
+      rank,
+      sport: sportOverride || activeSport
+    });
   }, [activeSport]);
 
   const pullVisibleHeight = isRefreshing ? 50 : pullDistance;
@@ -5279,52 +5276,63 @@ function App() {
     <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes bounceBar { 0% { transform: translate3d(-12px, 0, 0); } 50% { transform: translate3d(12px, 0, 0); } 100% { transform: translate3d(-12px, 0, 0); } }
-        .animate-bounce-bar { animation: bounceBar 1s cubic-bezier(0.22, 1, 0.36, 1) infinite; will-change: transform; }
+        .animate-bounce-bar { animation: bounceBar 0.9s cubic-bezier(0.22, 1, 0.36, 1) infinite; will-change: transform; }
       `}} />
 
       <div
         style={{
           height: `${pullVisibleHeight}px`,
           opacity: pullVisibleHeight > 4 ? 1 : 0,
-          transition: pullDistance > 0 ? 'none' : 'height 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1)'
+          transition: pullDistance > 0 ? 'none' : 'height 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease'
         }}
         className="w-full flex items-center justify-center overflow-hidden pointer-events-none shrink-0"
       >
-        <div className="sport-bar-crisp px-3.5 py-1.5 rounded-full flex items-center gap-2">
-          <img
-            src="./apple-touch-icon.png"
-            alt=""
-            className="w-4 h-4 rounded-[5px] ios-icon-dynamic"
-            style={!isRefreshing ? { transform: `translate3d(0,0,0) rotate(${pullProgress * 24}deg) scale(${0.92 + pullProgress * 0.12})` } : undefined}
-          />
-          <span className="text-[10px] font-extrabold tracking-[1px] text-[#F5F5F7] uppercase">
-            {isRefreshing ? 'Updating...' : pullProgress >= 1 ? 'Release to Refresh' : 'Pull to Refresh'}
-          </span>
+        <div className="sport-bar-crisp px-4 py-2 rounded-full flex items-center gap-2.5">
+          {isRefreshing ? (
+            <div className="w-[44px] h-[5px] rounded-full bg-white/15 overflow-hidden flex items-center justify-center">
+              <div className="w-[16px] h-[5px] rounded-full bg-[#F5F5F7] white-pill-bounce" />
+            </div>
+          ) : (
+            <>
+              <RefreshCw
+                size={13}
+                color={THEME.text}
+                style={{ transform: `translate3d(0,0,0) rotate(${pullProgress * 270}deg)` }}
+              />
+              <span className="text-[10px] font-extrabold tracking-[1px] text-[#F5F5F7] uppercase">
+                {pullProgress >= 1 ? 'Release to Refresh' : 'Pull to Refresh'}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
       {/* SLEEK NON-BLURRED SPORT TOGGLE AT TOP */}
       <div className="flex sport-bar-crisp rounded-[22px] mx-4 mt-3 mb-3.5 p-1">
         <button
-          onClick={() => navigateSmooth(() => setActiveSport('soccer'))}
-          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-200 ${activeSport === 'soccer' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
+          onClick={() => startTransition(() => {
+            setActiveSport('soccer');
+          })}
+          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-150 ${activeSport === 'soccer' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
         >
           ⚽ Soccer
         </button>
         <button
-          onClick={() => navigateSmooth(() => setActiveSport('cricket'))}
-          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-200 ${activeSport === 'cricket' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
+          onClick={() => startTransition(() => {
+            setActiveSport('cricket');
+          })}
+          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-150 ${activeSport === 'cricket' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
         >
           🏏 Cricket
         </button>
       </div>
 
-      <div key={`${activeSport}-${view}-${refreshTick}-${animPhase}`} className="flex-1 flex flex-col ios-view-enter">
+      <div key={`${activeSport}-${view}-${refreshTick}`} className="flex-1 flex flex-col ios-view-enter">
         {view === 'home' && (
           <div className="flex-1 px-4 pt-2.5 pb-36">
             <h2 className="text-[28px] font-extrabold text-[#F5F5F7] mb-5 tracking-[-0.5px]">Favorites Schedule</h2>
             {loading && favMatches.length === 0 ? (
-              <div className="flex justify-center items-center py-20"><img src="./apple-touch-icon.png" alt="Sideline" className="w-12 h-12 rounded-[16px] ios-icon-dynamic" /></div>
+              <WhitePillLoader className="mt-10 py-6" />
             ) : favMatches.length === 0 ? (
               <EmptyState icon={Calendar} title="No Live or Upcoming Matches" message="Your favorite football and cricket teams don't have any live or upcoming fixtures right now." />
             ) : (
@@ -5341,10 +5349,10 @@ function App() {
 
         {view === 'scores' && (
           <div className="flex-1 flex flex-col">
-            <DateSelector dates={dates} selectedDate={date} onSelectDate={(d) => setTimeout(() => setDate(d), 35)} />
+            <DateSelector dates={dates} selectedDate={date} onSelectDate={setDate} />
             <div className="px-4 pb-36">
               {loading && (activeSport === 'soccer' ? soccerMatches.length === 0 : cricketMatches.length === 0) ? (
-                <div className="flex justify-center items-center py-20"><img src="./apple-touch-icon.png" alt="Sideline" className="w-12 h-12 rounded-[16px] ios-icon-dynamic" /></div>
+                <WhitePillLoader className="py-20" />
               ) : activeSport === 'soccer' ? (
                 soccerMatches.length === 0 ? (
                   <EmptyState icon={CircleDashed} title="No Broadcasts" message="There are no scheduled games for this date." />
@@ -5379,17 +5387,17 @@ function App() {
 
       <div className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
         {favoritesList.length > 0 && (
-          <button onClick={() => navigateSmooth(() => setView('home'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+          <button onClick={() => startTransition(() => setView('home'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
             <Star size={26} color={view === 'home' ? THEME.text : THEME.muted} />
           </button>
         )}
-        <button onClick={() => navigateSmooth(() => setView('scores'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+        <button onClick={() => startTransition(() => setView('scores'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
           <Activity size={26} color={view === 'scores' ? THEME.text : THEME.muted} />
         </button>
-        <button onClick={() => navigateSmooth(() => setView('standings'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+        <button onClick={() => startTransition(() => setView('standings'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
           <Trophy size={26} color={view === 'standings' ? THEME.text : THEME.muted} />
         </button>
-        <button onClick={() => navigateSmooth(() => setView('intel'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+        <button onClick={() => startTransition(() => setView('intel'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
           <Zap size={26} color={view === 'intel' ? THEME.text : THEME.muted} />
         </button>
       </div>
@@ -5428,87 +5436,54 @@ function App() {
 }
 
 
-    class SidelineErrorBoundary extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = { error: null };
-      }
-      static getDerivedStateFromError(error) {
-        return { error };
-      }
-      render() {
-        if (this.state.error) {
-          return (
-            <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col items-center justify-center p-6 text-center">
-              <div className="text-[#FF453A] font-extrabold text-[14px] mb-2">APP ERROR</div>
-              <div className="text-[#8E8E93] text-[12px] max-w-[300px] mb-4 break-words">{String(this.state.error?.message || this.state.error)}</div>
-              <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-full liquid-glass text-[#F5F5F7] text-[12px] font-bold">
-                Reload
-              </button>
-            </div>
-          );
-        }
-        return this.props.children;
-      }
+class SidelineErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col items-center justify-center p-6 text-center">
+          <div className="text-[#FF453A] font-extrabold text-[14px] mb-2">APP ERROR</div>
+          <div className="text-[#8E8E93] text-[12px] max-w-[300px] mb-4 break-words">{String(this.state.error?.message || this.state.error)}</div>
+          <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-full liquid-glass text-[#F5F5F7] text-[12px] font-bold">
+            Reload
+          </button>
+        </div>
+      );
     }
+    return this.props.children;
+  }
+}
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(
-      <SidelineErrorBoundary>
-        <App />
-      </SidelineErrorBoundary>
-    );
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <SidelineErrorBoundary>
+    <App />
+  </SidelineErrorBoundary>
+);
+
   </script>
-
   <script>
     (function bootSideline() {
       let started = false;
-      let attempts = 0;
-
-      if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch(() => {});
-        });
-      }
-
       function startApp() {
         if (started) return;
         if (!window.React || !window.ReactDOM || !window.Babel) {
-          attempts++;
-          if (attempts < 50) {
-            setTimeout(startApp, 90);
-            return;
-          }
+          setTimeout(startApp, 80);
           return;
         }
         started = true;
-        try {
-          const jsxSource = document.getElementById('sideline-jsx').textContent;
-          const sig = 'sideline_compiled_v15_' + jsxSource.length;
-          let compiled = null;
-          try { compiled = sessionStorage.getItem(sig); } catch {}
-          if (!compiled) {
-            compiled = window.Babel.transform(jsxSource, { presets: ['react'] }).code;
-            try {
-              sessionStorage.clear();
-              sessionStorage.setItem(sig, compiled);
-            } catch {}
-          }
-          const runFn = new Function(compiled);
-          // Slight 140ms opening beat so the dynamic app-icon entrance plays smoothly
-          setTimeout(() => {
-            runFn();
-          }, 140);
-        } catch (err) {
-          started = false;
-        }
+        const jsxSource = document.getElementById('sideline-jsx').textContent;
+        const compiled = window.Babel.transform(jsxSource, { presets: ['react'] }).code;
+        new Function(compiled)();
       }
-
-      if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        requestAnimationFrame(() => setTimeout(startApp, 60));
-      } else {
-        window.addEventListener('DOMContentLoaded', () => setTimeout(startApp, 60));
-      }
+      if (document.readyState === 'complete' || document.readyState === 'interactive') requestAnimationFrame(startApp);
+      else window.addEventListener('DOMContentLoaded', startApp);
       window.addEventListener('load', startApp);
     })();
   </script>
