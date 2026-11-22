@@ -292,11 +292,11 @@
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.24s ease, border-color 0.24s ease, opacity 0.24s ease;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.20s ease, border-color 0.20s ease, opacity 0.20s ease;
       will-change: transform;
     }
     .ios-card-press:active {
-      transform: scale3d(0.976, 0.976, 1);
+      transform: scale3d(0.974, 0.974, 1);
     }
 
     button {
@@ -400,7 +400,7 @@ const THEME = {
   fwd: '#FFD60A'
 };
 
-const SOCCER_LEAGUES = [
+const FOOTBALL_LEAGUES = [
   { id: 'eng.1', name: 'Premier League', short: 'EPL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/23.png', hasKnockout: false, isSplitSeason: true },
   { id: 'eng.2', name: 'Championship', short: 'EFL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/24.png', hasKnockout: true, isSplitSeason: true },
   { id: 'uefa.champions', name: 'Champions League', short: 'UCL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/2.png', hasKnockout: true, isSplitSeason: true },
@@ -673,7 +673,7 @@ const getWbblCrestUri = (name) => {
 
 const CRICKET_DOMESTIC_LEAGUE_REGEX = /(county championship|vitality blast|one-day cup|t20 blast|bob willis|royal london|sheffield shield|marsh one-day|plunket shield|ford trophy|super smash \(domestic\)|ranji trophy|vijay hazare|duleep trophy|syed mushtaq ali)/i;
 
-const SOCCER_STADIUM_DB = {
+const FOOTBALL_STADIUM_DB = {
   "Arsenal": { name: "Emirates Stadium", city: "London", cap: 60704 },
   "Aston Villa": { name: "Villa Park", city: "Birmingham", cap: 42918 },
   "Bournemouth": { name: "Vitality Stadium", city: "Bournemouth", cap: 11307 },
@@ -853,8 +853,7 @@ const prewarmSportsAPIs = () => {
     fetchWithCache(`${API_CRICKET_BASE}/standings`).catch(() => {});
     fetchWithCache(API_CRICKET_NEWS_ESPN).catch(() => {});
     fetchWithCache(CRICINFO_RSS_JSON).catch(() => {});
-    fetchWithCache(BBC_CRICKET_RSS_JSON).catch(() => {});
-    SOCCER_LEAGUES.forEach(l => {
+    FOOTBALL_LEAGUES.forEach(l => {
       fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${todayDs}`).catch(() => {});
       fetchWithCache(`${API_SOCCER_STANDINGS_BASE}/${l.id}/standings`).catch(() => {});
     });
@@ -1166,18 +1165,18 @@ const getCricketLeagueLogo = (title, apiLogo = null) => {
   return uri;
 };
 
-const getSoccerLeagueLogo = (matchOrLeagueId, leagueName = '') => {
+const getFootballLeagueLogo = (matchOrLeagueId, leagueName = '') => {
   if (matchOrLeagueId) {
     const lid = typeof matchOrLeagueId === 'string' ? matchOrLeagueId : matchOrLeagueId._leagueId;
-    const found = SOCCER_LEAGUES.find(l => l.id === lid);
+    const found = FOOTBALL_LEAGUES.find(l => l.id === lid);
     if (found?.logo) return found.logo;
   }
-  const byName = SOCCER_LEAGUES.find(l => leagueName && l.name.toLowerCase() === String(leagueName).toLowerCase());
+  const byName = FOOTBALL_LEAGUES.find(l => leagueName && l.name.toLowerCase() === String(leagueName).toLowerCase());
   if (byName?.logo) return byName.logo;
-  return getCricketLeagueLogo(leagueName || 'SOCCER');
+  return getCricketLeagueLogo(leagueName || 'FOOTBALL');
 };
 
-const getSafeSoccerLogo = (team) => {
+const getSafeFootballLogo = (team) => {
   if (!team) return getFallbackLogo('T');
   const apiLogo = team?.logo || team?.logos?.[0]?.href || team?.imageUrl || team?.team?.logo || team?.team?.logos?.[0]?.href || '';
   const tid = team?.id || team?.team?.id || '';
@@ -1442,17 +1441,17 @@ const deriveCricketRecentForm = (targetTeam, allMatches = [], teamProf = null, t
 };
 
 // --- SOCCER HELPERS & DETAILED MATCH EVENTS EXTRACTOR ---
-const getSafeSoccerScore = (scoreData) => scoreData === null || scoreData === undefined ? '0' : typeof scoreData === 'object' ? scoreData.displayValue || scoreData.value || '0' : scoreData;
+const getSafeFootballScore = (scoreData) => scoreData === null || scoreData === undefined ? '0' : typeof scoreData === 'object' ? scoreData.displayValue || scoreData.value || '0' : scoreData;
 
-const getSoccerMatchLeagueName = (m) => {
+const getFootballMatchLeagueName = (m) => {
   if (m._leagueId && m._leagueId !== 'custom') {
-    const found = SOCCER_LEAGUES.find(l => l.id === m._leagueId);
+    const found = FOOTBALL_LEAGUES.find(l => l.id === m._leagueId);
     if (found) return found.name;
   }
   return stripSeasonYear(m?.league?.name || m?.league?.shortName || m?.series || m?.season?.displayName || m?.competitions?.[0]?.notes?.[0]?.headline || "Match") || "Match";
 };
 
-const formatSoccerShortName = (fullName) => {
+const formatFootballShortName = (fullName) => {
   if (!fullName) return "Player";
   const parts = fullName.trim().split(/\s+/);
   return parts.length <= 1 ? fullName : `${parts[0].charAt(0)}. ${parts[parts.length - 1]}`;
@@ -1469,7 +1468,7 @@ const formatMatchMinuteApostrophe = (rawVal) => {
   return `${token}’`;
 };
 
-const extractSoccerTime = (item) => {
+const extractFootballTime = (item) => {
   if (!item) return "0’";
   const txt = String(item.text || item.shortText || "").replace(/[’′]/g, "'").trim();
 
@@ -1503,7 +1502,7 @@ const extractSoccerTime = (item) => {
   return "0’";
 };
 
-const extractDetailedSoccerEvents = (summary, homeComp, awayComp) => {
+const extractDetailedFootballEvents = (summary, homeComp, awayComp) => {
   const goals = [];
   const cards = [];
   const subs = [];
@@ -1513,8 +1512,8 @@ const extractDetailedSoccerEvents = (summary, homeComp, awayComp) => {
   const awayTeamId = String(awayComp?.team?.id || summary?.rosters?.[1]?.team?.id || '');
   const homeTeamName = homeComp?.team?.shortDisplayName || homeComp?.team?.name || summary?.rosters?.[0]?.team?.displayName || 'Home';
   const awayTeamName = awayComp?.team?.shortDisplayName || awayComp?.team?.name || summary?.rosters?.[1]?.team?.displayName || 'Away';
-  const homeLogo = getSafeSoccerLogo(homeComp?.team || summary?.rosters?.[0]?.team);
-  const awayLogo = getSafeSoccerLogo(awayComp?.team || summary?.rosters?.[1]?.team);
+  const homeLogo = getSafeFootballLogo(homeComp?.team || summary?.rosters?.[0]?.team);
+  const awayLogo = getSafeFootballLogo(awayComp?.team || summary?.rosters?.[1]?.team);
 
   const playerTeamMap = new Map();
   (summary.rosters || []).forEach((r, idx) => {
@@ -1563,7 +1562,7 @@ const extractDetailedSoccerEvents = (summary, homeComp, awayComp) => {
   rawEvents.forEach(ev => {
     const typeText = String(ev.type?.text || ev.text || ev.shortText || '').toLowerCase();
     const rawText = String(ev.text || ev.shortText || '').trim();
-    const timeStr = extractSoccerTime(ev);
+    const timeStr = extractFootballTime(ev);
     const minVal = parseMinuteNum(timeStr);
     const participants = ev.participants || ev.athletesInvolved || [];
     const p1 = participants[0]?.athlete || participants[0] || ev.athlete;
@@ -1666,7 +1665,7 @@ const extractDetailedSoccerEvents = (summary, homeComp, awayComp) => {
   return { goals, cards, subs };
 };
 
-const lookupSoccerStadium = (namesToTry = [], apiVenue = null) => {
+const lookupFootballStadium = (namesToTry = [], apiVenue = null) => {
   if (apiVenue?.fullName || apiVenue?.name) {
     return {
       stadium: apiVenue.fullName || apiVenue.name,
@@ -1678,7 +1677,7 @@ const lookupSoccerStadium = (namesToTry = [], apiVenue = null) => {
   for (const raw of namesToTry) {
     if (!raw) continue;
     const clean = String(raw).trim().toLowerCase();
-    for (const [key, val] of Object.entries(SOCCER_STADIUM_DB)) {
+    for (const [key, val] of Object.entries(FOOTBALL_STADIUM_DB)) {
       const kLower = key.toLowerCase();
       if (kLower === clean || clean.includes(kLower) || kLower.includes(clean)) {
         return { stadium: val.name, city: val.city, capacity: val.cap, stadiumImage: null };
@@ -1688,7 +1687,7 @@ const lookupSoccerStadium = (namesToTry = [], apiVenue = null) => {
   return { stadium: 'Home Stadium', city: 'Europe / Domestic', capacity: null, stadiumImage: null };
 };
 
-const extractSoccerStandingEntry = (stdRes, teamId, teamName) => {
+const extractFootballStandingEntry = (stdRes, teamId, teamName) => {
   if (!stdRes) return null;
   let allEntries = [];
   if (stdRes?.children) {
@@ -1725,11 +1724,11 @@ const getSeasonMetaFromYear = (yearNum, isSplitYearSport = true) => {
   };
 };
 
-const isSoccerSeasonCurrent = (leagueId, stdJson, now = new Date()) => {
+const isFootballSeasonCurrent = (leagueId, stdJson, now = new Date()) => {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
   const expectedStartYear = currentMonth >= 6 ? currentYear : currentYear - 1;
-  const leagueMeta = SOCCER_LEAGUES.find(l => l.id === leagueId);
+  const leagueMeta = FOOTBALL_LEAGUES.find(l => l.id === leagueId);
   const isSplit = leagueMeta ? leagueMeta.isSplitSeason : true;
   const defaultYearLabel = getSeasonMetaFromYear(isSplit ? expectedStartYear : currentYear, isSplit).label;
 
@@ -1935,7 +1934,7 @@ const buildTbdKnockouts = (stageDef, startIndex) => {
   return ties;
 };
 
-const extractSoccerKnockouts = async (leagueId, seasonLabel) => {
+const extractFootballKnockouts = async (leagueId, seasonLabel) => {
   const cacheKey = `soccer|${leagueId}|${seasonLabel}`;
   if (knockoutCache.has(cacheKey)) return knockoutCache.get(cacheKey);
 
@@ -1967,8 +1966,8 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel) => {
       const hIsTbd = !h.team?.id || hName.toUpperCase() === 'TBD';
       const aIsTbd = !a.team?.id || aName.toUpperCase() === 'TBD';
 
-      const hScore = isPre ? '—' : getSafeSoccerScore(h.score);
-      const aScore = isPre ? '—' : getSafeSoccerScore(a.score);
+      const hScore = isPre ? '—' : getSafeFootballScore(h.score);
+      const aScore = isPre ? '—' : getSafeFootballScore(a.score);
       const aggH = !isPre ? (h.aggregateScore?.value ?? h.aggregateScore?.displayValue) : null;
       const aggA = !isPre ? (a.aggregateScore?.value ?? a.aggregateScore?.displayValue) : null;
       const hNum = parseFloat(aggH ?? hScore);
@@ -1984,7 +1983,7 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel) => {
         isTBD: hIsTbd && aIsTbd,
         home: {
           name: hName,
-          logo: hIsTbd ? getFallbackLogo('TBD', ['#1C1C1E', '#2C2C2E', 'TBD']) : getSafeSoccerLogo(h.team),
+          logo: hIsTbd ? getFallbackLogo('TBD', ['#1C1C1E', '#2C2C2E', 'TBD']) : getSafeFootballLogo(h.team),
           score: aggH !== undefined && aggH !== null ? `${hScore} (${aggH})` : hScore,
           winner: Boolean(isPost && (h.winner || h.advance || (!isNaN(hNum) && !isNaN(aNum) && hNum > aNum))),
           team: hIsTbd ? null : h.team,
@@ -1992,7 +1991,7 @@ const extractSoccerKnockouts = async (leagueId, seasonLabel) => {
         },
         away: {
           name: aName,
-          logo: aIsTbd ? getFallbackLogo('TBD', ['#1C1C1E', '#2C2C2E', 'TBD']) : getSafeSoccerLogo(a.team),
+          logo: aIsTbd ? getFallbackLogo('TBD', ['#1C1C1E', '#2C2C2E', 'TBD']) : getSafeFootballLogo(a.team),
           score: aggA !== undefined && aggA !== null ? `${aScore} (${aggA})` : aScore,
           winner: Boolean(isPost && (a.winner || a.advance || (!isNaN(aNum) && !isNaN(hNum) && aNum > hNum))),
           team: aIsTbd ? null : a.team,
@@ -2181,7 +2180,7 @@ const DuelStat = memo(({ label, homeVal, awayVal }) => {
 // ⚽ TACTICAL PITCH & BELOW-PITCH MATCH EVENTS
 // ==========================================
 
-const useSoccerFormations = (summary, width, height, isHome) =>
+const useFootballFormations = (summary, width, height, isHome) =>
   useMemo(() => {
     if (!summary?.rosters) return [];
     const teamIndex = isHome ? 0 : 1;
@@ -2214,7 +2213,7 @@ const useSoccerFormations = (summary, width, height, isHome) =>
 
 const PlayerJersey = memo(({ player, teamColor }) => {
   if (!player?.athlete) return null;
-  const name = formatSoccerShortName(player.athlete.displayName);
+  const name = formatFootballShortName(player.athlete.displayName);
   const safeColor = teamColor || THEME.accent;
   const c = safeColor.replace('#', '');
   const r = parseInt(c.substring(0, 2), 16) || 0;
@@ -2244,7 +2243,7 @@ const PlayerJersey = memo(({ player, teamColor }) => {
 
 const PitchMatchEventsSection = memo(({ summary, home, away }) => {
   const { goals, cards, subs } = useMemo(
-    () => extractDetailedSoccerEvents(summary, home, away),
+    () => extractDetailedFootballEvents(summary, home, away),
     [summary, home, away]
   );
 
@@ -2364,8 +2363,8 @@ const TacticalPitch = memo(({ summary, home, away }) => {
   const homeFormation = summary?.rosters?.[0]?.formation || '';
 
   const HALF_HEIGHT = pitchSize.height / 2;
-  const awayPlayers = useSoccerFormations(summary, pitchSize.width, HALF_HEIGHT, false);
-  const homePlayers = useSoccerFormations(summary, pitchSize.width, HALF_HEIGHT, true);
+  const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, false);
+  const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, true);
 
   if (!summary?.rosters) {
     return <WhitePillLoader className="py-16" />;
@@ -2374,7 +2373,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
   return (
     <div className="mb-10 mt-2.5">
       <div className="flex items-center px-5 my-3 gap-3">
-        <img src={getSafeSoccerLogo(away?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, away?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <img src={getSafeFootballLogo(away?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, away?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
         <div className="flex-1 flex items-center gap-3">
           <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
           <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
@@ -2417,7 +2416,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
       </div>
 
       <div className="flex items-center px-5 my-3 gap-3">
-        <img src={getSafeSoccerLogo(home?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, home?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <img src={getSafeFootballLogo(home?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, home?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
         <div className="flex-1 flex items-center gap-3">
           <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
           <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
@@ -2618,7 +2617,7 @@ const NewsCard = memo(({ item }) => {
 });
 
 // --- MATCH CARDS ---
-const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDate = false }) => {
+const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDate = false }) => {
   const comps = match?.competitions?.[0]?.competitors;
   if (!comps) return null;
   const h = comps.find(c => c.homeAway === 'home');
@@ -2627,13 +2626,13 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
   const isViewingToday = !selectedDate || isSameDay(selectedDate, new Date());
   const isLive = state === 'in' && isViewingToday;
   const isPre = state === 'pre';
-  const leagueName = getSoccerMatchLeagueName(match);
-  const leagueLogo = getSoccerLeagueLogo(match, leagueName);
+  const leagueName = getFootballMatchLeagueName(match);
+  const leagueLogo = getFootballLeagueLogo(match, leagueName);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full [content-visibility:auto]">
+    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full [content-visibility:auto]">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
-        <img src={getSafeSoccerLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
+        <img src={getSafeFootballLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h?.team?.shortDisplayName || h?.team?.name}</span>
       </div>
       <div className="w-[128px] flex flex-col items-center justify-center shrink-0">
@@ -2642,7 +2641,7 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
           <span className="text-[9px] font-extrabold text-[#8E8E93] tracking-[0.5px] text-center uppercase break-words leading-tight">{leagueName}</span>
         </div>
         <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums">
-          {getSafeSoccerScore(h?.score)} <span className="text-[#8E8E93] font-normal">—</span> {getSafeSoccerScore(a?.score)}
+          {getSafeFootballScore(h?.score)} <span className="text-[#8E8E93] font-normal">—</span> {getSafeFootballScore(a?.score)}
         </span>
         {isLive ? (
           <BlinkingTime time={match?.status?.displayClock} color={THEME.success} />
@@ -2653,7 +2652,7 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
         )}
       </div>
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a?.team, match._leagueId, null, 'soccer'); }}>
-        <img src={getSafeSoccerLogo(a?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
+        <img src={getSafeFootballLogo(a?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a?.team?.shortDisplayName || a?.team?.name}</span>
       </div>
     </div>
@@ -2673,7 +2672,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   const leagueLogo = getCricketLeagueLogo(match.league || match.series || match.title, match.league_logo);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full [content-visibility:auto]">
+    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full [content-visibility:auto]">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
         <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h.short_name || h.name}</span>
@@ -2833,7 +2832,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
   );
 });
 
-const getSoccerZoneBadge = (leagueId, rank, totalTeams) => {
+const getFootballZoneBadge = (leagueId, rank, totalTeams) => {
   if (!leagueId || !rank) return null;
   if (leagueId === 'eng.1' || leagueId === 'esp.1' || leagueId === 'ita.1') {
     if (rank <= 4) return { code: 'UCL', color: THEME.accent, desc: 'UEFA Champions League' };
@@ -2853,7 +2852,7 @@ const getSoccerZoneBadge = (leagueId, rank, totalTeams) => {
   return null;
 };
 
-const getSoccerStatNum = (item, names) => {
+const getFootballStatNum = (item, names) => {
   for (const n of names) {
     const found = item?.stats?.find(s => s.name === n);
     if (found !== undefined && found !== null) {
@@ -2864,22 +2863,22 @@ const getSoccerStatNum = (item, names) => {
   return 0;
 };
 
-const sortSoccerEntries = (entries = []) => {
+const sortFootballEntries = (entries = []) => {
   return [...entries].sort((a, b) => {
-    const ptsA = getSoccerStatNum(a, ['points']);
-    const ptsB = getSoccerStatNum(b, ['points']);
+    const ptsA = getFootballStatNum(a, ['points']);
+    const ptsB = getFootballStatNum(b, ['points']);
     if (ptsB !== ptsA) return ptsB - ptsA;
 
-    const gdA = getSoccerStatNum(a, ['pointDifferential', 'goalDifference']);
-    const gdB = getSoccerStatNum(b, ['pointDifferential', 'goalDifference']);
+    const gdA = getFootballStatNum(a, ['pointDifferential', 'goalDifference']);
+    const gdB = getFootballStatNum(b, ['pointDifferential', 'goalDifference']);
     if (gdB !== gdA) return gdB - gdA;
 
-    const gfA = getSoccerStatNum(a, ['pointsFor', 'goalsFor']);
-    const gfB = getSoccerStatNum(b, ['pointsFor', 'goalsFor']);
+    const gfA = getFootballStatNum(a, ['pointsFor', 'goalsFor']);
+    const gfB = getFootballStatNum(b, ['pointsFor', 'goalsFor']);
     if (gfB !== gfA) return gfB - gfA;
 
-    const wA = getSoccerStatNum(a, ['wins']);
-    const wB = getSoccerStatNum(b, ['wins']);
+    const wA = getFootballStatNum(a, ['wins']);
+    const wB = getFootballStatNum(b, ['wins']);
     if (wB !== wA) return wB - wA;
 
     return String(a?.team?.shortDisplayName || a?.team?.name || '').localeCompare(
@@ -2888,7 +2887,7 @@ const sortSoccerEntries = (entries = []) => {
   });
 };
 
-const parseSoccerStandingsCached = (leagueId, leagueName, json) => {
+const parseFootballStandingsCached = (leagueId, leagueName, json) => {
   if (!json) return [];
   const cacheKey = `soccer_std_v6|${leagueId}|${json?.children?.length || 0}|${json?.standings?.entries?.length || json?.entries?.length || 0}`;
   if (standingsParsedCache.has(cacheKey)) return standingsParsedCache.get(cacheKey);
@@ -2901,7 +2900,7 @@ const parseSoccerStandingsCached = (leagueId, leagueName, json) => {
     const key = cleanName.toLowerCase();
     if (seenGroupNames.has(key)) return;
     seenGroupNames.add(key);
-    parsedGroups.push({ name: cleanName, entries: sortSoccerEntries(entries) });
+    parsedGroups.push({ name: cleanName, entries: sortFootballEntries(entries) });
   };
 
   if (json?.children && json.children.length > 0) {
@@ -2918,18 +2917,18 @@ const parseSoccerStandingsCached = (leagueId, leagueName, json) => {
   return parsedGroups;
 };
 
-const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
+const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
   const now = useMemo(() => new Date(), []);
   const availableLeagues = useMemo(() => {
     const seenIds = new Set();
-    return SOCCER_LEAGUES.filter(l => {
+    return FOOTBALL_LEAGUES.filter(l => {
       if (seenIds.has(l.id)) return false;
       seenIds.add(l.id);
       const cached = getCachedSync(`${API_SOCCER_STANDINGS_BASE}/${l.id}/standings`);
-      return isSoccerSeasonCurrent(l.id, cached, now).isCurrent;
+      return isFootballSeasonCurrent(l.id, cached, now).isCurrent;
     }).map(l => {
       const cached = getCachedSync(`${API_SOCCER_STANDINGS_BASE}/${l.id}/standings`);
-      const check = isSoccerSeasonCurrent(l.id, cached, now);
+      const check = isFootballSeasonCurrent(l.id, cached, now);
       return {
         ...l,
         cleanName: stripSeasonYear(l.name),
@@ -2938,11 +2937,11 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
     });
   }, [now]);
 
-  const [league, setLeague] = useState(() => availableLeagues[0] || SOCCER_LEAGUES[0]);
+  const [league, setLeague] = useState(() => availableLeagues[0] || FOOTBALL_LEAGUES[0]);
   const [groups, setGroups] = useState(() => {
-    const first = availableLeagues[0] || SOCCER_LEAGUES[0];
+    const first = availableLeagues[0] || FOOTBALL_LEAGUES[0];
     const cached = getCachedSync(`${API_SOCCER_STANDINGS_BASE}/${first.id}/standings`);
-    return cached ? parseSoccerStandingsCached(first.id, first.name, cached) : [];
+    return cached ? parseFootballStandingsCached(first.id, first.name, cached) : [];
   });
   const [resolvedSeasonLabel, setResolvedSeasonLabel] = useState(() => availableLeagues[0]?.seasonLabel || '');
   const [isCurrentSeasonActive, setIsCurrentSeasonActive] = useState(true);
@@ -2953,14 +2952,14 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
     let active = true;
     const stdUrl = `${API_SOCCER_STANDINGS_BASE}/${league.id}/standings`;
     const cached = getCachedSync(stdUrl);
-    const initialCheck = isSoccerSeasonCurrent(league.id, cached, new Date());
+    const initialCheck = isFootballSeasonCurrent(league.id, cached, new Date());
     const initialYear = extractSeasonYear(initialCheck.seasonLabel);
 
     setResolvedSeasonLabel(initialYear);
     setIsCurrentSeasonActive(initialCheck.isCurrent);
 
     if (cached && initialCheck.isCurrent) {
-      setGroups(parseSoccerStandingsCached(league.id, league.name, cached));
+      setGroups(parseFootballStandingsCached(league.id, league.name, cached));
       setLoading(false);
     } else {
       setLoading(true);
@@ -2968,7 +2967,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
     fetchWithCache(stdUrl).catch(() => null).then(async (json) => {
       if (!active) return;
-      const check = isSoccerSeasonCurrent(league.id, json, new Date());
+      const check = isFootballSeasonCurrent(league.id, json, new Date());
       const conciseYear = extractSeasonYear(check.seasonLabel);
       setResolvedSeasonLabel(conciseYear);
       setIsCurrentSeasonActive(check.isCurrent);
@@ -2980,11 +2979,11 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
         return;
       }
 
-      setGroups(parseSoccerStandingsCached(league.id, league.name, json));
+      setGroups(parseFootballStandingsCached(league.id, league.name, json));
       setLoading(false);
 
       if (league.hasKnockout) {
-        const ko = await extractSoccerKnockouts(league.id, conciseYear).catch(() => []);
+        const ko = await extractFootballKnockouts(league.id, conciseYear).catch(() => []);
         if (active) setKnockoutStages(ko);
       } else {
         setKnockoutStages([]);
@@ -3053,7 +3052,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
               const legendMap = new Map();
               group.entries.forEach((_, idx) => {
-                const b = getSoccerZoneBadge(league.id, idx + 1, totalTeams);
+                const b = getFootballZoneBadge(league.id, idx + 1, totalTeams);
                 if (b && !legendMap.has(b.code)) legendMap.set(b.code, b);
               });
               const legendItems = Array.from(legendMap.values());
@@ -3080,7 +3079,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                   </div>
                   {group.entries.map((item, index) => {
                     const rank = index + 1;
-                    const zoneBadge = getSoccerZoneBadge(league.id, rank, totalTeams);
+                    const zoneBadge = getFootballZoneBadge(league.id, rank, totalTeams);
                     const get = (n) => item.stats?.find(s => s.name === n)?.displayValue || '0';
                     const wdl = `${get('wins')}-${get('ties')}-${get('losses')}`;
                     const tName = item?.team?.shortDisplayName || item?.team?.name;
@@ -3102,7 +3101,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                           )}
                         </div>
                         <div className="flex-1 flex items-center ml-2 min-w-0">
-                          <img src={getSafeSoccerLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
+                          <img src={getSafeFootballLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
                           <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{tName}</span>
                         </div>
                         <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{get('gamesPlayed')}</span>
@@ -3359,7 +3358,6 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 });
 
 const API_CRICKET_NEWS_ESPN = "https://site.api.espn.com/apis/site/v2/sports/cricket/news?limit=30";
-const BBC_CRICKET_RSS_JSON = "https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.bbci.co.uk%2Fsport%2Fcricket%2Frss.xml";
 
 const normalizeHeadlineKey = (title) =>
   String(title || '')
@@ -3368,7 +3366,7 @@ const normalizeHeadlineKey = (title) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const SoccerIntelView = memo(() => {
+const FootballIntelView = memo(() => {
   const buildSoccerNews = useCallback((results) => {
     const uniqueNews = [];
     const seen = new Set();
@@ -3389,7 +3387,7 @@ const SoccerIntelView = memo(() => {
   }, []);
 
   const [news, setNews] = useState(() => {
-    const cachedResults = SOCCER_LEAGUES.slice(0, 5).map(l =>
+    const cachedResults = FOOTBALL_LEAGUES.slice(0, 5).map(l =>
       getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/news`)
     );
     return buildSoccerNews(cachedResults);
@@ -3399,7 +3397,7 @@ const SoccerIntelView = memo(() => {
   useEffect(() => {
     let active = true;
     Promise.all(
-      SOCCER_LEAGUES.slice(0, 5).map(l =>
+      FOOTBALL_LEAGUES.slice(0, 5).map(l =>
         fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/news`, false, 5500).catch(() => ({}))
       )
     ).then(results => {
@@ -3419,7 +3417,7 @@ const SoccerIntelView = memo(() => {
       ) : (
         <div className="pb-40">
           {news.length === 0 ? (
-            <EmptyState icon={Newspaper} title="News Wire Offline" message="Unable to fetch latest soccer reports." />
+            <EmptyState icon={Newspaper} title="News Wire Offline" message="Unable to fetch latest football reports." />
           ) : (
             news.map((item, i) => <NewsCard key={item.id || i} item={item} />)
           )}
@@ -3430,7 +3428,7 @@ const SoccerIntelView = memo(() => {
 });
 
 const CricketIntelView = memo(() => {
-  const buildCricketArticles = useCallback((espnJson, cricinfoRss, bbcRss) => {
+  const buildCricketArticles = useCallback((espnJson, cricinfoRss) => {
     const merged = [];
     const seen = new Set();
 
@@ -3465,31 +3463,13 @@ const CricketIntelView = memo(() => {
       });
     });
 
-    (bbcRss?.items || []).forEach(item => {
-      const title = stripHtml(item?.title || '');
-      const key = normalizeHeadlineKey(title);
-      if (!key || seen.has(key)) return;
-      seen.add(key);
-      const rawDesc = item.description || item.content || '';
-      const imgUrl = item.enclosure?.link || item.thumbnail || '';
-      merged.push({
-        headline: title,
-        description: stripHtml(rawDesc),
-        published: item.pubDate,
-        categories: Array.isArray(item.categories) ? item.categories : [],
-        images: imgUrl ? [{ url: imgUrl }] : [],
-        source: 'BBC Cricket'
-      });
-    });
-
     return merged.sort((a, b) => new Date(b.published || 0) - new Date(a.published || 0));
   }, []);
 
   const [news, setNews] = useState(() => {
     const cachedEspn = getCachedSync(API_CRICKET_NEWS_ESPN);
     const cachedCricinfo = getCachedSync(CRICINFO_RSS_JSON);
-    const cachedBbc = getCachedSync(BBC_CRICKET_RSS_JSON);
-    return buildCricketArticles(cachedEspn, cachedCricinfo, cachedBbc);
+    return buildCricketArticles(cachedEspn, cachedCricinfo);
   });
   const [loading, setLoading] = useState(() => news.length === 0);
 
@@ -3497,11 +3477,10 @@ const CricketIntelView = memo(() => {
     let active = true;
     Promise.all([
       fetchWithCache(API_CRICKET_NEWS_ESPN, false, 5000).catch(() => null),
-      fetchWithCache(CRICINFO_RSS_JSON, false, 5000).catch(() => null),
-      fetchWithCache(BBC_CRICKET_RSS_JSON, false, 5000).catch(() => null)
-    ]).then(([espnRes, cricinfoRes, bbcRes]) => {
+      fetchWithCache(CRICINFO_RSS_JSON, false, 5000).catch(() => null)
+    ]).then(([espnRes, cricinfoRes]) => {
       if (!active) return;
-      setNews(buildCricketArticles(espnRes, cricinfoRes, bbcRes));
+      setNews(buildCricketArticles(espnRes, cricinfoRes));
       setLoading(false);
     }).catch(() => {
       if (active) setLoading(false);
@@ -4341,7 +4320,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 // ⚽ SOCCER MATCH MODAL
 // ==========================================
 
-const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
+const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
   const sumUrl = `${API_SOCCER_SCORE_BASE}/all/summary?event=${match?.id}`;
   const [summary, setSummary] = useState(() => match?.id ? getCachedSync(sumUrl) : null);
   const [tab, setTab] = useState('lineup');
@@ -4364,13 +4343,13 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
 
   const hComp = match?.competitions?.[0]?.competitors?.find(c => c.homeAway === 'home');
   const aComp = match?.competitions?.[0]?.competitors?.find(c => c.homeAway === 'away');
-  let hScore = getSafeSoccerScore(hComp?.score);
-  let aScore = getSafeSoccerScore(aComp?.score);
+  let hScore = getSafeFootballScore(hComp?.score);
+  let aScore = getSafeFootballScore(aComp?.score);
   if (summary?.header?.competitions?.[0]?.competitors) {
     const sumH = summary.header.competitions[0].competitors.find(c => c.team.id === hComp?.team?.id);
     const sumA = summary.header.competitions[0].competitors.find(c => c.team.id === aComp?.team?.id);
-    if (sumH && sumH.score !== undefined) hScore = getSafeSoccerScore(sumH.score);
-    if (sumA && sumA.score !== undefined) aScore = getSafeSoccerScore(sumA.score);
+    if (sumH && sumH.score !== undefined) hScore = getSafeFootballScore(sumH.score);
+    if (sumA && sumA.score !== undefined) aScore = getSafeFootballScore(sumA.score);
   }
 
   return (
@@ -4383,7 +4362,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
 
         <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hComp?.team, match._leagueId, null, 'soccer')}>
-            <img src={getSafeSoccerLogo(hComp?.team)} onError={(e) => handleImageError(e, hComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
+            <img src={getSafeFootballLogo(hComp?.team)} onError={(e) => handleImageError(e, hComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
             <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{hComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore}</span>
@@ -4395,7 +4374,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
           </div>
 
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aComp?.team, match._leagueId, null, 'soccer')}>
-            <img src={getSafeSoccerLogo(aComp?.team)} onError={(e) => handleImageError(e, aComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
+            <img src={getSafeFootballLogo(aComp?.team)} onError={(e) => handleImageError(e, aComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
             <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{aComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{aScore}</span>
@@ -4444,9 +4423,20 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
               <EmptyState icon={MessageSquare} title="No Commentary" message="Live commentary stream is offline." />
             ) : (
               <div className="px-5 pb-10">
-                {(summary?.commentary || summary?.keyEvents || []).map((item, index) => {
+                {(() => {
+                  const rawList = [...(summary?.commentary || summary?.keyEvents || [])];
+                  const parseMin = (it) => {
+                    const t = extractFootballTime(it).replace(/[’']/g, '');
+                    const parts = t.split('+').map(n => parseInt(n, 10) || 0);
+                    return (parts[0] || 0) * 100 + (parts[1] || 0);
+                  };
+                  if (rawList.length > 1 && parseMin(rawList[0]) < parseMin(rawList[rawList.length - 1])) {
+                    rawList.reverse();
+                  }
+                  return rawList;
+                })().map((item, index) => {
                   const txt = String(item.text || item.shortText || "").toLowerCase();
-                  const time = extractSoccerTime(item);
+                  const time = extractFootballTime(item);
                   let meta = { icon: Clock, color: THEME.muted, label: 'Match' };
                   if (txt.includes('goal')) meta = { icon: CircleDashed, color: THEME.accent, label: 'Goal' };
                   else if (txt.includes('free kick')) meta = { icon: Mic, color: THEME.freekick, label: 'Free Kick' };
@@ -4470,9 +4460,8 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
                         <div className="flex-1 w-[2px] bg-[rgba(255,255,255,0.08)]" />
                       </div>
                       <div className="flex-1 bg-[#121212] p-5 rounded-[24px] mb-6 border border-[rgba(255,255,255,0.08)]">
-                        <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2">
                           <span className="text-[11px] font-extrabold uppercase break-words" style={{ color: meta.color }}>{meta.label}</span>
-                          <span className="text-[11px] font-extrabold text-[#8E8E93] tabular-nums shrink-0">{minuteStamp}</span>
                         </div>
                         <p className="text-[#F5F5F7] text-[14px] leading-[22px] font-medium text-left">{item.text || item.shortText}</p>
                       </div>
@@ -4886,7 +4875,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
 // ⚽ SOCCER TEAM HUB MODAL
 // ==========================================
 
-const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorites, onToggleFavorite, onClose, onOpenMatch }) => {
+const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favorites, onToggleFavorite, onClose, onOpenMatch }) => {
   const [teamData, setTeamData] = useState(null);
   const [teamTab, setTeamTab] = useState('squad');
 
@@ -4895,7 +4884,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
     const fetchHubData = async () => {
       let lid = leagueId;
       if (!lid) {
-        const checks = await Promise.all(SOCCER_LEAGUES.map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/teams/${team.id}`).then(() => l.id).catch(() => null)));
+        const checks = await Promise.all(FOOTBALL_LEAGUES.map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/teams/${team.id}`).then(() => l.id).catch(() => null)));
         lid = checks.find(id => id !== null) || 'eng.1';
       }
       try {
@@ -4910,10 +4899,10 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
 
         const b = info.team || {};
         const namesToTry = [b.displayName, team.displayName, b.shortDisplayName, team.shortDisplayName, b.name, team.name].filter(Boolean);
-        const stdEntry = extractSoccerStandingEntry(stdRes, team.id, namesToTry[0]);
+        const stdEntry = extractFootballStandingEntry(stdRes, team.id, namesToTry[0]);
         const resolvedRank = standingRank || stdEntry?._computedRank || stdEntry?.stats?.find(s => s.name === 'rank')?.value || b.standingSummary || null;
         const resolvedStats = existingStats || stdEntry?.stats || b.record?.items?.[0]?.stats || [];
-        const leagueObj = SOCCER_LEAGUES.find(l => l.id === lid);
+        const leagueObj = FOOTBALL_LEAGUES.find(l => l.id === lid);
 
         const getVal = (n) => resolvedStats.find(s => s.name === n)?.displayValue || resolvedStats.find(s => s.name === n)?.value || '0';
         const wdlSummary = resolvedStats.length > 0 ? `${getVal('wins')}-${getVal('ties')}-${getVal('losses')}` : (b.record?.items?.[0]?.summary || '0-0-0');
@@ -4929,7 +4918,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
         }).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5);
 
         const apiV = b.venue || (b.venues && b.venues[0]) || b.franchise?.venue || null;
-        const venueInfo = lookupSoccerStadium(namesToTry, apiV);
+        const venueInfo = lookupFootballStadium(namesToTry, apiV);
         const cleanLeagueTitle = stripSeasonYear(leagueObj?.name || stdEntry?._groupName || 'League Standings');
 
         setTeamData({
@@ -4937,7 +4926,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
           ...b,
           id: b.id || team.id,
           displayName: b.displayName || team.displayName || team.shortDisplayName || team.name,
-          logo: getSafeSoccerLogo({ ...team, ...b }),
+          logo: getSafeFootballLogo({ ...team, ...b }),
           athletes: roster.athletes || [],
           records: [{
             leagueName: cleanLeagueTitle,
@@ -5121,7 +5110,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             <div className="flex flex-col items-center px-5 shrink-0">
-              <img src={getSafeSoccerLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
+              <img src={getSafeFootballLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
               <h2 className="text-[22px] font-black text-[#F5F5F7] mb-4 text-center">{teamData.displayName}</h2>
 
               <div className="grid grid-cols-3 items-center bg-[#1C1C1E] rounded-[16px] p-1 w-full mb-5 border border-[rgba(255,255,255,0.08)]">
@@ -5173,15 +5162,15 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
                     return (
                       <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
                         <div className="flex-1 flex flex-col items-center gap-1.5">
-                          <img src={getSafeSoccerLogo(h?.team)} onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain" alt="" />
+                          <img src={getSafeFootballLogo(h?.team)} onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain" alt="" />
                           <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{h?.team?.shortDisplayName}</span>
                         </div>
                         <div className="w-[120px] flex flex-col items-center justify-center">
-                          <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase truncate max-w-[100px]">{getSoccerMatchLeagueName(m)}</span>
+                          <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase truncate max-w-[100px]">{getFootballMatchLeagueName(m)}</span>
                           <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.date, false)}</span>
                         </div>
                         <div className="flex-1 flex flex-col items-center gap-1.5">
-                          <img src={getSafeSoccerLogo(a?.team)} onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain" alt="" />
+                          <img src={getSafeFootballLogo(a?.team)} onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain" alt="" />
                           <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{a?.team?.shortDisplayName}</span>
                         </div>
                       </div>
@@ -5217,7 +5206,7 @@ function App() {
   }, []);
   const [, startTransition] = useTransition();
 
-  const [soccerMatches, setSoccerMatches] = useState([]);
+  const [footballMatches, setSoccerMatches] = useState([]);
   const [cricketMatches, setCricketMatches] = useState([]);
   const [favMatches, setFavMatches] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -5297,7 +5286,7 @@ function App() {
     });
   }, [persistUnifiedFavorites]);
 
-  const soccerFavs = useMemo(
+  const footballFavs = useMemo(
     () => favoritesList.filter(f => f.sport === 'soccer').map(f => f.id),
     [favoritesList]
   );
@@ -5306,7 +5295,7 @@ function App() {
     [favoritesList]
   );
 
-  const toggleSoccerFav = useCallback((teamId) => toggleFavorite('soccer', teamId), [toggleFavorite]);
+  const toggleFootballFav = useCallback((teamId) => toggleFavorite('soccer', teamId), [toggleFavorite]);
   const toggleCricketFav = useCallback((teamId) => toggleFavorite('cricket', teamId), [toggleFavorite]);
 
   const dates = useMemo(() => {
@@ -5328,11 +5317,11 @@ function App() {
     });
   }, []);
 
-  const fetchSoccerMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
+  const fetchFootballMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
     const ds = date.toISOString().split('T')[0].replace(/-/g, '');
     const cachedEvents = [];
     if (!forceRefresh) {
-      SOCCER_LEAGUES.forEach(l => {
+      FOOTBALL_LEAGUES.forEach(l => {
         const c = getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${ds}`);
         if (c?.events) cachedEvents.push(...c.events.map(e => ({ ...e, _leagueId: l.id })));
       });
@@ -5346,7 +5335,7 @@ function App() {
 
     try {
       const results = await Promise.all(
-        SOCCER_LEAGUES.map(l =>
+        FOOTBALL_LEAGUES.map(l =>
           fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${ds}`, isSilent || forceRefresh)
             .then(data => (data.events || []).map(e => ({ ...e, _leagueId: l.id })))
             .catch(() => [])
@@ -5420,7 +5409,7 @@ function App() {
   }, [date]);
 
   const fetchFavSchedule = useCallback(async (forceRefresh = false) => {
-    if (soccerFavs.length === 0 && cricketFavs.length === 0) {
+    if (footballFavs.length === 0 && cricketFavs.length === 0) {
       setFavMatches([]);
       return;
     }
@@ -5432,18 +5421,18 @@ function App() {
       const nowMs = Date.now();
       const todayDs = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const [soccerTeamResults, soccerScoreboards, cricketSched, cricketLive] = await Promise.all([
-        soccerFavs.length > 0
+        footballFavs.length > 0
           ? Promise.all(
-              soccerFavs.map(async (id) => {
+              footballFavs.map(async (id) => {
                 const res = await fetchWithCache(`${API_SOCCER_SCORE_BASE}/all/teams/${id}`, forceRefresh).catch(() => null);
                 const teamObj = res?.team || {};
                 return { id, teamObj };
               })
             )
           : Promise.resolve([]),
-        soccerFavs.length > 0
+        footballFavs.length > 0
           ? Promise.all(
-              SOCCER_LEAGUES.map(l =>
+              FOOTBALL_LEAGUES.map(l =>
                 fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${todayDs}`, forceRefresh)
                   .then(d => (d.events || []).map(e => ({ ...e, _leagueId: l.id })))
                   .catch(() => [])
@@ -5460,7 +5449,7 @@ function App() {
 
       const combined = [];
       const seenIds = new Set();
-      const favSoccerSet = new Set(soccerFavs.map(String));
+      const favSoccerSet = new Set(footballFavs.map(String));
 
       soccerScoreboards.flat().forEach(event => {
         if (!event || !event.id || !event.competitions?.length) return;
@@ -5562,7 +5551,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [soccerFavs, cricketFavs]);
+  }, [footballFavs, cricketFavs]);
 
   const triggerForceRefresh = useCallback(async () => {
     if (isRefreshing) return;
@@ -5571,14 +5560,14 @@ function App() {
       if (view === 'home') {
         await fetchFavSchedule(true);
       } else if (view === 'scores') {
-        if (activeSport === 'soccer') await fetchSoccerMatches(false, true);
+        if (activeSport === 'soccer') await fetchFootballMatches(false, true);
         else await fetchCricketMatches(false, true);
       } else if (view === 'standings') {
         standingsParsedCache.clear();
         knockoutCache.clear();
         if (activeSport === 'soccer') {
           await Promise.all(
-            SOCCER_LEAGUES.map(l =>
+            FOOTBALL_LEAGUES.map(l =>
               Promise.all([
                 fetchWithCache(`${API_SOCCER_STANDINGS_BASE}/${l.id}/standings`, true).catch(() => null),
                 l.hasKnockout ? fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard`, true, 9500).catch(() => null) : Promise.resolve(null)
@@ -5595,17 +5584,17 @@ function App() {
       } else if (view === 'intel') {
         if (activeSport === 'soccer') {
           await Promise.all(
-            SOCCER_LEAGUES.slice(0, 4).map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/news`, true).catch(() => null))
+            FOOTBALL_LEAGUES.slice(0, 4).map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/news`, true).catch(() => null))
           );
         } else {
-          await Promise.all([fetchWithCache(API_CRICKET_NEWS_ESPN, true).catch(() => null), fetchWithCache(CRICINFO_RSS_JSON, true).catch(() => null), fetchWithCache(BBC_CRICKET_RSS_JSON, true).catch(() => null)]);
+          await Promise.all([fetchWithCache(API_CRICKET_NEWS_ESPN, true).catch(() => null), fetchWithCache(CRICINFO_RSS_JSON, true).catch(() => null)]);
         }
         setRefreshTick(t => t + 1);
       }
     } finally {
       setTimeout(() => setIsRefreshing(false), 220);
     }
-  }, [isRefreshing, view, activeSport, fetchFavSchedule, fetchSoccerMatches, fetchCricketMatches]);
+  }, [isRefreshing, view, activeSport, fetchFavSchedule, fetchFootballMatches, fetchCricketMatches]);
 
   const navHistoryRef = useRef([]);
   const prevViewRef = useRef(view);
@@ -5766,19 +5755,19 @@ function App() {
   useEffect(() => {
     if (view === 'home') fetchFavSchedule(false);
     else if (view === 'scores') {
-      if (activeSport === 'soccer') fetchSoccerMatches(false, false);
+      if (activeSport === 'soccer') fetchFootballMatches(false, false);
       else fetchCricketMatches(false, false);
     }
-  }, [view, activeSport, date, fetchSoccerMatches, fetchCricketMatches, fetchFavSchedule]);
+  }, [view, activeSport, date, fetchFootballMatches, fetchCricketMatches, fetchFavSchedule]);
 
   useEffect(() => {
     if (view !== 'scores' || !isSameDay(date, new Date())) return;
     const interval = setInterval(() => {
-      if (activeSport === 'soccer') fetchSoccerMatches(true, false);
+      if (activeSport === 'soccer') fetchFootballMatches(true, false);
       else fetchCricketMatches(true, false);
     }, 15000);
     return () => clearInterval(interval);
-  }, [view, activeSport, date, fetchSoccerMatches, fetchCricketMatches]);
+  }, [view, activeSport, date, fetchFootballMatches, fetchCricketMatches]);
 
   const openMatchModal = useCallback((m) => {
     setActiveMatch(m);
@@ -5842,7 +5831,7 @@ function App() {
           })}
           className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-150 ${activeSport === 'soccer' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
         >
-          ⚽ Soccer
+          ⚽ Football
         </button>
         <button
           onClick={() => startTransition(() => {
@@ -5865,7 +5854,7 @@ function App() {
             ) : (
               favMatches.map((m, idx) =>
                 m._favSport === 'soccer' ? (
-                  <SoccerMatchCard key={`fav-s-${m.id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
+                  <FootballMatchCard key={`fav-s-${m.id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
                 ) : (
                   <CricketMatchCard key={`fav-c-${m.match_id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
                 )
@@ -5881,19 +5870,19 @@ function App() {
               key={`${activeSport}-${date.toISOString().split('T')[0]}`}
               className={`px-4 pb-36 ${dateDir >= 0 ? 'schedule-load-next' : 'schedule-load-prev'}`}
             >
-              {loading && (activeSport === 'soccer' ? soccerMatches.length === 0 : cricketMatches.length === 0) ? (
+              {loading && (activeSport === 'soccer' ? footballMatches.length === 0 : cricketMatches.length === 0) ? (
                 <WhitePillLoader className="py-20" />
               ) : activeSport === 'soccer' ? (
-                soccerMatches.length === 0 ? (
+                footballMatches.length === 0 ? (
                   <EmptyState icon={CircleDashed} title="No Broadcasts" message="There are no scheduled games for this date." />
                 ) : (
-                  soccerMatches.map((m, idx) => (
+                  footballMatches.map((m, idx) => (
                     <div
                       key={m.id}
                       className="schedule-card-item"
                       style={{ animationDelay: `${170 + Math.min(idx, 8) * 55}ms` }}
                     >
-                      <SoccerMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
+                      <FootballMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                     </div>
                   ))
                 )
@@ -5916,14 +5905,14 @@ function App() {
 
         {view === 'standings' && (
           activeSport === 'soccer' ? (
-            <SoccerStandingsView key={`std-s-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
+            <FootballStandingsView key={`std-s-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
           ) : (
             <CricketStandingsView key={`std-c-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
           )
         )}
 
         {view === 'intel' && (
-          activeSport === 'soccer' ? <SoccerIntelView key={`intel-s-${refreshTick}`} /> : <CricketIntelView key={`intel-c-${refreshTick}`} />
+          activeSport === 'soccer' ? <FootballIntelView key={`intel-s-${refreshTick}`} /> : <CricketIntelView key={`intel-c-${refreshTick}`} />
         )}
       </div>
 
@@ -5945,20 +5934,20 @@ function App() {
       </div>
 
       {activeMatch && activeMatch._sport === 'soccer' && (
-        <SoccerMatchModal match={activeMatch} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
+        <FootballMatchModal match={activeMatch} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
       )}
       {activeMatch && activeMatch._sport === 'cricket' && (
         <CricketMatchModal match={activeMatch} selectedDate={date} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
       )}
 
       {activeTeam && activeTeam.sport === 'soccer' && (
-        <SoccerTeamModal
+        <FootballTeamModal
           team={activeTeam.team}
           leagueId={activeTeam.leagueId}
           existingStats={activeTeam.existingStats}
           standingRank={activeTeam.rank}
-          favorites={soccerFavs}
-          onToggleFavorite={toggleSoccerFav}
+          favorites={footballFavs}
+          onToggleFavorite={toggleFootballFav}
           onClose={() => setActiveTeam(null)}
           onOpenMatch={openMatchModal}
         />

@@ -1,7 +1,7 @@
 {
   "name": "Sideline",
   "short_name": "Sideline",
-  "description": "Live Soccer & Cricket Scores, Standings, Knockouts & Match Analytics",
+  "description": "Live Football & Cricket Scores, Standings, Knockouts & Match Analytics",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
