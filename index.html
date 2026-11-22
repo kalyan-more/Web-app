@@ -2180,115 +2180,103 @@ const DuelStat = memo(({ label, homeVal, awayVal }) => {
 // ⚽ TACTICAL PITCH & BELOW-PITCH MATCH EVENTS
 // ==========================================
 
-const resolveTeamRosterEntry = (summary, comp, fallbackIdx) => {
-  const rosters = Array.isArray(summary?.rosters) ? summary.rosters : [];
-  if (rosters.length === 0) return null;
-
-  const targetId = String(comp?.team?.id || comp?.id || '');
-  const targetSide = String(comp?.homeAway || '').toLowerCase();
-
-  if (targetId) {
-    const byId = rosters.find(r => String(r?.team?.id || r?.id || '') === targetId);
-    if (byId) return byId;
-  }
-  if (targetSide) {
-    const bySide = rosters.find(r => String(r?.homeAway || '').toLowerCase() === targetSide);
-    if (bySide) return bySide;
-  }
-  return rosters[fallbackIdx] || null;
-};
-
-const getLateralSortScore = (playerEntry, isHome) => {
-  const fp = parseInt(playerEntry?.formationPlace, 10);
-  if (!isNaN(fp) && fp > 0) {
-    return isHome ? fp : -fp;
-  }
-  const abbr = String(
-    playerEntry?.position?.abbreviation ||
-    playerEntry?.athlete?.position?.abbreviation ||
+const getPositionBucketRank = (player) => {
+  const posRaw = String(
+    player?.position?.abbreviation ||
+    player?.position?.shortName ||
+    player?.position?.name ||
+    player?.athlete?.position?.abbreviation ||
+    player?.athlete?.position?.name ||
     ''
   ).toUpperCase().trim();
 
-  const lateralMap = {
-    'LB': -3, 'LWB': -2.5, 'LCB': -1, 'CB': 0, 'RCB': 1, 'RWB': 2.5, 'RB': 3,
-    'LM': -2.5, 'LDM': -1.2, 'CDM': 0, 'CM': 0, 'RDM': 1.2, 'RM': 2.5,
-    'LW': -2.5, 'LAM': -1.5, 'CAM': 0, 'RAM': 1.5, 'RW': 2.5, 'LF': -1.2, 'ST': 0, 'CF': 0, 'RF': 1.2
-  };
-  const base = lateralMap[abbr] !== undefined ? lateralMap[abbr] : 0;
-  return isHome ? base : -base;
+  if (posRaw === 'G' || posRaw === 'GK' || posRaw.includes('GOALKEEPER')) return 0;
+  if (['D', 'DF', 'CB', 'LB', 'RB', 'LWB', 'RWB', 'SW'].includes(posRaw) || posRaw.includes('DEFEN') || posRaw.includes('BACK')) return 1;
+  if (['M', 'MF', 'CM', 'CDM', 'CAM', 'LM', 'RM', 'DM', 'AM'].includes(posRaw) || posRaw.includes('MID')) return 2;
+  if (['F', 'FW', 'ST', 'CF', 'LW', 'RW', 'LF', 'RF', 'SS'].includes(posRaw) || posRaw.includes('FORW') || posRaw.includes('STRIK') || posRaw.includes('WING') || posRaw.includes('ATTACK')) return 3;
+  return 2;
 };
 
-const extractConfirmedStarters = (teamRoster) => {
-  const list = Array.isArray(teamRoster?.roster) ? teamRoster.roster : [];
-  if (list.length === 0) return [];
-  const explicitStarters = list.filter(p => p?.starter === true);
-  if (explicitStarters.length >= 7) {
-    return explicitStarters.slice(0, 11);
+const resolveTeamRoster = (summary, targetComp, isHome) => {
+  const rosters = summary?.rosters || [];
+  if (rosters.length === 0) return null;
+  const targetTeamId = String(targetComp?.team?.id || '');
+  const targetHomeAway = targetComp?.homeAway || (isHome ? 'home' : 'away');
+
+  if (targetTeamId) {
+    const byId = rosters.find(r => String(r?.team?.id || '') === targetTeamId);
+    if (byId) return byId;
   }
-  return [];
+  const byHomeAway = rosters.find(r => String(r?.homeAway || '').toLowerCase() === targetHomeAway.toLowerCase());
+  if (byHomeAway) return byHomeAway;
+
+  return rosters[isHome ? 0 : Math.min(1, rosters.length - 1)] || null;
 };
 
-const useFootballFormations = (summary, comp, fallbackIdx, width, height, isHome) =>
+const useFootballFormations = (summary, width, height, targetComp, isHome) =>
   useMemo(() => {
-    const teamRoster = resolveTeamRosterEntry(summary, comp, fallbackIdx);
+    const teamRoster = resolveTeamRoster(summary, targetComp, isHome);
     if (!teamRoster) return [];
 
-    const starters = extractConfirmedStarters(teamRoster);
-    if (starters.length === 0) return [];
+    const rawRoster = Array.isArray(teamRoster.roster) ? teamRoster.roster : [];
+    let starters = rawRoster.filter(p => Boolean(p?.starter));
+    if (starters.length < 11) {
+      const nonStarters = rawRoster.filter(p => !p?.starter);
+      starters = [...starters, ...nonStarters].slice(0, 11);
+    } else if (starters.length > 11) {
+      starters = starters.slice(0, 11);
+    }
 
-    const formation = String(teamRoster.formation || '')
+    const indexed = starters.map((p, idx) => ({
+      p,
+      idx,
+      bucket: getPositionBucketRank(p)
+    }));
+    const hasExplicitPositions = indexed.some(item => item.bucket !== 2);
+    const orderedStarters = hasExplicitPositions
+      ? [...indexed].sort((a, b) => (a.bucket - b.bucket) || (a.idx - b.idx)).map(item => item.p)
+      : starters;
+
+    const parsedFormation = String(teamRoster.formation || '')
       .split('-')
       .map(n => parseInt(n.trim(), 10))
       .filter(n => !isNaN(n) && n > 0);
 
-    const outfieldStarters = starters.slice(1);
-    const outfieldSum = formation.reduce((acc, n) => acc + n, 0);
-    const effectiveFormation =
-      formation.length >= 2 && (outfieldSum === outfieldStarters.length || Math.abs(outfieldSum - outfieldStarters.length) <= 1)
-        ? formation
-        : [4, 4, 2];
-
-    const rows = [starters.slice(0, 1)];
-    let cursor = 1;
-    effectiveFormation.forEach(count => {
-      if (cursor < starters.length) {
-        rows.push(starters.slice(cursor, cursor + count));
-        cursor += count;
-      }
-    });
-    if (cursor < starters.length) {
-      rows.push(starters.slice(cursor));
+    const totalOutfield = Math.max(1, orderedStarters.length - 1);
+    let formation = parsedFormation.length > 0 ? [...parsedFormation] : [4, 4, 2];
+    const sumFormation = formation.reduce((acc, v) => acc + v, 0);
+    if (sumFormation !== totalOutfield) {
+      if (totalOutfield === 10) formation = [4, 3, 3];
+      else if (totalOutfield === 9) formation = [4, 3, 2];
+      else formation = [totalOutfield];
     }
 
+    const rows = [1, ...formation];
     const numRows = Math.max(1, rows.length - 1);
-    const usableHeight = Math.max(180, height - 84);
+    const topPad = 12;
+    const bottomPad = 56;
+    const usableHeight = Math.max(150, height - topPad - bottomPad);
 
-    return rows.map((rowPlayers, rowIndex) => {
-      if (!rowPlayers || rowPlayers.length === 0) return [];
-      const sortedRow = rowIndex === 0
-        ? rowPlayers
-        : [...rowPlayers].sort((a, b) => getLateralSortScore(a, isHome) - getLateralSortScore(b, isHome));
+    let cursor = 0;
+    return rows.map((count, rowIndex) => {
+      const rowPlayers = orderedStarters.slice(cursor, cursor + count);
+      cursor += count;
+      const progress = numRows === 0 ? 0 : rowIndex / numRows;
 
-      const progress = rowIndex / numRows;
       const y = isHome
-        ? (10 + usableHeight) - (progress * usableHeight)
-        : 10 + (progress * usableHeight);
+        ? (topPad + usableHeight) - (progress * usableHeight)
+        : topPad + (progress * usableHeight);
 
-      return sortedRow.map((p, i) => {
-        const x = ((i + 1) / (sortedRow.length + 1)) * width;
-        return {
-          id: p.athlete?.id || p.id || `p_${rowIndex}_${i}`,
-          player: p,
-          x,
-          y
-        };
+      return rowPlayers.map((p, i) => {
+        const x = ((i + 1) / (rowPlayers.length + 1)) * width;
+        return { id: p.athlete?.id || `p_${isHome ? 'h' : 'a'}_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
-  }, [summary, comp, fallbackIdx, width, height, isHome]);
+  }, [summary?.rosters, width, height, targetComp, isHome]);
 
 const PlayerJersey = memo(({ player, teamColor }) => {
   if (!player?.athlete) return null;
-  const name = formatFootballShortName(player.athlete.displayName || player.athlete.shortName);
+  const name = formatFootballShortName(player.athlete.displayName);
   const safeColor = teamColor || THEME.accent;
   const c = safeColor.replace('#', '');
   const r = parseInt(c.substring(0, 2), 16) || 0;
@@ -2432,39 +2420,27 @@ const TacticalPitch = memo(({ summary, home, away }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const homeRoster = resolveTeamRosterEntry(summary, home, 0);
-  const awayRoster = resolveTeamRosterEntry(summary, away, 1);
-
-  const hCol = `#${summary?.teams?.find(t => t.id === (home?.team?.id || homeRoster?.team?.id))?.color || homeRoster?.team?.color || '0A84FF'}`;
-  const aCol = `#${summary?.teams?.find(t => t.id === (away?.team?.id || awayRoster?.team?.id))?.color || awayRoster?.team?.color || 'E4E4E7'}`;
-  const awayFormation = awayRoster?.formation || '';
-  const homeFormation = homeRoster?.formation || '';
+  const homeRosterObj = resolveTeamRoster(summary, home, true);
+  const awayRosterObj = resolveTeamRoster(summary, away, false);
+  const hRawColor = homeRosterObj?.team?.color || summary?.teams?.find(t => String(t.id) === String(home?.team?.id))?.color || '0A84FF';
+  const aRawColor = awayRosterObj?.team?.color || summary?.teams?.find(t => String(t.id) === String(away?.team?.id))?.color || 'E4E4E7';
+  const hCol = String(hRawColor).startsWith('#') ? hRawColor : `#${hRawColor}`;
+  const aCol = String(aRawColor).startsWith('#') ? aRawColor : `#${aRawColor}`;
+  const awayFormation = awayRosterObj?.formation || '';
+  const homeFormation = homeRosterObj?.formation || '';
 
   const HALF_HEIGHT = pitchSize.height / 2;
-  const awayPlayers = useFootballFormations(summary, away, 1, pitchSize.width, HALF_HEIGHT, false);
-  const homePlayers = useFootballFormations(summary, home, 0, pitchSize.width, HALF_HEIGHT, true);
+  const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, away, false);
+  const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, home, true);
 
-  if (!summary) {
+  if (!summary?.rosters) {
     return <WhitePillLoader className="py-16" />;
-  }
-
-  if (homePlayers.length === 0 && awayPlayers.length === 0) {
-    return (
-      <div className="px-4 pb-10">
-        <EmptyState
-          icon={Users}
-          title="Live Lineups Pending"
-          message="Confirmed starting XIs and formations are published closer to kickoff."
-        />
-        <PitchMatchEventsSection summary={summary} home={home} away={away} />
-      </div>
-    );
   }
 
   return (
     <div className="mb-10 mt-2.5">
       <div className="flex items-center px-5 my-3 gap-3">
-        <img src={getSafeFootballLogo(away?.team || awayRoster?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, away?.team?.shortDisplayName || awayRoster?.team?.displayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <img src={getSafeFootballLogo(away?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, away?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
         <div className="flex-1 flex items-center gap-3">
           <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
           <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
@@ -2507,7 +2483,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
       </div>
 
       <div className="flex items-center px-5 my-3 gap-3">
-        <img src={getSafeFootballLogo(home?.team || homeRoster?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, home?.team?.shortDisplayName || homeRoster?.team?.displayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <img src={getSafeFootballLogo(home?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, home?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
         <div className="flex-1 flex items-center gap-3">
           <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
           <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
@@ -4412,27 +4388,19 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 // ==========================================
 
 const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
-  const leaguePrefix = match?._leagueId && match._leagueId !== 'custom' ? match._leagueId : 'all';
-  const sumUrl = `${API_SOCCER_SCORE_BASE}/${leaguePrefix}/summary?event=${match?.id}`;
-  const fallbackSumUrl = `${API_SOCCER_SCORE_BASE}/all/summary?event=${match?.id}`;
-  const [summary, setSummary] = useState(() =>
-    match?.id ? (getCachedSync(sumUrl) || getCachedSync(fallbackSumUrl)) : null
-  );
+  const sumUrl = `${API_SOCCER_SCORE_BASE}/all/summary?event=${match?.id}`;
+  const [summary, setSummary] = useState(() => match?.id ? getCachedSync(sumUrl) : null);
   const [tab, setTab] = useState('lineup');
 
   const fetchActiveDetails = useCallback(async (isSilent = false) => {
     if (!match?.id) return;
     try {
-      let data = await fetchWithCache(sumUrl, isSilent).catch(() => null);
-      if (!data?.rosters && sumUrl !== fallbackSumUrl) {
-        data = await fetchWithCache(fallbackSumUrl, isSilent).catch(() => data);
-      }
-      if (data) setSummary(data);
-      else if (!isSilent) setSummary(prev => prev || {});
+      const data = await fetchWithCache(sumUrl, isSilent);
+      setSummary(data);
     } catch {
       if (!isSilent) setSummary(prev => prev || {});
     }
-  }, [match?.id, sumUrl, fallbackSumUrl]);
+  }, [match?.id, sumUrl]);
 
   useEffect(() => {
     fetchActiveDetails(false);
