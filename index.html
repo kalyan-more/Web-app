@@ -253,18 +253,20 @@
     }
 
     .schedule-load-next {
-      animation: scheduleLoadNext 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      opacity: 0;
+      animation: scheduleLoadNext 0.54s cubic-bezier(0.22, 1, 0.36, 1) 0.08s forwards;
       will-change: transform, opacity;
     }
 
     .schedule-load-prev {
-      animation: scheduleLoadPrev 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      opacity: 0;
+      animation: scheduleLoadPrev 0.54s cubic-bezier(0.22, 1, 0.36, 1) 0.08s forwards;
       will-change: transform, opacity;
     }
 
     .schedule-card-item {
       opacity: 0;
-      animation: scheduleCardGlide 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: scheduleCardGlide 0.50s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -1215,6 +1217,9 @@ const formatCricketScore = (str) => {
   if (oversStr.toLowerCase().includes('super over')) {
     inn = "Super Over";
     oversStr = oversStr.replace(/,? \s*super over/ig, '');
+  }
+  if (oversStr) {
+    oversStr = oversStr.replace(/,?\s*target\s*\d+/ig, '').replace(/,\s*\)/g, ')').replace(/\s+\)/g, ')').trim();
   }
   if (isFollowOn) oversStr = oversStr ? `${oversStr.replace(')', '')} f/o)` : "(f/o)";
   if (inn && oversStr) oversStr = `${oversStr} • ${inn}`;
@@ -2461,21 +2466,64 @@ const extractParagraphs = (htmlOrText) => {
 };
 
 const getArticleApiUrl = (item) => {
+  const numericIdMatch = String(item?.id || '').match(/(\d{5,})/);
   const raw =
     item?.links?.api?.news?.href ||
     item?.links?.api?.self?.href ||
-    (item?.id && /^\d+$/.test(String(item.id))
-      ? `https://now.core.api.espn.com/v1/sports/news/${item.id}`
+    (numericIdMatch
+      ? `https://now.core.api.espn.com/v1/sports/news/${numericIdMatch[1]}`
       : null);
   return raw ? String(raw).replace(/^http:\/\//i, 'https://') : null;
 };
 
-const prefetchFullArticle = (item) => {
+const normalizeFetchedArticle = (res, fallbackItem) => {
+  const art = res?.headlines?.[0] || res?.article || res || null;
+  if (!art) return null;
+  const storyText =
+    art.story ||
+    art.body ||
+    (Array.isArray(art.paragraphs) ? art.paragraphs.join('\n\n') : '') ||
+    fallbackItem?.story ||
+    fallbackItem?.description ||
+    '';
+  return { ...art, story: storyText };
+};
+
+const prefetchFullArticle = async (item) => {
   const url = getArticleApiUrl(item);
-  if (!url) return Promise.resolve(null);
-  return fetchWithCache(url, false, 3500)
-    .then(res => res?.headlines?.[0] || res?.article || res || null)
-    .catch(() => null);
+  if (url) {
+    try {
+      const res = await fetchWithCache(url, false, 3500);
+      const norm = normalizeFetchedArticle(res, item);
+      if (norm && stripHtml(norm.story).length > stripHtml(item?.description || '').length) {
+        return norm;
+      }
+    } catch {}
+  }
+
+  try {
+    const espnNews = await fetchWithCache(API_CRICKET_NEWS_ESPN, false, 3500).catch(() => null);
+    const targetHeadline = String(item?.headline || '').toLowerCase().trim();
+    const matched = (espnNews?.articles || []).find(a => {
+      if (item?.id && String(a.id) === String(item.id)) return true;
+      const aHead = String(a.headline || '').toLowerCase().trim();
+      return targetHeadline && aHead && (aHead === targetHeadline || aHead.includes(targetHeadline.slice(0, 28)) || targetHeadline.includes(aHead.slice(0, 28)));
+    });
+    if (matched) {
+      const subUrl = matched?.links?.api?.news?.href || matched?.links?.api?.self?.href;
+      if (subUrl) {
+        const subRes = await fetchWithCache(String(subUrl).replace(/^http:\/\//i, 'https://'), false, 3500).catch(() => null);
+        const normSub = normalizeFetchedArticle(subRes, matched);
+        if (normSub) return normSub;
+      }
+      return normalizeFetchedArticle(matched, item);
+    }
+  } catch {}
+
+  if (item?.story) {
+    return { story: item.story, byline: item.byline, images: item.images };
+  }
+  return null;
 };
 
 const NewsCard = memo(({ item }) => {
@@ -2500,13 +2548,16 @@ const NewsCard = memo(({ item }) => {
     : '';
 
   useEffect(() => {
-    if (!isExpanded || fullArticleData) return;
+    if (!isExpanded) return;
+    const hasRichStory = fullArticleData?.story && stripHtml(fullArticleData.story).length > rawSummary.length + 20;
+    const itemHasRichStory = item?.story && stripHtml(item.story).length > rawSummary.length + 20;
+    if (hasRichStory || itemHasRichStory) return;
     let active = true;
     prefetchFullArticle(item).then(art => {
       if (active && art) setFullArticleData(art);
     });
     return () => { active = false; };
-  }, [isExpanded, fullArticleData, item]);
+  }, [isExpanded, fullArticleData, item, rawSummary.length]);
 
   const resolvedStoryRaw =
     fullArticleData?.story ||
@@ -2548,7 +2599,7 @@ const NewsCard = memo(({ item }) => {
           <div className="px-2.5 py-1 rounded-[8px] shrink-0" style={{ backgroundColor: tag.color + '20' }}>
             <span className="text-[10px] font-extrabold tracking-[0.6px] uppercase" style={{ color: tag.color }}>{tag.label}</span>
           </div>
-          <span className="text-[10px] font-bold text-[#8E8E93] truncate">{sourceLabel}</span>
+          <span className="text-[10px] font-bold text-[#8E8E93] break-words leading-tight">{sourceLabel}</span>
         </div>
         <span className="text-[11px] text-[#8E8E93] font-semibold shrink-0 tabular-nums">{getRelativeTime(item.published)}</span>
       </div>
@@ -2591,7 +2642,7 @@ const NewsCard = memo(({ item }) => {
               <span className="block text-[9px] font-extrabold text-[#8E8E93] tracking-[1px] uppercase">
                 {cleanAuthor ? 'AUTHOR' : 'DESK'}
               </span>
-              <span className="block text-[12px] font-bold text-[#F5F5F7] mt-0.5 truncate">{reportingValue}</span>
+              <span className="block text-[12px] font-bold text-[#F5F5F7] mt-0.5 break-words leading-snug">{reportingValue}</span>
             </div>
             <div className="bg-[#1C1C1E] px-3 py-2.5 rounded-[14px] border border-white/[0.06]">
               <span className="block text-[9px] font-extrabold text-[#8E8E93] tracking-[1px] uppercase">PUBLISHED</span>
@@ -2656,7 +2707,7 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
     <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
         <img src={getSafeSoccerLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
-        <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{h?.team?.shortDisplayName || h?.team?.name}</span>
+        <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h?.team?.shortDisplayName || h?.team?.name}</span>
       </div>
       <div className="w-[128px] flex flex-col items-center justify-center shrink-0">
         <div className="flex items-center justify-center gap-1 mb-1.5 max-w-[120px]">
@@ -2676,7 +2727,7 @@ const SoccerMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDat
       </div>
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a?.team, match._leagueId, null, 'soccer'); }}>
         <img src={getSafeSoccerLogo(a?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
-        <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{a?.team?.shortDisplayName || a?.team?.name}</span>
+        <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a?.team?.shortDisplayName || a?.team?.name}</span>
       </div>
     </div>
   );
@@ -2698,7 +2749,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
     <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150 transform-gpu w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
         <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
-        <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{h.short_name || h.name}</span>
+        <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h.short_name || h.name}</span>
         <div className="h-[40px] flex flex-col items-center justify-start">
           <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums leading-tight">{hScore.runs}</span>
           {hScore.overs ? <span className="text-[10px] text-[#8E8E93] font-semibold">{hScore.overs}</span> : null}
@@ -2726,7 +2777,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
 
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a, null, null, 'cricket'); }}>
         <img src={getCricketLogo(a)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
-        <span className="text-[11px] font-bold text-[#F5F5F7] text-center truncate w-full px-1">{a.short_name || a.name}</span>
+        <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a.short_name || a.name}</span>
         <div className="h-[40px] flex flex-col items-center justify-start">
           {aScore.runs ? (
             <>
@@ -3116,8 +3167,8 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                           <span className="text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums leading-tight">{rank}</span>
                           {zoneBadge && (
                             <span
-                              className="mt-0.5 text-[7.5px] font-black tracking-[0.4px] px-1 py-[1px] rounded-[4px] uppercase leading-none"
-                              style={{ color: zoneBadge.color, backgroundColor: `${zoneBadge.color}1F` }}
+                              className="mt-0.5 text-[8px] font-black tracking-[0.5px] uppercase leading-none"
+                              style={{ color: zoneBadge.color }}
                             >
                               {zoneBadge.code}
                             </span>
@@ -3125,7 +3176,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                         </div>
                         <div className="flex-1 flex items-center ml-2 min-w-0">
                           <img src={getSafeSoccerLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
-                          <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
+                          <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{tName}</span>
                         </div>
                         <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{get('gamesPlayed')}</span>
                         <span className="w-[55px] text-center text-[12px] text-[#8E8E93] tracking-[0.5px] tabular-nums">{wdl}</span>
@@ -3356,7 +3407,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                       <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
                       <div className="flex-1 flex items-center ml-2 min-w-0">
                         <img src={teamLogoUrl} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
-                        <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
+                        <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{tName}</span>
                       </div>
                       <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{played}</span>
                       <span className="w-[45px] text-center text-[12px] text-[#8E8E93] tracking-[0.5px] tabular-nums">{won}-{lost}</span>
@@ -3809,8 +3860,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     let hScore = formatCricketScore(hTeam.score);
     let aScore = formatCricketScore(aTeam.score);
 
-    if (hScore.overs) hScore.overs = hScore.overs.replace(/ • Inn \d+/g, '').replace(/Inn \d+/g, '').trim();
-    if (aScore.overs) aScore.overs = aScore.overs.replace(/ • Inn \d+/g, '').replace(/Inn \d+/g, '').trim();
+    if (hScore.overs) hScore.overs = hScore.overs.replace(/ • Inn \d+/g, '').replace(/Inn \d+/g, '').replace(/,?\s*target\s*\d+/ig, '').replace(/,\s*\)/g, ')').trim();
+    if (aScore.overs) aScore.overs = aScore.overs.replace(/ • Inn \d+/g, '').replace(/Inn \d+/g, '').replace(/,?\s*target\s*\d+/ig, '').replace(/,\s*\)/g, ')').trim();
 
     if (matchDetails?.innings && matchDetails.innings.length > 0) {
       const hInns = matchDetails.innings.filter(i => i.team_name === hTeam.name || i.team_name === hTeam.short_name);
@@ -4048,8 +4099,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
           {(inning.batting || []).map((b, i) => (
             <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
               <div className="flex-[3] pr-2 min-w-0">
-                <span className="block text-[#F5F5F7] text-[14px] font-bold truncate">{decodeEntities(b.name)}{!b.is_out && '*'}</span>
-                <span className="block text-[#8E8E93] text-[11px] mt-1 font-medium truncate">{cleanCricketDismissalText(b.dismissal, b.is_out)}</span>
+                <span className="block text-[#F5F5F7] text-[14px] font-bold break-words leading-snug">{decodeEntities(b.name)}{!b.is_out && '*'}</span>
+                <span className="block text-[#8E8E93] text-[11px] mt-1 font-medium break-words leading-snug">{cleanCricketDismissalText(b.dismissal, b.is_out)}</span>
               </div>
               <span className="w-[30px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{b.runs}</span>
               <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.balls}</span>
@@ -4077,7 +4128,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
           </div>
           {(inning.bowling || []).map((b, i) => (
             <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
-              <span className="flex-[3] text-[#F5F5F7] text-[14px] font-bold truncate pr-2">{decodeEntities(b.name || 'Bowler')}</span>
+              <span className="flex-[3] text-[#F5F5F7] text-[14px] font-bold break-words leading-snug pr-2">{decodeEntities(b.name || 'Bowler')}</span>
               <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.overs}</span>
               <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.maidens || 0}</span>
               <span className="w-[30px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{b.runs}</span>
@@ -4451,19 +4502,30 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
                   else if (txt.includes('foul')) meta = { icon: AlertCircle, color: THEME.danger, label: 'Foul' };
                   const IconComp = meta.icon;
 
+                  const rawStamp = item.wallClockTime || item.timestamp || item.date || item.time?.displayValue || '';
+                  const formattedStamp = rawStamp && !isNaN(new Date(rawStamp)) && String(rawStamp).includes('T')
+                    ? get24HourTime(rawStamp)
+                    : (typeof rawStamp === 'string' && /^\d{1,2}:\d{2}/.test(rawStamp) ? rawStamp : null);
+
                   return (
                     <div key={index} className={`flex gap-4 ${index === 0 ? 'mt-2.5' : ''}`}>
-                      <div className="flex flex-col items-center w-[50px] shrink-0">
-                        <div className="bg-[#1C1C1E] px-2 py-1 rounded-[8px] mb-2 border border-[rgba(255,255,255,0.08)]">
+                      <div className="flex flex-col items-center w-[54px] shrink-0">
+                        <div className="bg-[#1C1C1E] px-2 py-1 rounded-[8px] mb-1 border border-[rgba(255,255,255,0.08)]">
                           <span className="text-[#F5F5F7] font-bold text-[11px] tabular-nums">{time}</span>
                         </div>
+                        {formattedStamp && (
+                          <span className="text-[9px] font-bold text-[#8E8E93] tabular-nums mb-1.5">{formattedStamp}</span>
+                        )}
                         <div className="w-[12px] h-[12px] rounded-full z-10 shrink-0" style={{ backgroundColor: meta.color }} />
                         <div className="flex-1 w-[2px] bg-[rgba(255,255,255,0.08)]" />
                       </div>
                       <div className="flex-1 bg-[#121212] p-5 rounded-[24px] mb-6 border border-[rgba(255,255,255,0.08)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <IconComp size={14} color={meta.color} className="shrink-0" />
-                          <span className="text-[11px] font-extrabold uppercase" style={{ color: meta.color }}>{meta.label}</span>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <IconComp size={14} color={meta.color} className="shrink-0" />
+                            <span className="text-[11px] font-extrabold uppercase break-words" style={{ color: meta.color }}>{meta.label}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-[#8E8E93] tabular-nums shrink-0">{formattedStamp || time}</span>
                         </div>
                         <p className="text-[#F5F5F7] text-[14px] leading-[22px] font-medium text-left">{item.text || item.shortText}</p>
                       </div>
@@ -4733,7 +4795,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   <div className="flex items-center justify-between py-1">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
-                      <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{h.short_name || h.name}</span>
+                      <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{h.short_name || h.name}</span>
                     </div>
                     <div className="text-right">
                       <span className="text-[14px] font-extrabold text-[#F5F5F7] tabular-nums">{hScore.runs || '—'}</span>
@@ -4743,7 +4805,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   <div className="flex items-center justify-between py-1 mt-1">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
-                      <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{a.short_name || a.name}</span>
+                      <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{a.short_name || a.name}</span>
                     </div>
                     <div className="text-right">
                       <span className="text-[14px] font-extrabold text-[#F5F5F7] tabular-nums">{aScore.runs || '—'}</span>
@@ -4828,8 +4890,8 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                               <User size={16} color={g.color} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="block text-[#F5F5F7] text-[15px] font-bold truncate">{p.name}</span>
-                              {detailsList.length > 0 && <span className="block text-[#8E8E93] text-[12px] mt-1 font-medium truncate">{detailsList.join(' • ')}</span>}
+                              <span className="block text-[#F5F5F7] text-[15px] font-bold break-words leading-snug">{p.name}</span>
+                              {detailsList.length > 0 && <span className="block text-[#8E8E93] text-[12px] mt-1 font-medium break-words leading-snug">{detailsList.join(' • ')}</span>}
                             </div>
                           </div>
                         );
@@ -4851,7 +4913,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                     <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
                       <div className="flex-1 flex flex-col items-center gap-1.5">
                         <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain" alt="" />
-                        <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{h.short_name || h.name}</span>
+                        <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{h.short_name || h.name}</span>
                       </div>
                       <div className="w-[120px] flex flex-col items-center justify-center">
                         <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase truncate max-w-[100px]">{getShortLeagueName(m.league)}</span>
@@ -4859,7 +4921,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                       </div>
                       <div className="flex-1 flex flex-col items-center gap-1.5">
                         <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain" alt="" />
-                        <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{a.short_name || a.name}</span>
+                        <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{a.short_name || a.name}</span>
                       </div>
                     </div>
                   );
@@ -5146,7 +5208,7 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
                         <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center mr-4 shrink-0" style={{ backgroundColor: `${g.color}20` }}>
                           <span className="text-[14px] font-extrabold" style={{ color: g.color }}>{p.jersey || '#'}</span>
                         </div>
-                        <span className="text-[#F5F5F7] text-[15px] font-bold truncate">{p.displayName}</span>
+                        <span className="text-[#F5F5F7] text-[15px] font-bold break-words leading-snug">{p.displayName}</span>
                       </div>
                     ))}
                   </div>
@@ -5879,7 +5941,7 @@ function App() {
                     <div
                       key={m.id}
                       className="schedule-card-item"
-                      style={{ animationDelay: `${Math.min(idx, 8) * 38}ms` }}
+                      style={{ animationDelay: `${90 + Math.min(idx, 8) * 45}ms` }}
                     >
                       <SoccerMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                     </div>
@@ -5892,7 +5954,7 @@ function App() {
                   <div
                     key={m.match_id}
                     className="schedule-card-item"
-                    style={{ animationDelay: `${Math.min(idx, 8) * 38}ms` }}
+                    style={{ animationDelay: `${90 + Math.min(idx, 8) * 45}ms` }}
                   >
                     <CricketMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                   </div>
