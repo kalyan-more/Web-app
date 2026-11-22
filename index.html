@@ -151,22 +151,26 @@
     @keyframes iosOpeningIcon {
       0% {
         opacity: 0;
-        transform: scale3d(0.84, 0.84, 1);
+        transform: scale3d(0.82, 0.82, 1);
       }
-      55% {
+      45% {
         opacity: 1;
-        transform: scale3d(1.02, 1.02, 1);
+        transform: scale3d(1.015, 1.015, 1);
       }
-      100% {
+      75% {
         opacity: 1;
         transform: scale3d(1, 1, 1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale3d(1.04, 1.04, 1);
       }
     }
 
     @keyframes iosOpeningOverlayFade {
       0% { opacity: 1; }
-      62% { opacity: 1; }
-      100% { opacity: 0; visibility: hidden; }
+      68% { opacity: 1; }
+      100% { opacity: 0; }
     }
 
     @keyframes whitePillBounce {
@@ -181,12 +185,12 @@
     }
 
     .ios-opening-overlay {
-      animation: iosOpeningOverlayFade 1.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      animation: iosOpeningOverlayFade 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: opacity;
     }
 
     .ios-opening-icon {
-      animation: iosOpeningIcon 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningIcon 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -215,10 +219,10 @@
       will-change: transform, opacity;
     }
 
-    @keyframes scheduleLoadSmooth {
+    @keyframes scheduleLoadNext {
       0% {
         opacity: 0;
-        transform: translate3d(0, 12px, 0) scale3d(0.992, 0.992, 1);
+        transform: translate3d(18px, 6px, 0) scale3d(0.992, 0.992, 1);
       }
       100% {
         opacity: 1;
@@ -226,8 +230,41 @@
       }
     }
 
-    .schedule-load-smooth {
-      animation: scheduleLoadSmooth 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    @keyframes scheduleLoadPrev {
+      0% {
+        opacity: 0;
+        transform: translate3d(-18px, 6px, 0) scale3d(0.992, 0.992, 1);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+      }
+    }
+
+    @keyframes scheduleCardGlide {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .schedule-load-next {
+      animation: scheduleLoadNext 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .schedule-load-prev {
+      animation: scheduleLoadPrev 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .schedule-card-item {
+      opacity: 0;
+      animation: scheduleCardGlide 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -271,6 +308,9 @@
   </style>
 </head>
 <body class="no-scrollbar">
+  <div id="sideline-opening" class="fixed inset-0 z-[100] bg-[#000000] flex items-center justify-center pointer-events-none ios-opening-overlay">
+    <img src="./apple-touch-icon.png" onerror="this.onerror=null;this.src='./icon-512.png';" alt="Sideline" class="w-[88px] h-[88px] rounded-[22px] object-contain ios-opening-icon" />
+  </div>
   <div id="root" style="min-height:100vh;background:#000000;"></div>
 
   <script>
@@ -5156,6 +5196,16 @@ function App() {
   const [activeSport, setActiveSport] = useState('soccer');
   const [view, setView] = useState('scores');
   const [date, setDate] = useState(() => new Date());
+  const [dateDir, setDateDir] = useState(1);
+
+  const handleSelectDateSmooth = useCallback((nextDate) => {
+    setDate(prev => {
+      const prevDay = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate()).getTime();
+      const nextDay = new Date(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate()).getTime();
+      if (nextDay !== prevDay) setDateDir(nextDay > prevDay ? 1 : -1);
+      return nextDate;
+    });
+  }, []);
   const [, startTransition] = useTransition();
 
   const [soccerMatches, setSoccerMatches] = useState([]);
@@ -5164,12 +5214,15 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
-  const [showOpeningAnim, setShowOpeningAnim] = useState(true);
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowOpeningAnim(false), 1250);
+    const el = document.getElementById('sideline-opening');
+    if (!el) return;
+    const timer = setTimeout(() => {
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -5258,6 +5311,7 @@ function App() {
   }, []);
 
   const stepScoreDate = useCallback((deltaDays) => {
+    setDateDir(deltaDays >= 0 ? 1 : -1);
     setDate(prev => {
       const next = new Date(prev);
       next.setDate(next.getDate() + deltaDays);
@@ -5734,16 +5788,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
-      {showOpeningAnim && (
-        <div className="fixed inset-0 z-[100] bg-[#000000] flex items-center justify-center pointer-events-none ios-opening-overlay">
-          <img
-            src="./apple-touch-icon.png"
-            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = './icon-512.png'; }}
-            alt="Sideline"
-            className="w-[88px] h-[88px] rounded-[22px] object-contain ios-opening-icon"
-          />
-        </div>
-      )}
+
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes bounceBar { 0% { transform: translate3d(-12px, 0, 0); } 50% { transform: translate3d(12px, 0, 0); } 100% { transform: translate3d(-12px, 0, 0); } }
         .animate-bounce-bar { animation: bounceBar 1.75s cubic-bezier(0.37, 0, 0.63, 1) infinite; will-change: transform; }
@@ -5819,10 +5864,10 @@ function App() {
 
         {view === 'scores' && (
           <div className="flex-1 flex flex-col">
-            <DateSelector dates={dates} selectedDate={date} onSelectDate={setDate} />
+            <DateSelector dates={dates} selectedDate={date} onSelectDate={handleSelectDateSmooth} />
             <div
               key={`${activeSport}-${date.toISOString().split('T')[0]}`}
-              className="px-4 pb-36 schedule-load-smooth"
+              className={`px-4 pb-36 ${dateDir >= 0 ? 'schedule-load-next' : 'schedule-load-prev'}`}
             >
               {loading && (activeSport === 'soccer' ? soccerMatches.length === 0 : cricketMatches.length === 0) ? (
                 <WhitePillLoader className="py-20" />
@@ -5830,15 +5875,27 @@ function App() {
                 soccerMatches.length === 0 ? (
                   <EmptyState icon={CircleDashed} title="No Broadcasts" message="There are no scheduled games for this date." />
                 ) : (
-                  soccerMatches.map(m => (
-                    <SoccerMatchCard key={m.id} match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
+                  soccerMatches.map((m, idx) => (
+                    <div
+                      key={m.id}
+                      className="schedule-card-item"
+                      style={{ animationDelay: `${Math.min(idx, 8) * 38}ms` }}
+                    >
+                      <SoccerMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
+                    </div>
                   ))
                 )
               ) : cricketMatches.length === 0 ? (
                 <EmptyState icon={Activity} title="No Broadcasts" message="No cricket fixtures found for this date." />
               ) : (
-                cricketMatches.map(m => (
-                  <CricketMatchCard key={m.match_id} match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
+                cricketMatches.map((m, idx) => (
+                  <div
+                    key={m.match_id}
+                    className="schedule-card-item"
+                    style={{ animationDelay: `${Math.min(idx, 8) * 38}ms` }}
+                  >
+                    <CricketMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
+                  </div>
                 ))
               )}
             </div>
