@@ -2256,11 +2256,13 @@ const getPlayerRoleMeta = (player) => {
   const posObj = player?.position || {};
   const subObj = player?.subPosition || {};
   const athPos = player?.athlete?.position || {};
+  const defPos = player?.athlete?.defaultPosition || {};
 
   const abbr = String(
     subObj.abbreviation ||
     posObj.abbreviation ||
     athPos.abbreviation ||
+    defPos.abbreviation ||
     ''
   ).toUpperCase().trim();
 
@@ -2269,12 +2271,14 @@ const getPlayerRoleMeta = (player) => {
     posObj.name ||
     posObj.displayName ||
     athPos.name ||
+    defPos.name ||
     ''
   ).toUpperCase().trim();
 
   const ptype = String(
     posObj.type ||
     athPos.type ||
+    defPos.type ||
     ''
   ).toLowerCase().trim();
 
@@ -2283,8 +2287,9 @@ const getPlayerRoleMeta = (player) => {
 };
 
 const getPlayerZone = (player) => {
-  const { abbr, pname, ptype, combined } = getPlayerRoleMeta(player);
-  if (abbr === 'GK' || abbr === 'G' || combined.includes('GOALKEEPER') || ptype.includes('goal')) return 0;
+  const { abbr, ptype, combined } = getPlayerRoleMeta(player);
+  const fp = parseInt(player?.formationPlace, 10);
+  if (abbr === 'GK' || abbr === 'G' || combined.includes('GOALKEEPER') || ptype.includes('goal') || fp === 1) return 0;
   if (
     abbr === 'D' || abbr === 'DEF' || abbr === 'CB' || abbr === 'LB' || abbr === 'RB' ||
     abbr === 'LWB' || abbr === 'RWB' || abbr === 'SW' || abbr === 'LCB' || abbr === 'RCB' ||
@@ -2304,73 +2309,70 @@ const getPlayerZone = (player) => {
   return 2;
 };
 
-/**
- * Scores how well a specific player fits a specific row (`rowIndex` out of `totalLines` rows)
- * in a team's formation (higher = better fit).
- */
 const scorePlayerForRow = (player, rowIndex, totalLines, formationRows) => {
-  const { abbr, pname, combined } = getPlayerRoleMeta(player);
+  const { abbr, combined } = getPlayerRoleMeta(player);
   const zone = getPlayerZone(player);
 
   if (rowIndex === 0) {
-    return zone === 0 ? 100 : -100;
+    return zone === 0 ? 200 : -200;
   }
-  if (zone === 0) return -100;
+  if (zone === 0) return -200;
 
-  // Backline is always rowIndex === 1
+  // Backline (rowIndex === 1)
   if (rowIndex === 1) {
-    if (zone === 1) return 90;
-    if (abbr.includes('DM') || abbr.includes('CDM')) return 25;
-    return -40;
+    if (zone === 1) return 120;
+    if (abbr === 'CDM' || abbr === 'DM' || combined.includes('DEFENSIVE MID')) return 20;
+    return -80;
   }
 
-  // Final row is the most advanced attacking line
+  const isStrikerRole = abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD');
+  const isHoldingRole = abbr === 'CDM' || abbr === 'DM' || abbr === 'LDM' || abbr === 'RDM' || combined.includes('DEFENSIVE MID');
+  const isAttackingMidRole = abbr === 'CAM' || abbr === 'AM' || abbr === 'LAM' || abbr === 'RAM' || combined.includes('ATTACKING MID');
+  const isWingerRole = abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' || combined.includes('WING') || abbr === 'LM' || abbr === 'RM';
+
+  // Final attacking line (rowIndex === totalLines - 1)
   if (rowIndex === totalLines - 1) {
-    let score = 0;
-    if (abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD')) score += 95;
-    else if (zone === 3) score += 75;
-    else if (abbr === 'CAM' || abbr === 'AM' || combined.includes('ATTACKING MID')) score += 45;
-    else if (zone === 2) score += 10;
-    else score -= 50;
-    return score;
+    if (isStrikerRole) return 140;
+    if (zone === 3 && !isWingerRole) return 110;
+    if (isWingerRole) return 75;
+    if (isAttackingMidRole) return 55;
+    if (zone === 2 && !isHoldingRole) return 25;
+    return -70;
   }
 
-  // Intermediate lines (e.g. for 4-2-3-1: rowIndex 2 is double-pivot/CMs, rowIndex 3 is CAM/wingers)
-  const midRowCount = Math.max(1, totalLines - 3);
-  const midProgress = (rowIndex - 1) / (totalLines - 2); // 0..1 from defensive-mid toward attacking-mid
-
-  const isHolding = abbr === 'CDM' || abbr === 'DM' || abbr === 'LDM' || abbr === 'RDM' || combined.includes('DEFENSIVE MID');
-  const isAttackingMid = abbr === 'CAM' || abbr === 'AM' || abbr === 'LAM' || abbr === 'RAM' || combined.includes('ATTACKING MID');
-  const isWinger = abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' || combined.includes('WING');
-
-  if (midRowCount >= 2 && formationRows.length === 5 && rowIndex === 2) {
-    // 4-2-3-1 holding pivot row
-    if (isHolding) return 95;
-    if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 80;
-    if (zone === 2 && !isAttackingMid) return 60;
-    if (zone === 1) return 20;
-    if (isAttackingMid) return 15;
-    if (isWinger || zone === 3) return -25;
+  // 4-2-3-1 specific handling (totalLines === 5: [1, 4, 2, 3, 1])
+  if (totalLines === 5 && formationRows[2] === 2 && formationRows[3] === 3) {
+    if (rowIndex === 2) {
+      // Double pivot: prefer holding/central mids; penalize pure strikers & wide wingers
+      if (isHoldingRole) return 140;
+      if (abbr === 'CM' || abbr === 'LCM' || abbr === 'RCM') return 120;
+      if (zone === 2 && !isAttackingMidRole && !isWingerRole) return 95;
+      if (isAttackingMidRole) return 30;
+      if (isWingerRole) return -25;
+      if (isStrikerRole) return -60;
+      return 10;
+    }
+    if (rowIndex === 3) {
+      // Attacking midfield / wide line of 3: prefer CAM, wingers, wide mids; penalize pure ST and pure CDM
+      if (isAttackingMidRole) return 140;
+      if (isWingerRole) return 130;
+      if (zone === 3 && !isStrikerRole) return 115;
+      if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 65;
+      if (isHoldingRole) return -15;
+      if (isStrikerRole) return -35;
+      return 20;
+    }
   }
 
-  if (midRowCount >= 2 && formationRows.length === 5 && rowIndex === 3) {
-    // 4-2-3-1 attacking midfield / wide creators row
-    if (isAttackingMid) return 95;
-    if (isWinger || abbr === 'LM' || abbr === 'RM') return 82;
-    if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 55;
-    if (zone === 2) return 50;
-    if (zone === 3 && abbr !== 'ST' && abbr !== 'CF') return 45;
-    if (isHolding) return 10;
-    return -20;
-  }
-
-  // General intermediate row scoring
+  // General intermediate rows (e.g. 4-3-3 where rowIndex === 2 is midfield of 3)
+  const midProgress = totalLines > 2 ? (rowIndex - 1) / (totalLines - 2) : 0.5;
   if (zone === 2) {
-    if (midProgress < 0.45 && isHolding) return 90;
-    if (midProgress >= 0.55 && (isAttackingMid || isWinger)) return 90;
-    return 70;
+    if (midProgress < 0.45 && isHoldingRole) return 130;
+    if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) return 130;
+    return 100;
   }
-  if (zone === 3 && !combined.includes('STRIKER')) return 55;
+  if (zone === 3 && !isStrikerRole) return 85;
+  if (isStrikerRole) return -30;
   if (zone === 1) return 15;
   return 0;
 };
@@ -2396,30 +2398,62 @@ const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
 };
 
 /**
- * Optimal row assignment for 11 starters across `formationRows` (e.g. [1, 4, 2, 3, 1]):
- * Picks the highest-scoring available player for each row slot so every role lands in its true line.
+ * Globally assigns 11 starters to `formationRows` by finding the highest-affinity
+ * (player, rowIndex) slot matches across all rows rather than greedily draining early rows.
  */
 const assignPlayersToFormationRows = (starters, formationRows) => {
-  const remaining = [...starters];
-  const assignedRows = formationRows.map(() => []);
   const totalLines = formationRows.length;
+  const assignedRows = formationRows.map(() => []);
+  const usedPlayerIndices = new Set();
 
-  // Fill row 0 (GK) first, then rows 1..totalLines-1
-  const rowOrder = [0, ...Array.from({ length: totalLines - 1 }, (_, k) => k + 1)];
+  // Build individual slot list: [{ rowIndex, slotScore }]
+  const slots = [];
+  formationRows.forEach((count, rowIndex) => {
+    for (let s = 0; s < count; s++) {
+      slots.push({ rowIndex });
+    }
+  });
 
-  for (const rIdx of rowOrder) {
-    const slotCount = formationRows[rIdx];
-    for (let s = 0; s < slotCount && remaining.length > 0; s++) {
-      let bestIdx = 0;
-      let bestScore = -Infinity;
-      for (let i = 0; i < remaining.length; i++) {
-        const sc = scorePlayerForRow(remaining[i], rIdx, totalLines, formationRows);
-        if (sc > bestScore) {
-          bestScore = sc;
-          bestIdx = i;
-        }
+  // For each slot, rank how strongly each player prefers THIS row over OTHER rows
+  const slotCandidates = slots.map((slot) => {
+    const scored = starters.map((p, pIdx) => {
+      const ownScore = scorePlayerForRow(p, slot.rowIndex, totalLines, formationRows);
+      let maxOtherScore = -Infinity;
+      for (let r = 0; r < totalLines; r++) {
+        if (r === slot.rowIndex || formationRows[r] === 0) continue;
+        const other = scorePlayerForRow(p, r, totalLines, formationRows);
+        if (other > maxOtherScore) maxOtherScore = other;
       }
-      assignedRows[rIdx].push(remaining.splice(bestIdx, 1)[0]);
+      const specificityAdvantage = isFinite(maxOtherScore) ? (ownScore - maxOtherScore) : ownScore;
+      return { pIdx, ownScore, specificityAdvantage };
+    });
+    return { rowIndex: slot.rowIndex, scored };
+  });
+
+  // Sort slots so the most constrained/specific rows (like GK row 0 and Striker row totalLines-1) match first
+  const orderedSlots = [...slotCandidates].sort((a, b) => {
+    if (a.rowIndex === 0) return -1;
+    if (b.rowIndex === 0) return 1;
+    if (a.rowIndex === totalLines - 1) return -1;
+    if (b.rowIndex === totalLines - 1) return 1;
+    return a.rowIndex - b.rowIndex;
+  });
+
+  for (const slot of orderedSlots) {
+    let bestCandidate = null;
+    let bestCombined = -Infinity;
+    for (const cand of slot.scored) {
+      if (usedPlayerIndices.has(cand.pIdx)) continue;
+      // Weight direct row fit highest, with specificity advantage breaking ties between generic vs specific roles
+      const combined = cand.ownScore * 2 + cand.specificityAdvantage;
+      if (combined > bestCombined) {
+        bestCombined = combined;
+        bestCandidate = cand;
+      }
+    }
+    if (bestCandidate) {
+      usedPlayerIndices.add(bestCandidate.pIdx);
+      assignedRows[slot.rowIndex].push(starters[bestCandidate.pIdx]);
     }
   }
 
@@ -2458,15 +2492,13 @@ const useFootballFormations = (summary, width, height, isHome) =>
         return getLateralFlankScore(a, idxA, rowPlayers.length) - getLateralFlankScore(b, idxB, rowPlayers.length);
       });
 
-      const orientedRow = isHome ? sortedRow : [...sortedRow].reverse();
-
       const progress = rowIndex / numRows;
       const y = isHome
         ? (14 + usableHeight) - (progress * usableHeight)
         : 14 + (progress * usableHeight);
 
-      return orientedRow.map((p, i) => {
-        const x = ((i + 1) / (orientedRow.length + 1)) * width;
+      return sortedRow.map((p, i) => {
+        const x = ((i + 1) / (sortedRow.length + 1)) * width;
         return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
