@@ -2252,147 +2252,68 @@ const resolveTeamKitColors = (summary, comp, fallbackHex = "0A84FF") => {
   return { primary: `#${hex}`, secondary: '#FFFFFF' };
 };
 
-// Maps any player position abbreviation/name to { xNorm (0.14..0.86), depthNorm (0.06 own goal .. 0.92 halfway) }
-const LIVE_MATCH_ROLE_HINTS = {
-  // Liverpool XI (4-2-3-1)
-  "alisson": { xNorm: 0.50, depthNorm: 0.06, lineIdx: 0 },
-  "a. becker": { xNorm: 0.50, depthNorm: 0.06, lineIdx: 0 },
-  "r. araujo": { xNorm: 0.16, depthNorm: 0.27, lineIdx: 1 },
-  "ronald araujo": { xNorm: 0.16, depthNorm: 0.27, lineIdx: 1 },
-  "j. jacquet": { xNorm: 0.38, depthNorm: 0.27, lineIdx: 1 },
-  "jeremy jacquet": { xNorm: 0.38, depthNorm: 0.27, lineIdx: 1 },
-  "v. van dijk": { xNorm: 0.62, depthNorm: 0.27, lineIdx: 1 },
-  "virgil van dijk": { xNorm: 0.62, depthNorm: 0.27, lineIdx: 1 },
-  "m. kerkez": { xNorm: 0.84, depthNorm: 0.27, lineIdx: 1 },
-  "milos kerkez": { xNorm: 0.84, depthNorm: 0.27, lineIdx: 1 },
-  "d. szoboszlai": { xNorm: 0.34, depthNorm: 0.48, lineIdx: 2 },
-  "dominik szoboszlai": { xNorm: 0.34, depthNorm: 0.48, lineIdx: 2 },
-  "a. mac allister": { xNorm: 0.66, depthNorm: 0.48, lineIdx: 2 },
-  "alexis mac allister": { xNorm: 0.66, depthNorm: 0.48, lineIdx: 2 },
-  "r. ngumoha": { xNorm: 0.20, depthNorm: 0.69, lineIdx: 3 },
-  "rio ngumoha": { xNorm: 0.20, depthNorm: 0.69, lineIdx: 3 },
-  "f. wirtz": { xNorm: 0.50, depthNorm: 0.69, lineIdx: 3 },
-  "florian wirtz": { xNorm: 0.50, depthNorm: 0.69, lineIdx: 3 },
-  "b. barcola": { xNorm: 0.80, depthNorm: 0.69, lineIdx: 3 },
-  "bradley barcola": { xNorm: 0.80, depthNorm: 0.69, lineIdx: 3 },
-  "a. isak": { xNorm: 0.50, depthNorm: 0.88, lineIdx: 4 },
-  "alexander isak": { xNorm: 0.50, depthNorm: 0.88, lineIdx: 4 },
-
-  // Man Utd XI
-  "s. lammens": { xNorm: 0.50, depthNorm: 0.06, lineIdx: 0 },
-  "senne lammens": { xNorm: 0.50, depthNorm: 0.06, lineIdx: 0 },
-  "l. yoro": { xNorm: 0.16, depthNorm: 0.27, lineIdx: 1 },
-  "leny yoro": { xNorm: 0.16, depthNorm: 0.27, lineIdx: 1 },
-  "m. de ligt": { xNorm: 0.38, depthNorm: 0.27, lineIdx: 1 },
-  "matthijs de ligt": { xNorm: 0.38, depthNorm: 0.27, lineIdx: 1 },
-  "l. martinez": { xNorm: 0.62, depthNorm: 0.27, lineIdx: 1 },
-  "lisandro martinez": { xNorm: 0.62, depthNorm: 0.27, lineIdx: 1 },
-  "d. dalot": { xNorm: 0.84, depthNorm: 0.27, lineIdx: 1 },
-  "diogo dalot": { xNorm: 0.84, depthNorm: 0.27, lineIdx: 1 },
-  "y. tielemans": { xNorm: 0.34, depthNorm: 0.48, lineIdx: 2 },
-  "youri tielemans": { xNorm: 0.34, depthNorm: 0.48, lineIdx: 2 },
-  "k. mainoo": { xNorm: 0.66, depthNorm: 0.48, lineIdx: 2 },
-  "kobbie mainoo": { xNorm: 0.66, depthNorm: 0.48, lineIdx: 2 },
-  "b. mbeumo": { xNorm: 0.20, depthNorm: 0.69, lineIdx: 3 },
-  "bryan mbeumo": { xNorm: 0.20, depthNorm: 0.69, lineIdx: 3 },
-  "b. fernandes": { xNorm: 0.50, depthNorm: 0.69, lineIdx: 3 },
-  "bruno fernandes": { xNorm: 0.50, depthNorm: 0.69, lineIdx: 3 },
-  "p. dorgu": { xNorm: 0.80, depthNorm: 0.69, lineIdx: 3 },
-  "patrick dorgu": { xNorm: 0.80, depthNorm: 0.69, lineIdx: 3 },
-  "m. cunha": { xNorm: 0.50, depthNorm: 0.88, lineIdx: 4 },
-  "matheus cunha": { xNorm: 0.50, depthNorm: 0.88, lineIdx: 4 }
-};
-
-const mapPositionToPitchCoords = (player, formationLines = [4, 3, 3]) => {
-  const fullName = String(player?.athlete?.displayName || player?.athlete?.fullName || '').toLowerCase().trim();
-  const shortName = formatFootballShortName(player?.athlete?.displayName || '').toLowerCase().trim();
-  if (LIVE_MATCH_ROLE_HINTS[fullName]) return LIVE_MATCH_ROLE_HINTS[fullName];
-  if (LIVE_MATCH_ROLE_HINTS[shortName]) return LIVE_MATCH_ROLE_HINTS[shortName];
-
+const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
   const posAbbr = String(
     player?.position?.abbreviation ||
     player?.athlete?.position?.abbreviation ||
-    player?.subPosition?.abbreviation ||
-    ''
-  ).toUpperCase().trim();
-  const posName = String(
     player?.position?.name ||
     player?.athlete?.position?.name ||
     ''
   ).toUpperCase().trim();
 
-  // Goalkeeper
-  if (posAbbr === 'GK' || posAbbr === 'G' || posName.includes('GOALKEEPER')) {
-    return { xNorm: 0.5, depthNorm: 0.06, lineIdx: 0 };
+  // Standard left-to-right tactical flank score (-50 = far left flank, 0 = central, +50 = far right flank)
+  if (posAbbr === 'LB' || posAbbr === 'LWB' || posAbbr === 'L') return -45;
+  if (posAbbr === 'LW' || posAbbr === 'LF') return -40;
+  if (posAbbr === 'LM') return -35;
+  if (posAbbr === 'LAM') return -25;
+  if (posAbbr === 'LCB' || posAbbr === 'LD') return -15;
+  if (posAbbr === 'LDM' || posAbbr === 'LCM') return -12;
+  if (posAbbr === 'RDM' || posAbbr === 'RCM') return 12;
+  if (posAbbr === 'RCB' || posAbbr === 'RD') return 15;
+  if (posAbbr === 'RAM') return 25;
+  if (posAbbr === 'RM') return 35;
+  if (posAbbr === 'RW' || posAbbr === 'RF') return 40;
+  if (posAbbr === 'RB' || posAbbr === 'RWB' || posAbbr === 'R') return 45;
+
+  // ESPN formationPlace conventions for 4-back & wide slots (2=RB, 3=LB, 4=RCB, 5=LCB, 7=RW, 11=LW)
+  const fp = parseInt(player?.formationPlace, 10);
+  if (!isNaN(fp) && fp > 0 && rowCount >= 3) {
+    if (fp === 3 || fp === 11) return -32;
+    if (fp === 5) return -12;
+    if (fp === 4) return 12;
+    if (fp === 2 || fp === 7) return 32;
   }
 
-  const numLines = Math.max(1, formationLines.length);
-  const depthForOutfieldLine = (lineZeroBased) => {
-    if (numLines === 1) return 0.55;
-    // lineZeroBased = 0 is defenders closest to GK (~0.27); last line is strikers closest to halfway (~0.88)
-    const t = lineZeroBased / (numLines - 1);
-    return 0.27 + t * 0.61;
-  };
+  // Preserve original relative order for central players (CB, CDM, CM, CAM, ST)
+  return (fallbackIndex - (rowCount - 1) / 2) * 4;
+};
 
-  // Explicit lateral & depth slots for exact real-life positioning
-  if (posAbbr === 'LB' || posAbbr === 'LWB' || posName.includes('LEFT BACK') || posName.includes('LEFT WING-BACK')) {
-    return { xNorm: 0.15, depthNorm: depthForOutfieldLine(0), lineIdx: 1 };
-  }
-  if (posAbbr === 'RB' || posAbbr === 'RWB' || posName.includes('RIGHT BACK') || posName.includes('RIGHT WING-BACK')) {
-    return { xNorm: 0.85, depthNorm: depthForOutfieldLine(0), lineIdx: 1 };
-  }
-  if (posAbbr === 'LCB' || posName.includes('LEFT CENTER BACK') || posName.includes('LEFT CENTRE BACK')) {
-    return { xNorm: 0.36, depthNorm: depthForOutfieldLine(0), lineIdx: 1 };
-  }
-  if (posAbbr === 'RCB' || posName.includes('RIGHT CENTER BACK') || posName.includes('RIGHT CENTRE BACK')) {
-    return { xNorm: 0.64, depthNorm: depthForOutfieldLine(0), lineIdx: 1 };
-  }
-  if (posAbbr === 'CB' || posAbbr === 'D' || posAbbr === 'DEF' || posName.includes('DEFENDER') || posName.includes('CENTER BACK') || posName.includes('CENTRE BACK')) {
-    return { xNorm: 0.5, depthNorm: depthForOutfieldLine(0), lineIdx: 1 };
-  }
+const getFallbackDepthScore = (player, originalIdx) => {
+  const posType = String(player?.position?.type || player?.athlete?.position?.type || '').toLowerCase();
+  const posAbbr = String(
+    player?.position?.abbreviation ||
+    player?.athlete?.position?.abbreviation ||
+    player?.position?.name ||
+    player?.athlete?.position?.name ||
+    ''
+  ).toUpperCase().trim();
 
-  // Wingers / Wide Attackers
-  if (posAbbr === 'LW' || posAbbr === 'LF' || posName.includes('LEFT WING')) {
-    const fwdLineIdx = numLines >= 3 ? numLines - 2 : numLines - 1;
-    return { xNorm: 0.16, depthNorm: depthForOutfieldLine(fwdLineIdx), lineIdx: 3 };
-  }
-  if (posAbbr === 'RW' || posAbbr === 'RF' || posName.includes('RIGHT WING')) {
-    const fwdLineIdx = numLines >= 3 ? numLines - 2 : numLines - 1;
-    return { xNorm: 0.84, depthNorm: depthForOutfieldLine(fwdLineIdx), lineIdx: 3 };
-  }
-
-  // Centre Forward / Striker
-  if (posAbbr === 'ST' || posAbbr === 'CF' || posAbbr === 'F' || posAbbr === 'FWD' || posName.includes('STRIKER') || posName.includes('FORWARD')) {
-    return { xNorm: 0.5, depthNorm: depthForOutfieldLine(numLines - 1), lineIdx: 4 };
-  }
-
-  // Attacking Midfield / CAM
-  if (posAbbr === 'CAM' || posAbbr === 'AM' || posName.includes('ATTACKING MID')) {
-    const amLineIdx = numLines >= 4 ? numLines - 2 : Math.max(1, numLines - 1);
-    return { xNorm: 0.5, depthNorm: depthForOutfieldLine(amLineIdx), lineIdx: 3 };
-  }
-  if (posAbbr === 'LAM' || posAbbr === 'LM' || posName.includes('LEFT MID')) {
-    const midLineIdx = numLines >= 4 ? 1 : Math.max(1, Math.floor(numLines / 2));
-    return { xNorm: 0.22, depthNorm: depthForOutfieldLine(midLineIdx), lineIdx: 2 };
-  }
-  if (posAbbr === 'RAM' || posAbbr === 'RM' || posName.includes('RIGHT MID')) {
-    const midLineIdx = numLines >= 4 ? 1 : Math.max(1, Math.floor(numLines / 2));
-    return { xNorm: 0.78, depthNorm: depthForOutfieldLine(midLineIdx), lineIdx: 2 };
-  }
-
-  // Defensive / Central Midfielders
-  if (posAbbr === 'CDM' || posAbbr === 'LDM' || posName.includes('DEFENSIVE MID')) {
-    const dmLineIdx = numLines >= 4 ? 1 : Math.max(1, Math.floor((numLines - 1) / 2));
-    return { xNorm: 0.36, depthNorm: depthForOutfieldLine(dmLineIdx), lineIdx: 2 };
-  }
-  if (posAbbr === 'RDM') {
-    const dmLineIdx = numLines >= 4 ? 1 : Math.max(1, Math.floor((numLines - 1) / 2));
-    return { xNorm: 0.64, depthNorm: depthForOutfieldLine(dmLineIdx), lineIdx: 2 };
-  }
-
-  // Generic CM / M / MID
-  const cmLineIdx = numLines >= 4 ? 1 : Math.max(1, Math.floor((numLines - 1) / 2));
-  return { xNorm: 0.5, depthNorm: depthForOutfieldLine(cmLineIdx), lineIdx: 2 };
+  if (posAbbr === 'GK' || posAbbr === 'G' || posType.includes('goal')) return 0 + originalIdx * 0.01;
+  if (
+    posAbbr.includes('CB') || posAbbr.includes('LB') || posAbbr.includes('RB') ||
+    posAbbr.includes('LWB') || posAbbr.includes('RWB') || posAbbr === 'D' ||
+    posAbbr === 'DEF' || posAbbr.includes('BACK') || posType.includes('defen')
+  ) return 10 + originalIdx * 0.01;
+  if (posAbbr.includes('CDM') || posAbbr.includes('LDM') || posAbbr.includes('RDM') || posAbbr === 'DM') return 20 + originalIdx * 0.01;
+  if (posAbbr === 'CM' || posAbbr === 'LM' || posAbbr === 'RM' || posAbbr === 'M' || posAbbr === 'MID' || posType.includes('mid')) return 25 + originalIdx * 0.01;
+  if (posAbbr.includes('CAM') || posAbbr.includes('LAM') || posAbbr.includes('RAM') || posAbbr === 'AM') return 30 + originalIdx * 0.01;
+  if (posAbbr.includes('LW') || posAbbr.includes('RW') || posAbbr.includes('LF') || posAbbr.includes('RF')) return 35 + originalIdx * 0.01;
+  if (
+    posAbbr.includes('ST') || posAbbr.includes('CF') || posAbbr === 'F' ||
+    posAbbr === 'FWD' || posAbbr.includes('STRIKER') || posAbbr.includes('FORWARD') ||
+    posType.includes('forw') || posType.includes('striker')
+  ) return 40 + originalIdx * 0.01;
+  return 25 + originalIdx * 0.01;
 };
 
 const useFootballFormations = (summary, width, height, isHome) =>
@@ -2402,57 +2323,58 @@ const useFootballFormations = (summary, width, height, isHome) =>
     const teamRoster = summary.rosters[teamIndex];
     if (!teamRoster) return [];
 
-    const formationLines = teamRoster.formation?.split("-").map(Number).filter(n => !isNaN(n) && n > 0) || [4, 3, 3];
-    const starters = (teamRoster.roster?.filter(p => p.starter) || teamRoster.roster?.slice(0, 11) || []).slice(0, 11);
+    const formation = teamRoster.formation?.split("-").map(Number).filter(n => !isNaN(n) && n > 0) || [4, 3, 3];
+    const rawRoster = teamRoster.roster || [];
+    const startersPool = rawRoster.filter(p => p.starter);
+    const starters = (startersPool.length >= 11 ? startersPool : rawRoster).slice(0, 11);
 
-    // First assign each starter a tactical coordinate based on position & formation
-    const mapped = starters.map((p, idx) => {
-      const coords = mapPositionToPitchCoords(p, formationLines);
-      return {
-        id: p.athlete?.id || `p_${teamIndex}_${idx}`,
-        player: p,
-        xNorm: coords.xNorm,
-        depthNorm: coords.depthNorm,
-        lineIdx: coords.lineIdx
-      };
-    });
+    // Check if ESPN provides valid numeric formationPlace (1..11) on starters
+    const validPlaces = starters
+      .map(p => parseInt(p?.formationPlace, 10))
+      .filter(n => !isNaN(n) && n >= 1 && n <= 11);
+    const hasReliableFormationPlace = new Set(validPlaces).size >= 9;
 
-    // Group players that land on similar depth (within 0.09) so lateral spacing distributes them cleanly without overlap
-    const depthBuckets = [];
-    mapped.forEach(item => {
-      let bucket = depthBuckets.find(b => Math.abs(b.depthNorm - item.depthNorm) < 0.09 && item.lineIdx !== 0);
-      if (item.lineIdx === 0) {
-        depthBuckets.push({ depthNorm: item.depthNorm, items: [item] });
-      } else if (bucket) {
-        bucket.items.push(item);
-      } else {
-        depthBuckets.push({ depthNorm: item.depthNorm, items: [item] });
+    const orderedStarters = [...starters].sort((a, b) => {
+      if (hasReliableFormationPlace) {
+        const fpA = parseInt(a?.formationPlace, 10) || 99;
+        const fpB = parseInt(b?.formationPlace, 10) || 99;
+        if (fpA !== fpB) return fpA - fpB;
       }
+      const idxA = starters.indexOf(a);
+      const idxB = starters.indexOf(b);
+      return getFallbackDepthScore(a, idxA) - getFallbackDepthScore(b, idxB);
     });
 
-    const positioned = [];
-    depthBuckets.forEach(bucket => {
-      const sorted = [...bucket.items].sort((a, b) => a.xNorm - b.xNorm);
-      const n = sorted.length;
-      sorted.forEach((item, i) => {
-        const pName = String(item.player?.athlete?.displayName || '').toLowerCase().trim();
-        const pShort = formatFootballShortName(item.player?.athlete?.displayName || '').toLowerCase().trim();
-        const hasExactHint = Boolean(LIVE_MATCH_ROLE_HINTS[pName] || LIVE_MATCH_ROLE_HINTS[pShort]);
-        const evenXNorm = (i + 1) / (n + 1);
-        const blendedXNorm = n === 1
-          ? item.xNorm
-          : hasExactHint
-            ? (item.xNorm * 0.85 + evenXNorm * 0.15)
-            : (item.xNorm * 0.55 + evenXNorm * 0.45);
-        const x = blendedXNorm * width;
-        const y = isHome
-          ? (height - 46) - item.depthNorm * (height - 68)
-          : 14 + item.depthNorm * (height - 68);
-        positioned.push({ id: item.id, player: item.player, x, y });
+    const rows = [1, ...formation];
+    const numRows = Math.max(1, rows.length - 1);
+    const usableHeight = Math.max(180, height - 88);
+    let cursor = 0;
+
+    return rows.map((count, rowIndex) => {
+      const rawRowPlayers = orderedStarters.slice(cursor, cursor + count);
+      cursor += count;
+      if (rawRowPlayers.length === 0) return [];
+
+      // Sort players within this tactical line from Left-to-Right in their attacking orientation
+      const sortedRowPlayers = [...rawRowPlayers].sort((a, b) => {
+        const idxA = rawRowPlayers.indexOf(a);
+        const idxB = rawRowPlayers.indexOf(b);
+        return getLateralFlankScore(a, idxA, rawRowPlayers.length) - getLateralFlankScore(b, idxB, rawRowPlayers.length);
       });
-    });
 
-    return positioned;
+      // Away team attacks downward from top goal, so their left flank is on screen-right (mirror horizontally)
+      const visualRowPlayers = isHome ? sortedRowPlayers : [...sortedRowPlayers].reverse();
+
+      const progress = rowIndex / numRows;
+      const y = isHome
+        ? (12 + usableHeight) - (progress * usableHeight)
+        : 12 + (progress * usableHeight);
+
+      return visualRowPlayers.map((p, i) => {
+        const x = ((i + 1) / (visualRowPlayers.length + 1)) * width;
+        return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
+      });
+    }).flat();
   }, [summary?.rosters, width, height, isHome]);
 
 const PlayerJersey = memo(({ player, teamColor, accentColor = "#FFFFFF" }) => {
@@ -2485,6 +2407,211 @@ const PlayerJersey = memo(({ player, teamColor, accentColor = "#FFFFFF" }) => {
       <span className="text-[#F5F5F7] text-[8.5px] font-bold mt-1 text-center bg-black/80 px-1.5 py-0.5 rounded-[5px] truncate max-w-[82px] leading-tight">
         {name}
       </span>
+    </div>
+  );
+});
+
+const PitchMatchEventsSection = memo(({ summary, home, away }) => {
+  const { goals, cards, subs } = useMemo(
+    () => extractDetailedFootballEvents(summary, home, away),
+    [summary, home, away]
+  );
+
+  if (goals.length === 0 && cards.length === 0 && subs.length === 0) return null;
+
+  return (
+    <div className="mx-4 mt-5 bg-[#121212] rounded-[28px] p-5 border border-[rgba(255,255,255,0.08)]">
+      <span className="block text-[#8E8E93] text-[11px] font-extrabold tracking-[1.5px] uppercase mb-4">
+        Match Events
+      </span>
+
+      {goals.length > 0 && (
+        <div className="mb-5 last:mb-0">
+          <div className="flex items-center gap-2 mb-2.5 pb-1.5 border-b border-[rgba(255,255,255,0.08)]">
+            <CircleDashed size={14} color={THEME.success} className="shrink-0" />
+            <span className="text-[10px] font-extrabold text-[#32D74B] tracking-[1px] uppercase">Goals ({goals.length})</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {goals.map((g, i) => (
+              <div key={i} className="flex items-center justify-between bg-[#1C1C1E] px-3.5 py-2.5 rounded-[16px] border border-[rgba(255,255,255,0.05)]">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <img src={g.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, g.teamName)} className="w-5 h-5 object-contain shrink-0" alt="" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[13px] font-bold text-[#F5F5F7] break-words leading-snug">{g.scorer}</span>
+                      {g.isPen && <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#0A84FF]/20 text-[#0A84FF]">PEN</span>}
+                      {g.isOG && <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#FF453A]/20 text-[#FF453A]">OG</span>}
+                    </div>
+                    {g.assist && <span className="block text-[11px] text-[#8E8E93] font-medium break-words leading-snug">Assist: {g.assist}</span>}
+                  </div>
+                </div>
+                <span className="text-[11px] font-extrabold text-[#32D74B] bg-[#32D74B]/15 px-2.5 py-1 rounded-[8px] tabular-nums ml-2 shrink-0">
+                  {g.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {subs.length > 0 && (
+        <div className="mb-5 last:mb-0">
+          <div className="flex items-center gap-2 mb-2.5 pb-1.5 border-b border-[rgba(255,255,255,0.08)]">
+            <ArrowRightLeft size={14} color={THEME.accent} className="shrink-0" />
+            <span className="text-[10px] font-extrabold text-[#0A84FF] tracking-[1px] uppercase">Substitutions ({subs.length})</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {subs.map((s, i) => (
+              <div key={i} className="flex items-center justify-between bg-[#1C1C1E] px-3.5 py-2.5 rounded-[16px] border border-[rgba(255,255,255,0.05)]">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <img src={s.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, s.teamName)} className="w-5 h-5 object-contain shrink-0" alt="" />
+                  <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <ArrowUpRight size={13} color={THEME.success} className="shrink-0" />
+                      <span className="text-[12px] font-bold text-[#32D74B] break-words leading-snug">{s.playerIn}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <ArrowDownLeft size={13} color={THEME.danger} className="shrink-0" />
+                      <span className="text-[11px] font-semibold text-[#8E8E93] break-words leading-snug">{s.playerOut}</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[11px] font-extrabold text-[#F5F5F7] bg-[#2C2C2E] px-2.5 py-1 rounded-[8px] tabular-nums ml-2 shrink-0">
+                  {s.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {cards.length > 0 && (
+        <div className="mb-1 last:mb-0">
+          <div className="flex items-center gap-2 mb-2.5 pb-1.5 border-b border-[rgba(255,255,255,0.08)]">
+            <Square size={14} color={THEME.warning} fill={THEME.warning} className="shrink-0" />
+            <span className="text-[10px] font-extrabold text-[#FF9F0A] tracking-[1px] uppercase">Disciplinary Cards ({cards.length})</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {cards.map((c, i) => (
+              <div key={i} className="flex items-center justify-between bg-[#1C1C1E] px-3.5 py-2.5 rounded-[16px] border border-[rgba(255,255,255,0.05)]">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <img src={c.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, c.teamName)} className="w-5 h-5 object-contain shrink-0" alt="" />
+                  <div className="w-[10px] h-[14px] rounded-[2px] shrink-0" style={{ backgroundColor: c.cardType === 'red' ? THEME.danger : THEME.warning }} />
+                  <span className="text-[13px] font-bold text-[#F5F5F7] break-words leading-snug">{c.player}</span>
+                </div>
+                <span className="text-[11px] font-extrabold text-[#F5F5F7] bg-[#2C2C2E] px-2.5 py-1 rounded-[8px] tabular-nums ml-2 shrink-0">
+                  {c.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+const TacticalPitch = memo(({ summary, home, away }) => {
+  const pitchRef = useRef(null);
+  const [pitchSize, setPitchSize] = useState({ width: 392, height: 640 });
+
+  useEffect(() => {
+    const update = () => {
+      if (pitchRef.current) {
+        const rect = pitchRef.current.getBoundingClientRect();
+        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(600, Math.min(760, window.innerHeight * 0.80)) });
+      }
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  const { hCol, aCol, hAccent, aAccent } = useMemo(() => {
+    const hKit = resolveTeamKitColors(summary, home, "C8102E");
+    const aKit = resolveTeamKitColors(summary, away, "0A84FF");
+    let awayPrimary = aKit.primary;
+    if (awayPrimary.toLowerCase() === hKit.primary.toLowerCase()) {
+      awayPrimary = aKit.secondary && aKit.secondary.toLowerCase() !== hKit.primary.toLowerCase()
+        ? aKit.secondary
+        : '#FFFFFF';
+    }
+    return {
+      hCol: hKit.primary,
+      aCol: awayPrimary,
+      hAccent: hKit.secondary,
+      aAccent: aKit.secondary
+    };
+  }, [summary, home, away]);
+
+  const awayFormation = summary?.rosters?.[1]?.formation || '';
+  const homeFormation = summary?.rosters?.[0]?.formation || '';
+
+  const HALF_HEIGHT = pitchSize.height / 2;
+  const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, false);
+  const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, true);
+
+  if (!summary?.rosters) {
+    return <WhitePillLoader className="py-16" />;
+  }
+
+  return (
+    <div className="mb-10 mt-2.5">
+      <div className="flex items-center px-5 my-3 gap-3">
+        <img src={getSafeFootballLogo(away?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, away?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <div className="flex-1 flex items-center gap-3">
+          <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
+          <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
+            AWAY {awayFormation ? `• ${awayFormation}` : ''}
+          </span>
+          <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
+        </div>
+      </div>
+
+      <div
+        ref={pitchRef}
+        style={{ height: pitchSize.height, backgroundColor: THEME.pitch }}
+        className="mx-2.5 rounded-[34px] overflow-hidden border border-[rgba(255,255,255,0.12)] relative"
+      >
+        <div className="absolute inset-3 border-[1.5px] border-[rgba(255,255,255,0.15)] pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90px] h-[90px] rounded-full border-[1.5px] border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute top-1/2 left-0 w-full h-[1.5px] bg-[rgba(255,255,255,0.15)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[55%] h-[65px] border-[1.5px] border-t-0 border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[55%] h-[65px] border-[1.5px] border-b-0 border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[25%] h-[25px] border-[1.5px] border-t-0 border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[25%] h-[25px] border-[1.5px] border-b-0 border-[rgba(255,255,255,0.15)]" />
+        </div>
+
+        <div className="absolute inset-0">
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-hidden">
+            {awayPlayers.map(p => (
+              <div key={p.id} style={{ position: 'absolute', left: Math.max(4, Math.min(pitchSize.width - 88, p.x - 42)), top: p.y }}>
+                <PlayerJersey player={p.player} teamColor={aCol} accentColor={aAccent} />
+              </div>
+            ))}
+          </div>
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-hidden">
+            {homePlayers.map(p => (
+              <div key={p.id} style={{ position: 'absolute', left: Math.max(4, Math.min(pitchSize.width - 88, p.x - 42)), top: p.y }}>
+                <PlayerJersey player={p.player} teamColor={hCol} accentColor={hAccent} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center px-5 my-3 gap-3">
+        <img src={getSafeFootballLogo(home?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, home?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <div className="flex-1 flex items-center gap-3">
+          <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
+          <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
+            HOME {homeFormation ? `• ${homeFormation}` : ''}
+          </span>
+          <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
+        </div>
+      </div>
+
+      <PitchMatchEventsSection summary={summary} home={home} away={away} />
     </div>
   );
 });
@@ -3457,7 +3584,7 @@ const FootballIntelView = memo(() => {
   }, []);
 
   const [news, setNews] = useState(() => {
-    const cachedResults = FOOTBALL_LEAGUES.slice(0, 5).map(l =>
+    const cachedResults = FOOTBALL_LEAGUES.filter(l => ['eng.1', 'uefa.champions', 'esp.1', 'ger.1', 'ita.1', 'fra.1'].includes(l.id)).map(l =>
       getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/news`)
     );
     return buildSoccerNews(cachedResults);
@@ -3467,7 +3594,7 @@ const FootballIntelView = memo(() => {
   useEffect(() => {
     let active = true;
     Promise.all(
-      FOOTBALL_LEAGUES.slice(0, 5).map(l =>
+      FOOTBALL_LEAGUES.filter(l => ['eng.1', 'uefa.champions', 'esp.1', 'ger.1', 'ita.1', 'fra.1'].includes(l.id)).map(l =>
         fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/news`, false, 5500).catch(() => ({}))
       )
     ).then(results => {
