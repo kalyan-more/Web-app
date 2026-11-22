@@ -99,10 +99,43 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Sleek 120Hz GPU-accelerated spring transitions */
+        @keyframes appleSplashHoldFade {
+      0% {
+        opacity: 1;
+        transform: scale3d(0.96, 0.96, 1);
+      }
+      22% {
+        opacity: 1;
+        transform: scale3d(1.0, 1.0, 1);
+      }
+      78% {
+        opacity: 1;
+        transform: scale3d(1.0, 1.0, 1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale3d(1.04, 1.04, 1);
+        visibility: hidden;
+      }
+    }
+
+    #sideline-splash-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background-color: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      animation: appleSplashHoldFade 0.85s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      will-change: opacity, transform;
+    }
+
+    /* Apple-grade 120Hz GPU-accelerated spring transitions */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.6;
+        opacity: 0.85;
         transform: translate3d(0, 100%, 0);
       }
       100% {
@@ -165,7 +198,7 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.26s cubic-bezier(0.25, 1, 0.5, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -175,13 +208,13 @@
     }
 
     .ios-view-enter {
-      animation: iosViewEnter 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosViewEnter 0.14s cubic-bezier(0.25, 1, 0.5, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
+      transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
       will-change: transform;
     }
     .ios-card-press:active {
@@ -190,7 +223,7 @@
 
     button {
       touch-action: manipulation;
-      transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
+      transition: transform 0.10s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
       will-change: transform;
     }
     button:active {
@@ -199,6 +232,10 @@
   </style>
 </head>
 <body class="no-scrollbar">
+  <div id="sideline-splash-overlay">
+    <img src="./icon-512.png" onerror="this.onerror=null;this.src='./apple-touch-icon.png';" alt="Sideline" style="width:92px;height:92px;border-radius:22px;object-fit:contain;" />
+  </div>
+
   <div id="root">
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;">
       <img src="./icon-512.png" onerror="this.onerror=null;this.src='./apple-touch-icon.png';" alt="Sideline" class="ios-splash-icon" style="width:88px;height:88px;border-radius:22px;object-fit:contain;" />
@@ -1545,32 +1582,12 @@ const isCricketTournamentCurrent = (leagueObj, allSched = [], now = new Date()) 
   const explicitLabel = extractSeasonYear(rawTitle);
   const explicitYear = explicitLabel ? parseInt(explicitLabel.slice(0, 4), 10) : null;
 
+  // Only exclude clearly old seasons (> 1 year behind) or far-future seasons (> 1 year ahead)
   if (explicitYear && (explicitYear < currentYear - 1 || explicitYear > currentYear + 1)) {
     return { isCurrent: false, seasonLabel: explicitLabel, cleanTitle: stripSeasonYear(rawTitle) };
   }
 
-  const cleanTitle = stripSeasonYear(rawTitle);
-  const lowerClean = cleanTitle.toLowerCase();
-  const matchingFixtures = (Array.isArray(allSched) ? allSched : []).filter(m => {
-    const mSeries = String(m.league || m.series || m.title || '').toLowerCase();
-    return mSeries && (mSeries.includes(lowerClean) || lowerClean.includes(mSeries));
-  });
-
-  if (matchingFixtures.length > 0) {
-    const timestamps = matchingFixtures.map(m => new Date(m.start_time).getTime()).filter(ts => !isNaN(ts));
-    if (timestamps.length > 0) {
-      const minTs = Math.min(...timestamps);
-      const maxTs = Math.max(...timestamps);
-      const nowTs = now.getTime();
-      const windowMs = 45 * 24 * 60 * 60 * 1000;
-      if (nowTs < (minTs - windowMs) || nowTs > (maxTs + windowMs)) {
-        return { isCurrent: false, seasonLabel: explicitLabel || String(currentYear), cleanTitle };
-      }
-    }
-  } else if (explicitYear && explicitYear !== currentYear) {
-    return { isCurrent: false, seasonLabel: explicitLabel, cleanTitle };
-  }
-
+  const cleanTitle = stripSeasonYear(rawTitle) || rawTitle;
   return { isCurrent: true, seasonLabel: explicitLabel || String(currentYear), cleanTitle };
 };
 
@@ -1801,7 +1818,8 @@ const extractCricketKnockouts = (selectedLeague) => {
 
   (selectedLeague.allSched || []).forEach(m => {
     const mLeague = String(m.league || m.series || '').toLowerCase();
-    if (!mLeague.includes(lTitle) && !lTitle.includes(mLeague) && (!shortL || !mLeague.includes(shortL))) return;
+    const mFullText = `${m.league || ''} ${m.series || ''} ${m.title || ''}`.toLowerCase();
+    if (!mFullText.includes(lTitle) && !lTitle.includes(mLeague) && (!shortL || !mFullText.includes(shortL))) return;
     const stageId = classifyKnockoutStage(`${m.title || ''} ${m.match_title || ''} ${m.status_text || ''}`);
     if (!stageId || !stageMap[stageId] || !m.teams || m.teams.length < 2) return;
 
@@ -2086,13 +2104,13 @@ const PitchMatchEventsSection = memo(({ summary, home, away }) => {
 
 const TacticalPitch = memo(({ summary, home, away }) => {
   const pitchRef = useRef(null);
-  const [pitchSize, setPitchSize] = useState({ width: 358, height: 540 });
+  const [pitchSize, setPitchSize] = useState({ width: 382, height: 680 });
 
   useEffect(() => {
     const update = () => {
       if (pitchRef.current) {
         const rect = pitchRef.current.getBoundingClientRect();
-        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(480, Math.min(600, window.innerHeight * 0.68)) });
+        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(620, Math.min(780, window.innerHeight * 0.82)) });
       }
     };
     update();
@@ -2129,7 +2147,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
       <div
         ref={pitchRef}
         style={{ height: pitchSize.height, backgroundColor: THEME.pitch }}
-        className="mx-4 rounded-[32px] overflow-hidden border border-[rgba(255,255,255,0.1)] relative"
+        className="mx-2.5 rounded-[34px] overflow-hidden border border-[rgba(255,255,255,0.12)] relative"
       >
         <div className="absolute inset-3 border-[1.5px] border-[rgba(255,255,255,0.15)] pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90px] h-[90px] rounded-full border-[1.5px] border-[rgba(255,255,255,0.15)]" />
@@ -4945,15 +4963,45 @@ function App() {
     setLoading(true);
     try {
       const nowMs = Date.now();
-      const [soccerResults, cricketSched, cricketLive] = await Promise.all([
-        soccerFavs.length > 0
+      const favSoccerSet = new Set(soccerFavs.map(String));
+      const todayDs = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowDs = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
+
+      const [allTeamResults, leagueTeamResults, todayBoards, tomorrowBoards, cricketSched, cricketLive] = await Promise.all([
+        favSoccerSet.size > 0
           ? Promise.all(
-              soccerFavs.map(async (id) => {
-                const res = await fetchWithCache(`${API_SOCCER_SCORE_BASE}/all/teams/${id}`, forceRefresh).catch(() => null);
-                const teamObj = res?.team || {};
-                const events = [...(teamObj.nextEvent || []), ...(teamObj.events || [])];
-                return { id, teamObj, events };
-              })
+              Array.from(favSoccerSet).map(id =>
+                fetchWithCache(`${API_SOCCER_SCORE_BASE}/all/teams/${id}`, forceRefresh).catch(() => null)
+              )
+            )
+          : Promise.resolve([]),
+        favSoccerSet.size > 0
+          ? Promise.all(
+              Array.from(favSoccerSet).flatMap(id =>
+                SOCCER_LEAGUES.slice(0, 5).map(l =>
+                  fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/teams/${id}`, forceRefresh).catch(() => null)
+                )
+              )
+            )
+          : Promise.resolve([]),
+        favSoccerSet.size > 0
+          ? Promise.all(
+              SOCCER_LEAGUES.map(l =>
+                fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${todayDs}`, forceRefresh)
+                  .then(d => (d?.events || []).map(ev => ({ ...ev, _leagueId: l.id })))
+                  .catch(() => [])
+              )
+            )
+          : Promise.resolve([]),
+        favSoccerSet.size > 0
+          ? Promise.all(
+              SOCCER_LEAGUES.map(l =>
+                fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${tomorrowDs}`, forceRefresh)
+                  .then(d => (d?.events || []).map(ev => ({ ...ev, _leagueId: l.id })))
+                  .catch(() => [])
+              )
             )
           : Promise.resolve([]),
         cricketFavs.length > 0
@@ -4967,28 +5015,42 @@ function App() {
       const combined = [];
       const seenIds = new Set();
 
-      soccerResults.forEach(({ id, events }) => {
-        (events || []).forEach(event => {
-          if (!event || !event.id || seenIds.has(`soccer:${event.id}`) || !event.competitions?.length) return;
-          const comp = event.competitions[0];
-          const state = String(comp?.status?.type?.state || event?.status?.type?.state || '').toLowerCase();
-          const isCompleted = state === 'post' || Boolean(comp?.status?.type?.completed);
-          if (isCompleted) return;
+      const tryAddSoccerEvent = (event, fallbackLeagueId = null) => {
+        if (!event || !event.id || !event.competitions?.length) return;
+        const comp = event.competitions[0];
+        const competitors = comp.competitors || [];
+        const hasFavTeam = competitors.some(c => favSoccerSet.has(String(c?.team?.id || c?.id || '')));
+        if (!hasFavTeam) return;
 
-          const evTime = new Date(event.date || 0).getTime();
-          const isLive = state === 'in';
-          const isUpcoming = state === 'pre' || (!state && (isNaN(evTime) || evTime >= nowMs - 3600000));
-          if (!isLive && !isUpcoming) return;
+        const key = `soccer:${event.id}`;
+        if (seenIds.has(key)) return;
 
-          seenIds.add(`soccer:${event.id}`);
-          combined.push({
-            ...event,
-            _favSport: 'soccer',
-            _favTeamId: id,
-            _isLive: isLive,
-            _sortTs: isNaN(evTime) ? Number.MAX_SAFE_INTEGER : evTime
-          });
+        const state = String(comp?.status?.type?.state || event?.status?.type?.state || '').toLowerCase();
+        if (state === 'post' || Boolean(comp?.status?.type?.completed)) return;
+
+        const evTime = new Date(event.date || 0).getTime();
+        const isLive = state === 'in';
+        const isUpcoming = state === 'pre' || (!state && (isNaN(evTime) || evTime >= nowMs - 3600000));
+        if (!isLive && !isUpcoming) return;
+
+        seenIds.add(key);
+        combined.push({
+          ...event,
+          _leagueId: event._leagueId || fallbackLeagueId || null,
+          _favSport: 'soccer',
+          _isLive: isLive,
+          _sortTs: isNaN(evTime) ? Number.MAX_SAFE_INTEGER : evTime
         });
+      };
+
+      [...allTeamResults, ...leagueTeamResults].forEach(res => {
+        const teamObj = res?.team || {};
+        const evList = [...(teamObj.nextEvent || []), ...(teamObj.events || []), ...(res?.events || [])];
+        evList.forEach(ev => tryAddSoccerEvent(ev));
+      });
+
+      [...todayBoards.flat(), ...tomorrowBoards.flat()].forEach(ev => {
+        tryAddSoccerEvent(ev, ev._leagueId);
       });
 
       const cricketPool = new Map();
@@ -5330,7 +5392,7 @@ function App() {
       <div key={`${activeSport}-${view}-${refreshTick}`} className="flex-1 flex flex-col ios-view-enter">
         {view === 'home' && (
           <div className="flex-1 px-4 pt-2.5 pb-36">
-            <h2 className="text-[28px] font-extrabold text-[#F5F5F7] mb-5 tracking-[-0.5px]">Favorites Schedule</h2>
+            <div className="h-2" />
             {loading && favMatches.length === 0 ? (
               <WhitePillLoader className="mt-10 py-6" />
             ) : favMatches.length === 0 ? (
