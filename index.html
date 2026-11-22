@@ -403,9 +403,14 @@ const THEME = {
 const FOOTBALL_LEAGUES = [
   { id: 'eng.1', name: 'Premier League', short: 'EPL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/23.png', hasKnockout: false, isSplitSeason: true },
   { id: 'eng.2', name: 'Championship', short: 'EFL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/24.png', hasKnockout: true, isSplitSeason: true },
+  { id: 'eng.3', name: 'League One', short: 'L1', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/25.png', hasKnockout: true, isSplitSeason: true },
   { id: 'uefa.champions', name: 'Champions League', short: 'UCL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/2.png', hasKnockout: true, isSplitSeason: true },
+  { id: 'uefa.europa', name: 'Europa League', short: 'UEL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/2310.png', hasKnockout: true, isSplitSeason: true },
+  { id: 'ger.1', name: 'Bundesliga', short: 'BUN', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/10.png', hasKnockout: false, isSplitSeason: true },
   { id: 'esp.1', name: 'La Liga', short: 'LAL', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/15.png', hasKnockout: false, isSplitSeason: true },
   { id: 'ita.1', name: 'Serie A', short: 'SER', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/12.png', hasKnockout: false, isSplitSeason: true },
+  { id: 'fra.1', name: 'Ligue 1', short: 'L1F', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/9.png', hasKnockout: false, isSplitSeason: true },
+  { id: 'eng.fa', name: 'FA Cup', short: 'FAC', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/40.png', hasKnockout: true, isSplitSeason: true },
   { id: 'usa.1', name: 'MLS', short: 'MLS', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/19.png', hasKnockout: true, isSplitSeason: false },
   { id: 'fifa.world', name: 'World Cup', short: 'WC', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/4.png', hasKnockout: true, isSplitSeason: false },
   { id: 'uefa.euro', name: 'Euro', short: 'EURO', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/84.png', hasKnockout: true, isSplitSeason: false }
@@ -2247,7 +2252,12 @@ const resolveTeamKitColors = (summary, comp, fallbackHex = "0A84FF") => {
   return { primary: `#${hex}`, secondary: '#FFFFFF' };
 };
 
-const getPlayerPositionSortScore = (player, rowIndex, totalRows, colIndexInRow, rowCount) => {
+const getTacticalLineTier = (player) => {
+  const posType = String(
+    player?.position?.type ||
+    player?.athlete?.position?.type ||
+    ''
+  ).toLowerCase();
   const posAbbr = String(
     player?.position?.abbreviation ||
     player?.athlete?.position?.abbreviation ||
@@ -2256,21 +2266,57 @@ const getPlayerPositionSortScore = (player, rowIndex, totalRows, colIndexInRow, 
     ''
   ).toUpperCase().trim();
 
-  if (posAbbr.includes('LB') || posAbbr.includes('LWB') || posAbbr === 'L') return -30 + colIndexInRow;
-  if (posAbbr.includes('LW') || posAbbr.includes('LF')) return -25 + colIndexInRow;
-  if (posAbbr.includes('LM')) return -20 + colIndexInRow;
-  if (posAbbr.includes('LAM')) return -12 + colIndexInRow;
-  if (posAbbr.includes('LCB') || posAbbr.includes('LD')) return -10 + colIndexInRow;
+  if (posAbbr === 'GK' || posAbbr === 'G' || posType.includes('goal')) return 0;
+  if (
+    posAbbr.includes('CB') || posAbbr.includes('LB') || posAbbr.includes('RB') ||
+    posAbbr.includes('LWB') || posAbbr.includes('RWB') || posAbbr === 'D' ||
+    posAbbr === 'DEF' || posAbbr.includes('BACK') || posType.includes('defen')
+  ) return 1;
+  if (
+    posAbbr.includes('CDM') || posAbbr.includes('CAM') || posAbbr.includes('CM') ||
+    posAbbr.includes('LM') || posAbbr.includes('RM') || posAbbr.includes('DM') ||
+    posAbbr.includes('AM') || posAbbr === 'M' || posAbbr === 'MID' ||
+    posAbbr.includes('MIDFIELDER') || posType.includes('mid')
+  ) return 2;
+  if (
+    posAbbr.includes('ST') || posAbbr.includes('CF') || posAbbr.includes('LW') ||
+    posAbbr.includes('RW') || posAbbr.includes('LF') || posAbbr.includes('RF') ||
+    posAbbr === 'F' || posAbbr === 'FWD' || posAbbr.includes('STRIKER') ||
+    posAbbr.includes('FORWARD') || posAbbr.includes('WING') || posType.includes('forw') || posType.includes('striker')
+  ) return 3;
+
+  const fp = parseInt(player?.formationPlace, 10);
+  if (!isNaN(fp)) {
+    if (fp === 1) return 0;
+    if (fp <= 5) return 1;
+    if (fp <= 8) return 2;
+    return 3;
+  }
+  return 2;
+};
+
+const getPlayerPositionSortScore = (player, colIndexInRow, rowCount) => {
+  const posAbbr = String(
+    player?.position?.abbreviation ||
+    player?.athlete?.position?.abbreviation ||
+    player?.position?.name ||
+    player?.athlete?.position?.name ||
+    ''
+  ).toUpperCase().trim();
+
+  if (posAbbr.includes('LB') || posAbbr.includes('LWB') || posAbbr === 'L') return -40 + colIndexInRow;
+  if (posAbbr.includes('LW') || posAbbr.includes('LF')) return -35 + colIndexInRow;
+  if (posAbbr.includes('LM')) return -30 + colIndexInRow;
+  if (posAbbr.includes('LCB') || posAbbr.includes('LD')) return -15 + colIndexInRow;
+  if (posAbbr.includes('CDM') || posAbbr.includes('LDM')) return -12 + colIndexInRow;
   if (posAbbr === 'CB' || posAbbr === 'D' || posAbbr === 'DEF') return -5 + colIndexInRow;
-  if (posAbbr.includes('CDM') || posAbbr.includes('LDM')) return -8 + colIndexInRow;
-  if (posAbbr.includes('RDM')) return 8 + colIndexInRow;
   if (posAbbr === 'CM' || posAbbr === 'M' || posAbbr === 'MID') return -4 + colIndexInRow * 2;
   if (posAbbr === 'CAM' || posAbbr === 'AM') return colIndexInRow;
-  if (posAbbr.includes('RAM')) return 12 + colIndexInRow;
-  if (posAbbr.includes('RCB') || posAbbr.includes('RD')) return 10 + colIndexInRow;
-  if (posAbbr.includes('RM')) return 20 + colIndexInRow;
-  if (posAbbr.includes('RW') || posAbbr.includes('RF')) return 25 + colIndexInRow;
-  if (posAbbr.includes('RB') || posAbbr.includes('RWB') || posAbbr === 'R') return 30 + colIndexInRow;
+  if (posAbbr.includes('RDM')) return 12 + colIndexInRow;
+  if (posAbbr.includes('RCB') || posAbbr.includes('RD')) return 15 + colIndexInRow;
+  if (posAbbr.includes('RM')) return 30 + colIndexInRow;
+  if (posAbbr.includes('RW') || posAbbr.includes('RF')) return 35 + colIndexInRow;
+  if (posAbbr.includes('RB') || posAbbr.includes('RWB') || posAbbr === 'R') return 40 + colIndexInRow;
   if (posAbbr.includes('ST') || posAbbr.includes('CF') || posAbbr === 'F' || posAbbr === 'FWD') return colIndexInRow;
 
   return colIndexInRow - (rowCount - 1) / 2;
@@ -2284,22 +2330,33 @@ const useFootballFormations = (summary, width, height, isHome) =>
     if (!teamRoster) return [];
 
     const formation = teamRoster.formation?.split("-").map(Number).filter(n => !isNaN(n) && n > 0) || [4, 3, 3];
-    const starters = teamRoster.roster?.filter(p => p.starter) || teamRoster.roster?.slice(0, 11) || [];
+    const starters = (teamRoster.roster?.filter(p => p.starter) || teamRoster.roster?.slice(0, 11) || []).slice(0, 11);
+
+    // Order starters by tactical depth (GK -> DEF -> MID -> FWD) and formationPlace so lines match real life
+    const orderedStarters = [...starters].sort((a, b) => {
+      const tierA = getTacticalLineTier(a);
+      const tierB = getTacticalLineTier(b);
+      if (tierA !== tierB) return tierA - tierB;
+      const fpA = parseInt(a?.formationPlace, 10);
+      const fpB = parseInt(b?.formationPlace, 10);
+      if (!isNaN(fpA) && !isNaN(fpB) && fpA !== fpB) return fpA - fpB;
+      return starters.indexOf(a) - starters.indexOf(b);
+    });
+
     const rows = [1, ...formation];
     const numRows = Math.max(1, rows.length - 1);
     const usableHeight = Math.max(180, height - 88);
     let cursor = 0;
 
     return rows.map((count, rowIndex) => {
-      const rawRowPlayers = starters.slice(cursor, cursor + count);
+      const rawRowPlayers = orderedStarters.slice(cursor, cursor + count);
       cursor += count;
+      if (rawRowPlayers.length === 0) return [];
 
       const sortedRowPlayers = [...rawRowPlayers].sort((a, b) => {
         const idxA = rawRowPlayers.indexOf(a);
         const idxB = rawRowPlayers.indexOf(b);
-        const scoreA = getPlayerPositionSortScore(a, rowIndex, numRows, idxA, rawRowPlayers.length);
-        const scoreB = getPlayerPositionSortScore(b, rowIndex, numRows, idxB, rawRowPlayers.length);
-        return scoreA - scoreB;
+        return getPlayerPositionSortScore(a, idxA, rawRowPlayers.length) - getPlayerPositionSortScore(b, idxB, rawRowPlayers.length);
       });
 
       const progress = rowIndex / numRows;
@@ -2960,10 +3017,22 @@ const getFootballZoneBadge = (leagueId, rank, totalTeams) => {
     if (rank <= 4) return { code: 'UCL', color: THEME.accent, desc: 'UEFA Champions League' };
     if (rank === 5 || rank === 6) return { code: 'UEL', color: THEME.warning, desc: 'UEFA Europa League' };
     if (rank > Math.max(4, totalTeams - 3)) return { code: 'REL', color: THEME.danger, desc: 'Relegation' };
+  } else if (leagueId === 'ger.1') {
+    if (rank <= 4) return { code: 'UCL', color: THEME.accent, desc: 'UEFA Champions League' };
+    if (rank === 5) return { code: 'UEL', color: THEME.warning, desc: 'UEFA Europa League' };
+    if (rank >= totalTeams - 1) return { code: 'REL', color: THEME.danger, desc: 'Relegation' };
+  } else if (leagueId === 'fra.1') {
+    if (rank <= 3) return { code: 'UCL', color: THEME.accent, desc: 'UEFA Champions League' };
+    if (rank === 4) return { code: 'UEL', color: THEME.warning, desc: 'UEFA Europa League' };
+    if (rank >= totalTeams - 1) return { code: 'REL', color: THEME.danger, desc: 'Relegation' };
   } else if (leagueId === 'eng.2') {
     if (rank <= 2) return { code: 'EPL', color: THEME.accent, desc: 'Premier League Promotion' };
     if (rank <= 6) return { code: 'PO', color: THEME.warning, desc: 'Promotion Play-offs' };
     if (rank > Math.max(2, totalTeams - 3)) return { code: 'REL', color: THEME.danger, desc: 'Relegation' };
+  } else if (leagueId === 'eng.3') {
+    if (rank <= 2) return { code: 'EFL', color: THEME.accent, desc: 'Championship Promotion' };
+    if (rank <= 6) return { code: 'PO', color: THEME.warning, desc: 'Promotion Play-offs' };
+    if (rank > Math.max(2, totalTeams - 4)) return { code: 'REL', color: THEME.danger, desc: 'Relegation' };
   } else if (leagueId === 'uefa.champions') {
     if (rank <= 8) return { code: 'R16', color: THEME.accent, desc: 'Round of 16 Direct' };
     if (rank <= 24) return { code: 'KPO', color: THEME.warning, desc: 'Knockout Play-offs' };
