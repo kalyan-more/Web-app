@@ -2252,49 +2252,131 @@ const resolveTeamKitColors = (summary, comp, fallbackHex = "0A84FF") => {
   return { primary: `#${hex}`, secondary: '#FFFFFF' };
 };
 
-const getPlayerPosCode = (player) => {
+const getPlayerRoleMeta = (player) => {
+  const posObj = player?.position || {};
+  const subObj = player?.subPosition || {};
+  const athPos = player?.athlete?.position || {};
+
   const abbr = String(
-    player?.position?.abbreviation ||
-    player?.athlete?.position?.abbreviation ||
+    subObj.abbreviation ||
+    posObj.abbreviation ||
+    athPos.abbreviation ||
     ''
   ).toUpperCase().trim();
+
   const pname = String(
-    player?.position?.name ||
-    player?.athlete?.position?.name ||
+    subObj.name ||
+    posObj.name ||
+    posObj.displayName ||
+    athPos.name ||
     ''
   ).toUpperCase().trim();
+
   const ptype = String(
-    player?.position?.type ||
-    player?.athlete?.position?.type ||
+    posObj.type ||
+    athPos.type ||
     ''
   ).toLowerCase().trim();
-  return { abbr, pname, ptype };
+
+  const combined = `${abbr} ${pname}`;
+  return { abbr, pname, ptype, combined };
 };
 
 const getPlayerZone = (player) => {
-  const { abbr, pname, ptype } = getPlayerPosCode(player);
-  if (abbr === 'GK' || abbr === 'G' || pname.includes('GOALKEEPER') || ptype.includes('goal')) return 0;
+  const { abbr, pname, ptype, combined } = getPlayerRoleMeta(player);
+  if (abbr === 'GK' || abbr === 'G' || combined.includes('GOALKEEPER') || ptype.includes('goal')) return 0;
   if (
     abbr === 'D' || abbr === 'DEF' || abbr === 'CB' || abbr === 'LB' || abbr === 'RB' ||
     abbr === 'LWB' || abbr === 'RWB' || abbr === 'SW' || abbr === 'LCB' || abbr === 'RCB' ||
-    pname.includes('BACK') || pname.includes('DEFEND') || ptype.includes('defen')
+    combined.includes('BACK') || combined.includes('DEFEND') || ptype.includes('defen')
   ) return 1;
   if (
     abbr === 'M' || abbr === 'MID' || abbr === 'CM' || abbr === 'CDM' || abbr === 'CAM' ||
     abbr === 'LM' || abbr === 'RM' || abbr === 'DM' || abbr === 'AM' || abbr === 'LDM' || abbr === 'RDM' ||
-    pname.includes('MIDFIELD') || ptype.includes('mid')
+    combined.includes('MIDFIELD') || ptype.includes('mid')
   ) return 2;
   if (
     abbr === 'F' || abbr === 'FWD' || abbr === 'ST' || abbr === 'CF' ||
     abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' ||
-    pname.includes('FORWARD') || pname.includes('STRIKER') || pname.includes('WING') ||
+    combined.includes('FORWARD') || combined.includes('STRIKER') || combined.includes('WING') ||
     ptype.includes('forw') || ptype.includes('striker') || ptype.includes('att')
   ) return 3;
   return 2;
 };
 
+/**
+ * Scores how well a specific player fits a specific row (`rowIndex` out of `totalLines` rows)
+ * in a team's formation (higher = better fit).
+ */
+const scorePlayerForRow = (player, rowIndex, totalLines, formationRows) => {
+  const { abbr, pname, combined } = getPlayerRoleMeta(player);
+  const zone = getPlayerZone(player);
+
+  if (rowIndex === 0) {
+    return zone === 0 ? 100 : -100;
+  }
+  if (zone === 0) return -100;
+
+  // Backline is always rowIndex === 1
+  if (rowIndex === 1) {
+    if (zone === 1) return 90;
+    if (abbr.includes('DM') || abbr.includes('CDM')) return 25;
+    return -40;
+  }
+
+  // Final row is the most advanced attacking line
+  if (rowIndex === totalLines - 1) {
+    let score = 0;
+    if (abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD')) score += 95;
+    else if (zone === 3) score += 75;
+    else if (abbr === 'CAM' || abbr === 'AM' || combined.includes('ATTACKING MID')) score += 45;
+    else if (zone === 2) score += 10;
+    else score -= 50;
+    return score;
+  }
+
+  // Intermediate lines (e.g. for 4-2-3-1: rowIndex 2 is double-pivot/CMs, rowIndex 3 is CAM/wingers)
+  const midRowCount = Math.max(1, totalLines - 3);
+  const midProgress = (rowIndex - 1) / (totalLines - 2); // 0..1 from defensive-mid toward attacking-mid
+
+  const isHolding = abbr === 'CDM' || abbr === 'DM' || abbr === 'LDM' || abbr === 'RDM' || combined.includes('DEFENSIVE MID');
+  const isAttackingMid = abbr === 'CAM' || abbr === 'AM' || abbr === 'LAM' || abbr === 'RAM' || combined.includes('ATTACKING MID');
+  const isWinger = abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' || combined.includes('WING');
+
+  if (midRowCount >= 2 && formationRows.length === 5 && rowIndex === 2) {
+    // 4-2-3-1 holding pivot row
+    if (isHolding) return 95;
+    if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 80;
+    if (zone === 2 && !isAttackingMid) return 60;
+    if (zone === 1) return 20;
+    if (isAttackingMid) return 15;
+    if (isWinger || zone === 3) return -25;
+  }
+
+  if (midRowCount >= 2 && formationRows.length === 5 && rowIndex === 3) {
+    // 4-2-3-1 attacking midfield / wide creators row
+    if (isAttackingMid) return 95;
+    if (isWinger || abbr === 'LM' || abbr === 'RM') return 82;
+    if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 55;
+    if (zone === 2) return 50;
+    if (zone === 3 && abbr !== 'ST' && abbr !== 'CF') return 45;
+    if (isHolding) return 10;
+    return -20;
+  }
+
+  // General intermediate row scoring
+  if (zone === 2) {
+    if (midProgress < 0.45 && isHolding) return 90;
+    if (midProgress >= 0.55 && (isAttackingMid || isWinger)) return 90;
+    return 70;
+  }
+  if (zone === 3 && !combined.includes('STRIKER')) return 55;
+  if (zone === 1) return 15;
+  return 0;
+};
+
 const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
-  const { abbr, pname } = getPlayerPosCode(player);
+  const { abbr, pname } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname}`;
 
   if (abbr === 'LB' || abbr === 'LWB' || abbr === 'L' || tag.includes('LEFT BACK') || tag.includes('LEFT WINGBACK')) return -50;
@@ -2310,76 +2392,35 @@ const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
   if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 42;
   if (abbr === 'RB' || abbr === 'RWB' || abbr === 'R' || tag.includes('RIGHT BACK') || tag.includes('RIGHT WINGBACK')) return 50;
 
-  const fp = parseInt(player?.formationPlace, 10);
-  if (!isNaN(fp) && fp > 0 && rowCount >= 3) {
-    if (fp === 3 || fp === 11) return -30;
-    if (fp === 5) return -12;
-    if (fp === 4) return 12;
-    if (fp === 2 || fp === 7) return 30;
-  }
-
   return (fallbackIndex - (rowCount - 1) / 2) * 3;
 };
 
 /**
- * Matches 11 starting players into the exact formation rows (e.g. [1, 4, 2, 3, 1] for 4-2-3-1)
- * using real player tactical zones (GK -> DEF -> MID -> FWD) so each player sits in their real-life line.
+ * Optimal row assignment for 11 starters across `formationRows` (e.g. [1, 4, 2, 3, 1]):
+ * Picks the highest-scoring available player for each row slot so every role lands in its true line.
  */
 const assignPlayersToFormationRows = (starters, formationRows) => {
-  const pool = [...starters];
+  const remaining = [...starters];
   const assignedRows = formationRows.map(() => []);
-
-  // Determine target zone for each row index in `formationRows` (0 is always GK, last is attacking)
   const totalLines = formationRows.length;
-  const rowTargetZones = formationRows.map((_, rIdx) => {
-    if (rIdx === 0) return [0];
-    if (totalLines === 4) {
-      // e.g. 4-3-3 -> [1 (GK), 1 (DEF), 2 (MID), 3 (FWD)]
-      return rIdx === 1 ? [1] : rIdx === 2 ? [2] : [3];
-    }
-    if (totalLines === 5) {
-      // e.g. 4-2-3-1 -> [1 (GK), 1 (DEF), 2 (CDM/CM), 2/3 (CAM/Wingers), 3 (ST)]
-      if (rIdx === 1) return [1];
-      if (rIdx === 2) return [2];
-      if (rIdx === 3) return [2, 3];
-      return [3, 2];
-    }
-    if (rIdx === 1) return [1];
-    if (rIdx === totalLines - 1) return [3, 2];
-    return [2, 3, 1];
-  });
 
-  // Pass 1: Fill strict primary matches first
-  formationRows.forEach((slotCount, rIdx) => {
-    const preferredZones = rowTargetZones[rIdx];
-    const primaryZone = preferredZones[0];
-    for (let k = 0; k < slotCount && assignedRows[rIdx].length < slotCount; k++) {
-      const matchIdx = pool.findIndex(p => getPlayerZone(p) === primaryZone);
-      if (matchIdx !== -1) {
-        assignedRows[rIdx].push(pool.splice(matchIdx, 1)[0]);
+  // Fill row 0 (GK) first, then rows 1..totalLines-1
+  const rowOrder = [0, ...Array.from({ length: totalLines - 1 }, (_, k) => k + 1)];
+
+  for (const rIdx of rowOrder) {
+    const slotCount = formationRows[rIdx];
+    for (let s = 0; s < slotCount && remaining.length > 0; s++) {
+      let bestIdx = 0;
+      let bestScore = -Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const sc = scorePlayerForRow(remaining[i], rIdx, totalLines, formationRows);
+        if (sc > bestScore) {
+          bestScore = sc;
+          bestIdx = i;
+        }
       }
+      assignedRows[rIdx].push(remaining.splice(bestIdx, 1)[0]);
     }
-  });
-
-  // Pass 2: Fill remaining slots from compatible secondary zones
-  formationRows.forEach((slotCount, rIdx) => {
-    const preferredZones = rowTargetZones[rIdx];
-    while (assignedRows[rIdx].length < slotCount && pool.length > 0) {
-      let pickIdx = -1;
-      for (const z of preferredZones) {
-        pickIdx = pool.findIndex(p => getPlayerZone(p) === z);
-        if (pickIdx !== -1) break;
-      }
-      if (pickIdx === -1) pickIdx = 0;
-      assignedRows[rIdx].push(pool.splice(pickIdx, 1)[0]);
-    }
-  });
-
-  // Pass 3: Any leftover players go into any row with spare capacity
-  while (pool.length > 0) {
-    const targetRow = assignedRows.find((row, idx) => row.length < formationRows[idx]);
-    if (targetRow) targetRow.push(pool.shift());
-    else break;
   }
 
   return assignedRows;
@@ -2404,16 +2445,6 @@ const useFootballFormations = (summary, width, height, isHome) =>
       ? explicitStarters.slice(0, 11)
       : [...explicitStarters, ...rawRoster.filter(p => p.starter !== true)].slice(0, 11);
 
-    // If formationPlace 1..11 is cleanly numbered across starters, use it as tie-breaker
-    const placeNums = starters.map(p => parseInt(p?.formationPlace, 10)).filter(n => !isNaN(n) && n >= 1 && n <= 11);
-    if (new Set(placeNums).size >= 10) {
-      starters = [...starters].sort((a, b) => {
-        const pa = parseInt(a?.formationPlace, 10) || 99;
-        const pb = parseInt(b?.formationPlace, 10) || 99;
-        return pa - pb;
-      });
-    }
-
     const groupedRows = assignPlayersToFormationRows(starters, formationRows);
     const numRows = Math.max(1, formationRows.length - 1);
     const usableHeight = Math.max(180, height - 96);
@@ -2421,14 +2452,12 @@ const useFootballFormations = (summary, width, height, isHome) =>
     return groupedRows.map((rowPlayers, rowIndex) => {
       if (!rowPlayers || rowPlayers.length === 0) return [];
 
-      // Order left-to-right by actual lateral flank role
       const sortedRow = [...rowPlayers].sort((a, b) => {
         const idxA = rowPlayers.indexOf(a);
         const idxB = rowPlayers.indexOf(b);
         return getLateralFlankScore(a, idxA, rowPlayers.length) - getLateralFlankScore(b, idxB, rowPlayers.length);
       });
 
-      // Away team attacks downward from top goal, so mirror left/right to match attacking direction
       const orientedRow = isHome ? sortedRow : [...sortedRow].reverse();
 
       const progress = rowIndex / numRows;
