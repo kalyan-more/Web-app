@@ -165,7 +165,7 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.26s cubic-bezier(0.25, 0.85, 0.35, 1) forwards;
+      animation: iosSheetSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -175,7 +175,7 @@
     }
 
     .ios-view-enter {
-      animation: iosViewEnter 0.13s cubic-bezier(0.25, 0.85, 0.35, 1) forwards;
+      animation: iosViewEnter 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -491,27 +491,23 @@ const CRICKET_TEAM_COLORS = {
 };
 
 
-// WBBL / WPL / BBL / Franchise short & full aliases
-const CRICKET_EXTRA_LOGOS = {
-  "hh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
-  "bh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335978.png",
-  "ps-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335970.png",
-  "as-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335971.png",
-  "ss-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335977.png",
-  "mr-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335973.png",
-  "st-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335975.png",
-  "ms-w": "https://a.espncdn.com/i/teamlogos/cricket/500/628333.png"
-};
-
-const CRICKET_WBBL_BADGE_MAP = {
-  "hobart hurricanes": ["#5B21B6", "#311042", "HH"],
-  "brisbane heat": ["#0284C7", "#0F172A", "BH"],
-  "perth scorchers": ["#EA580C", "#18181B", "PS"],
-  "adelaide strikers": ["#0369A1", "#082F49", "AS"],
-  "sydney sixers": ["#DB2777", "#111111", "SS"],
-  "sydney thunder": ["#65A30D", "#14532D", "ST"],
-  "melbourne stars": ["#15803D", "#052E16", "MS"],
-  "melbourne renegades": ["#DC2626", "#450A0A", "MR"]
+const WBBL_TEAM_BADGES = {
+  "hobart hurricanes women": ["#5C2D91", "#240B42", "HH-W"],
+  "hobart hurricanes": ["#5C2D91", "#240B42", "HH-W"],
+  "brisbane heat women": ["#009FA5", "#0B3A3D", "BH-W"],
+  "brisbane heat": ["#009FA5", "#0B3A3D", "BH-W"],
+  "perth scorchers women": ["#FF6600", "#3D1800", "PS-W"],
+  "perth scorchers": ["#FF6600", "#3D1800", "PS-W"],
+  "adelaide strikers women": ["#0084D6", "#052C47", "AS-W"],
+  "adelaide strikers": ["#0084D6", "#052C47", "AS-W"],
+  "sydney sixers women": ["#EC2A90", "#3B0823", "SS-W"],
+  "sydney sixers": ["#EC2A90", "#3B0823", "SS-W"],
+  "sydney thunder women": ["#64B42D", "#1B3309", "ST-W"],
+  "sydney thunder": ["#64B42D", "#1B3309", "ST-W"],
+  "melbourne stars women": ["#287233", "#0A240E", "MS-W"],
+  "melbourne stars": ["#287233", "#0A240E", "MS-W"],
+  "melbourne renegades women": ["#E51837", "#3D050D", "MR-W"],
+  "melbourne renegades": ["#E51837", "#3D050D", "MR-W"]
 };
 
 const CRICKET_DOMESTIC_LEAGUE_REGEX = /(county championship|vitality blast|one-day cup|t20 blast|bob willis|royal london|sheffield shield|marsh one-day|plunket shield|ford trophy|super smash \(domestic\)|ranji trophy|vijay hazare|duleep trophy|syed mushtaq ali)/i;
@@ -919,37 +915,27 @@ const getCricketLogo = (team) => {
   const rawName = team.team_name || team.name || team.short_name || team.displayName || 'Team';
   const shortRaw = team.short_name || team.abbreviation || '';
   const apiLogo = team.logo || team.team_logo || team.image_url || team.imageUrl || team.team_image || team.image_path || '';
-  const cacheKey = `${rawName}|${shortRaw}|${apiLogo}|v2`;
+  const cacheKey = `${rawName}|${shortRaw}|${apiLogo}`;
   if (cricketLogoCache.has(cacheKey)) return cricketLogoCache.get(cacheKey);
 
   const tName = normalizeCricketTeamName(rawName);
   const searchName = tName.toLowerCase().trim();
   const rawLower = String(rawName).toLowerCase().trim();
   const shortLower = String(shortRaw).toLowerCase().trim();
-  const isWomenTeam = /women| w | -w$/i.test(`${rawLower} ${shortLower}`);
 
   let resolved = null;
   if (CRICKET_FRANCHISE_LOGOS[searchName]) resolved = CRICKET_FRANCHISE_LOGOS[searchName];
   else if (CRICKET_FRANCHISE_LOGOS[rawLower]) resolved = CRICKET_FRANCHISE_LOGOS[rawLower];
   else if (CRICKET_FRANCHISE_LOGOS[shortLower]) resolved = CRICKET_FRANCHISE_LOGOS[shortLower];
-  else if (CRICKET_EXTRA_LOGOS[shortLower]) resolved = CRICKET_EXTRA_LOGOS[shortLower];
-  else if (CRICKET_WBBL_BADGE_MAP[searchName]) {
-    const [c1, c2, code] = CRICKET_WBBL_BADGE_MAP[searchName];
-    resolved = getFallbackLogo(rawName, [c1, c2, isWomenTeam ? `${code}W` : code]);
-  } else if (CRICKET_TEAM_COLORS[searchName]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[searchName]);
+  else if (CRICKET_TEAM_COLORS[searchName]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[searchName]);
   else if (CRICKET_TEAM_COLORS[rawLower]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[rawLower]);
+  else if (WBBL_TEAM_BADGES[rawLower]) resolved = getFallbackLogo(rawName, WBBL_TEAM_BADGES[rawLower]);
+  else if (WBBL_TEAM_BADGES[searchName]) resolved = getFallbackLogo(rawName, WBBL_TEAM_BADGES[searchName]);
 
   if (!resolved) {
-    const tokenWords = searchName.split(/[^a-z0-9]+/).filter(Boolean);
     outer: for (const { code, keys } of CRICKET_COUNTRY_ALIASES) {
       for (const key of keys) {
-        if (
-          key === searchName ||
-          key === shortLower ||
-          key === rawLower ||
-          tokenWords.includes(key) ||
-          new RegExp(`\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`, 'i').test(searchName)
-        ) {
+        if (key === searchName || key === shortLower || key === rawLower || new RegExp(`\\b${key}\\b`, 'i').test(searchName)) {
           resolved = `https://flagcdn.com/w160/${code.toLowerCase()}.png`;
           break outer;
         }
@@ -960,13 +946,7 @@ const getCricketLogo = (team) => {
   if (!resolved) {
     const isDefaultLogo = apiLogo && (String(apiLogo).includes('default') || String(apiLogo).includes('placeholder'));
     if (apiLogo && !isDefaultLogo && String(apiLogo).startsWith('http')) resolved = apiLogo;
-    else {
-      const cleanCode = (shortRaw || tName || rawName)
-        .replace(/[^a-zA-Z]/g, '')
-        .toUpperCase()
-        .slice(0, 3) || 'CRK';
-      resolved = getFallbackLogo(rawName, [THEME.surfaceHighlight, THEME.surfaceLight, cleanCode]);
-    }
+    else resolved = getFallbackLogo(shortRaw || rawName);
   }
 
   cricketLogoCache.set(cacheKey, resolved);
@@ -1999,29 +1979,22 @@ const useSoccerFormations = (summary, width, height, isHome) =>
     const formation = teamRoster.formation?.split("-").map(Number).filter(n => !isNaN(n) && n > 0) || [4, 4, 2];
     const starters = teamRoster.roster?.filter(p => p.starter) || teamRoster.roster?.slice(0, 11) || [];
     const rows = [1, ...formation];
-    const numRows = Math.max(1, rows.length);
-    const topMargin = 14;
-    const bottomMargin = 34;
-    const usableHeight = Math.max(170, height - topMargin - bottomMargin);
-    const rowStep = numRows > 1 ? usableHeight / (numRows - 1) : 0;
-
+    const numRows = Math.max(1, rows.length - 1);
+    const usableHeight = Math.max(180, height - 84);
     let index = 0;
 
     return rows.map((count, rowIndex) => {
       const rowPlayers = starters.slice(index, index + count);
       index += count;
-      const sideMargin = 50;
-      const spanWidth = Math.max(120, width - sideMargin * 2);
+      const progress = rowIndex / numRows;
+      // Away: row 0 (GK) at top (y=10), advancing down toward halfway (y=10+usableHeight)
+      // Home: row 0 (GK) at bottom (y=10+usableHeight), advancing up toward halfway (y=10)
+      const y = isHome
+        ? (10 + usableHeight) - (progress * usableHeight)
+        : 10 + (progress * usableHeight);
 
       return rowPlayers.map((p, i) => {
-        const x = count === 1
-          ? width / 2
-          : sideMargin + (i / (count - 1)) * spanWidth;
-
-        const y = isHome
-          ? (height - bottomMargin - 22) - (rowIndex * rowStep)
-          : topMargin + (rowIndex * rowStep);
-
+        const x = ((i + 1) / (count + 1)) * width;
         return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
@@ -2038,19 +2011,19 @@ const PlayerJersey = memo(({ player, teamColor }) => {
   const contrast = (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? '#000' : '#fff';
 
   return (
-    <div className="flex flex-col items-center w-[90px] select-none pointer-events-none">
-      <div className="w-[32px] h-[32px] flex items-center justify-center relative">
-        <div className="w-[8px] h-[14px] absolute top-[3px] -left-[5px] rounded-[2px] -rotate-[15deg]" style={{ backgroundColor: safeColor }} />
-        <div className="w-[8px] h-[14px] absolute top-[3px] -right-[5px] rounded-[2px] rotate-[15deg]" style={{ backgroundColor: safeColor }} />
+    <div className="flex flex-col items-center w-[84px] select-none pointer-events-none">
+      <div className="w-[28px] h-[28px] flex items-center justify-center relative">
+        <div className="w-[7px] h-[12px] absolute top-[3px] -left-[4px] rounded-[2px] -rotate-[15deg]" style={{ backgroundColor: safeColor }} />
+        <div className="w-[7px] h-[12px] absolute top-[3px] -right-[4px] rounded-[2px] rotate-[15deg]" style={{ backgroundColor: safeColor }} />
         <div
-          className="w-[20px] h-[26px] rounded-[4px] flex items-center justify-center relative"
+          className="w-[18px] h-[23px] rounded-[4px] flex items-center justify-center relative"
           style={{ backgroundColor: safeColor, boxShadow: `0 2px 6px ${safeColor}66` }}
         >
-          <div className="w-[8px] h-[4px] bg-black/25 absolute top-0 rounded-b-[4px]" />
-          <span className="text-[11px] font-extrabold leading-none tabular-nums" style={{ color: contrast }}>{player.jersey || '-'}</span>
+          <div className="w-[7px] h-[3.5px] bg-black/25 absolute top-0 rounded-b-[4px]" />
+          <span className="text-[10px] font-extrabold leading-none tabular-nums" style={{ color: contrast }}>{player.jersey || '-'}</span>
         </div>
       </div>
-      <span className="text-[#F5F5F7] text-[9px] font-bold mt-1.5 text-center bg-black/65 px-1.5 py-0.5 rounded-[6px] truncate max-w-[86px]">
+      <span className="text-[#F5F5F7] text-[8.5px] font-bold mt-1 text-center bg-black/75 px-1.5 py-0.5 rounded-[5px] truncate max-w-[82px] leading-tight">
         {name}
       </span>
     </div>
@@ -2221,7 +2194,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
               </div>
             ))}
           </div>
-          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-visible">
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full">
             {homePlayers.map(p => (
               <div key={p.id} style={{ position: 'absolute', left: p.x - 45, top: p.y }}>
                 <PlayerJersey player={p.player} teamColor={hCol} />
@@ -2560,23 +2533,22 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
   );
 });
 
-const getSoccerZoneAccent = (leagueId, rank, totalTeams) => {
+const getSoccerZoneBadge = (leagueId, rank, totalTeams) => {
   if (!leagueId || !rank) return null;
-  // Champions League / Top spots (#0A84FF)
   if (leagueId === 'eng.1' || leagueId === 'esp.1' || leagueId === 'ita.1') {
-    if (rank <= 4) return THEME.accent; // #0A84FF
-    if (rank === 5 || rank === 6) return THEME.warning; // #FF9F0A (Europa / Play-offs)
-    if (rank > Math.max(4, totalTeams - 3)) return THEME.danger; // #FF453A (Relegation)
+    if (rank <= 4) return { code: 'UCL', color: THEME.accent, desc: 'UEFA Champions League' };
+    if (rank === 5 || rank === 6) return { code: 'UEL', color: THEME.warning, desc: 'UEFA Europa League' };
+    if (rank > Math.max(4, totalTeams - 3)) return { code: 'REL', color: THEME.danger, desc: 'Relegation' };
   } else if (leagueId === 'eng.2') {
-    if (rank <= 2) return THEME.accent; // Automatic promotion
-    if (rank <= 6) return THEME.warning; // Play-offs
-    if (rank > Math.max(2, totalTeams - 3)) return THEME.danger; // Relegation
+    if (rank <= 2) return { code: 'EPL', color: THEME.accent, desc: 'Premier League Promotion' };
+    if (rank <= 6) return { code: 'PO', color: THEME.warning, desc: 'Promotion Play-offs' };
+    if (rank > Math.max(2, totalTeams - 3)) return { code: 'REL', color: THEME.danger, desc: 'Relegation' };
   } else if (leagueId === 'uefa.champions') {
-    if (rank <= 8) return THEME.accent;
-    if (rank <= 24) return THEME.warning;
+    if (rank <= 8) return { code: 'R16', color: THEME.accent, desc: 'Round of 16 Direct' };
+    if (rank <= 24) return { code: 'KPO', color: THEME.warning, desc: 'Knockout Play-offs' };
   } else if (totalTeams >= 6) {
-    if (rank <= 2) return THEME.accent;
-    if (rank <= 4) return THEME.warning;
+    if (rank <= 2) return { code: 'KO', color: THEME.accent, desc: 'Knockout Stage' };
+    if (rank <= 4) return { code: 'PO', color: THEME.warning, desc: 'Play-offs' };
   }
   return null;
 };
@@ -2618,7 +2590,7 @@ const sortSoccerEntries = (entries = []) => {
 
 const parseSoccerStandingsCached = (leagueId, leagueName, json) => {
   if (!json) return [];
-  const cacheKey = `soccer_std_v5|${leagueId}|${json?.children?.length || 0}|${json?.standings?.entries?.length || json?.entries?.length || 0}`;
+  const cacheKey = `soccer_std_v6|${leagueId}|${json?.children?.length || 0}|${json?.standings?.entries?.length || json?.entries?.length || 0}`;
   if (standingsParsedCache.has(cacheKey)) return standingsParsedCache.get(cacheKey);
 
   const parsedGroups = [];
@@ -2779,6 +2751,13 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                 : `${cleanLeagueTitle} • ${group.name}`;
               const totalTeams = group.entries.length;
 
+              const legendMap = new Map();
+              group.entries.forEach((_, idx) => {
+                const b = getSoccerZoneBadge(league.id, idx + 1, totalTeams);
+                if (b && !legendMap.has(b.code)) legendMap.set(b.code, b);
+              });
+              const legendItems = Array.from(legendMap.values());
+
               return (
                 <div key={gIdx} className="mb-6">
                   <div className="flex items-center justify-between gap-2 mb-3 px-2">
@@ -2801,14 +2780,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                   </div>
                   {group.entries.map((item, index) => {
                     const rank = index + 1;
-                    const zoneColor = getSoccerZoneAccent(league.id, rank, totalTeams);
-                    const zoneTag = !zoneColor
-                      ? null
-                      : zoneColor === THEME.accent
-                        ? (league.id === 'eng.2' ? 'PRO' : 'UCL')
-                        : zoneColor === THEME.warning
-                          ? (league.id === 'eng.2' ? 'PLY' : 'UEL')
-                          : 'REL';
+                    const zoneBadge = getSoccerZoneBadge(league.id, rank, totalTeams);
                     const get = (n) => item.stats?.find(s => s.name === n)?.displayValue || '0';
                     const wdl = `${get('wins')}-${get('ties')}-${get('losses')}`;
                     const tName = item?.team?.shortDisplayName || item?.team?.name;
@@ -2816,23 +2788,20 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                       <div
                         key={item.team?.id || index}
                         onClick={() => onTeamPress(item.team, league.id, item.stats, 'soccer', rank)}
-                        style={zoneColor ? { borderLeftWidth: '3px', borderLeftColor: zoneColor } : undefined}
                         className="flex items-center liquid-glass p-4 rounded-[24px] mb-2.5 cursor-pointer ios-card-press overflow-hidden"
                       >
-                        <div className="w-[34px] flex flex-col items-center justify-center shrink-0">
-                          <span className="text-[12px] text-[#F5F5F7] font-extrabold tabular-nums leading-none">{rank}</span>
-                          {zoneTag && (
+                        <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
+                        <div className="flex-1 flex items-center ml-2 min-w-0 gap-2">
+                          <img src={getSafeSoccerLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-1 object-contain shrink-0" alt="" />
+                          <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
+                          {zoneBadge && (
                             <span
-                              className="text-[8px] font-black tracking-[0.6px] mt-1 px-1.5 py-[1px] rounded-full leading-tight"
-                              style={{ backgroundColor: `${zoneColor}22`, color: zoneColor }}
+                              className="text-[9px] font-black tracking-[0.6px] px-1.5 py-0.5 rounded-[6px] shrink-0 uppercase"
+                              style={{ color: zoneBadge.color, backgroundColor: `${zoneBadge.color}1A` }}
                             >
-                              {zoneTag}
+                              {zoneBadge.code}
                             </span>
                           )}
-                        </div>
-                        <div className="flex-1 flex items-center ml-1.5 min-w-0">
-                          <img src={getSafeSoccerLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
-                          <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
                         </div>
                         <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{get('gamesPlayed')}</span>
                         <span className="w-[55px] text-center text-[12px] text-[#8E8E93] tracking-[0.5px] tabular-nums">{wdl}</span>
@@ -2840,6 +2809,17 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                       </div>
                     );
                   })}
+
+                  {legendItems.length > 0 && (
+                    <div className="mt-3 px-3 py-2.5 rounded-[16px] bg-white/[0.03] border border-white/[0.06] flex flex-wrap gap-x-4 gap-y-1.5">
+                      {legendItems.map(item => (
+                        <div key={item.code} className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-black uppercase" style={{ color: item.color }}>{item.code}</span>
+                          <span className="text-[10px] font-medium text-[#8E8E93]">= {item.desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })
