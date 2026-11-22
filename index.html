@@ -123,7 +123,7 @@
     }
 
     @keyframes sectionScoresEnter {
-      0% { opacity: 0; transform: translate3d(10px, 0, 0); }
+      0% { opacity: 0; transform: translate3d(12px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
@@ -148,29 +148,24 @@
       }
     }
 
-    /* Ultra-smooth multi-phase Apple app opening animation */
     @keyframes iosOpeningIcon {
       0% {
         opacity: 0;
-        transform: scale3d(0.68, 0.68, 1);
+        transform: scale3d(0.84, 0.84, 1);
       }
-      42% {
+      55% {
         opacity: 1;
-        transform: scale3d(1.04, 1.04, 1);
-      }
-      72% {
-        opacity: 1;
-        transform: scale3d(0.995, 0.995, 1);
+        transform: scale3d(1.02, 1.02, 1);
       }
       100% {
-        opacity: 0;
-        transform: scale3d(1.08, 1.08, 1);
+        opacity: 1;
+        transform: scale3d(1, 1, 1);
       }
     }
 
     @keyframes iosOpeningOverlayFade {
       0% { opacity: 1; }
-      74% { opacity: 1; }
+      62% { opacity: 1; }
       100% { opacity: 0; visibility: hidden; }
     }
 
@@ -186,12 +181,12 @@
     }
 
     .ios-opening-overlay {
-      animation: iosOpeningOverlayFade 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningOverlayFade 1.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
       will-change: opacity;
     }
 
     .ios-opening-icon {
-      animation: iosOpeningIcon 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningIcon 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -240,14 +235,9 @@
       will-change: transform, opacity;
     }
 
-    .feed-card-optimize {
-      content-visibility: auto;
-      contain-intrinsic-size: auto 112px;
-    }
-
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.26s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.24s ease, border-color 0.24s ease, opacity 0.24s ease;
       will-change: transform;
     }
     .ios-card-press:active {
@@ -256,7 +246,7 @@
 
     button {
       touch-action: manipulation;
-      transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1), color 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.24s ease, color 0.24s ease, opacity 0.24s ease;
       will-change: transform;
     }
     button:active {
@@ -602,6 +592,25 @@ const WBBL_TEAM_BADGES = {
   "melbourne stars": ["#287233", "#0A240E", "MS-W"],
   "melbourne renegades women": ["#E51837", "#3D050D", "MR-W"],
   "melbourne renegades": ["#E51837", "#3D050D", "MR-W"]
+};
+
+const WBBL_OFFICIAL_CRESTS = {
+  "adelaide strikers women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="asw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0095F6"/><stop offset="100%" stop-color="#003B73"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#asw)" stroke="#7DD3FC" stroke-width="3.5"/><path d="M28 56 L92 42 L88 54 L32 68 Z" fill="#FFFFFF" opacity="0.9"/><text x="60" y="76" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">STRIKERS</text><text x="60" y="94" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#BAE6FD" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`,
+  "brisbane heat women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="bhw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00B8C4"/><stop offset="100%" stop-color="#7C2D12"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#bhw)" stroke="#FDBA74" stroke-width="3.5"/><path d="M60 22 C74 36 82 50 82 66 C82 80 72 90 60 90 C48 90 38 80 38 66 C38 54 46 42 54 34 C53 42 57 46 60 46 C64 46 66 36 60 22 Z" fill="#FDE047" opacity="0.92"/><text x="60" y="74" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">HEAT</text><text x="60" y="92" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FEF08A" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`,
+  "hobart hurricanes women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="hhw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7E22CE"/><stop offset="100%" stop-color="#2E1065"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#hhw)" stroke="#E9D5FF" stroke-width="3.5"/><circle cx="60" cy="54" r="24" fill="none" stroke="#F472B6" stroke-width="2.5" stroke-dasharray="10 5"/><text x="60" y="62" font-family="system-ui,-apple-system,sans-serif" font-size="17" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.8">HURRICANES</text><text x="60" y="84" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#F5D0FE" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`,
+  "melbourne renegades women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="mrw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EF4444"/><stop offset="100%" stop-color="#450A0A"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#mrw)" stroke="#FCA5A5" stroke-width="3.5"/><polygon points="60,22 92,52 60,96 28,52" fill="#111827" fill-opacity="0.55"/><text x="60" y="62" font-family="system-ui,-apple-system,sans-serif" font-size="17" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.8">RENEGADES</text><text x="60" y="84" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FECACA" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`,
+  "melbourne stars women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="msw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#16A34A"/><stop offset="100%" stop-color="#052E16"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#msw)" stroke="#86EFAC" stroke-width="3.5"/><polygon points="60,24 67,41 85,41 71,52 76,70 60,59 44,70 49,52 35,41 53,41" fill="#4ADE80" opacity="0.35"/><text x="60" y="63" font-family="system-ui,-apple-system,sans-serif" font-size="21" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">STARS</text><text x="60" y="85" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#BBF7D0" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`,
+  "perth scorchers women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="psw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF6600"/><stop offset="100%" stop-color="#431407"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#psw)" stroke="#FDBA74" stroke-width="3.5"/><circle cx="60" cy="54" r="22" fill="#FACC15" opacity="0.22"/><text x="60" y="62" font-family="system-ui,-apple-system,sans-serif" font-size="17" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.8">SCORCHERS</text><text x="60" y="84" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FED7AA" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`,
+  "sydney sixers women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="ssw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EC2A90"/><stop offset="100%" stop-color="#270618"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#ssw)" stroke="#F9A8D4" stroke-width="3.5"/><text x="60" y="62" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">SIXERS</text><text x="60" y="84" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FBCFE8" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`,
+  "sydney thunder women": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="stw" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#65A30D"/><stop offset="100%" stop-color="#1A2E05"/></linearGradient></defs><path d="M60 8 L106 24 L98 76 C94 96 78 108 60 114 C42 108 26 96 22 76 L14 24 Z" fill="url(#stw)" stroke="#BEF264" stroke-width="3.5"/><polygon points="64,22 44,58 58,58 52,86 78,48 63,48" fill="#A3E635" opacity="0.35"/><text x="60" y="62" font-family="system-ui,-apple-system,sans-serif" font-size="18" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.8">THUNDER</text><text x="60" y="84" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="#ECFCCB" text-anchor="middle" letter-spacing="2">WBBL</text></svg>`
+};
+
+const getWbblCrestUri = (name) => {
+  const low = String(name || '').toLowerCase().trim();
+  const norm = normalizeCricketTeamName(name).toLowerCase().trim();
+  const key = WBBL_OFFICIAL_CRESTS[low] ? low : WBBL_OFFICIAL_CRESTS[`${norm} women`] ? `${norm} women` : WBBL_OFFICIAL_CRESTS[norm] ? norm : null;
+  if (!key) return null;
+  return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(WBBL_OFFICIAL_CRESTS[key])))}`;
 };
 
 const CRICKET_DOMESTIC_LEAGUE_REGEX = /(county championship|vitality blast|one-day cup|t20 blast|bob willis|royal london|sheffield shield|marsh one-day|plunket shield|ford trophy|super smash \(domestic\)|ranji trophy|vijay hazare|duleep trophy|syed mushtaq ali)/i;
@@ -993,6 +1002,11 @@ const getFallbackLogo = (name, customColors = null) => {
 
 const handleImageError = (e, fallbackName) => {
   e.target.onerror = null;
+  const wbblCrest = getWbblCrestUri(fallbackName);
+  if (wbblCrest) {
+    e.target.src = wbblCrest;
+    return;
+  }
   const low = String(fallbackName || '').toLowerCase().trim();
   const norm = normalizeCricketTeamName(fallbackName).toLowerCase().trim();
   const custom = WBBL_TEAM_BADGES[low] || WBBL_TEAM_BADGES[norm] || CRICKET_TEAM_COLORS[low] || CRICKET_TEAM_COLORS[norm] || null;
@@ -1045,25 +1059,6 @@ const getCricketLogo = (team) => {
     const isDefaultLogo = apiLogo && (String(apiLogo).includes('default') || String(apiLogo).includes('placeholder'));
     if (apiLogo && !isDefaultLogo && String(apiLogo).startsWith('http')) resolved = apiLogo;
     else resolved = getFallbackLogo(shortRaw || rawName);
-  }
-
-  if (!resolved) {
-    const wbblMatchers = [
-      { re: /adelaide.*strikers/i, id: '660643', badge: WBBL_TEAM_BADGES['adelaide strikers women'] },
-      { re: /brisbane.*heat/i, id: '660647', badge: WBBL_TEAM_BADGES['brisbane heat women'] },
-      { re: /hobart.*hurricanes/i, id: '660649', badge: WBBL_TEAM_BADGES['hobart hurricanes women'] },
-      { re: /melbourne.*renegades/i, id: '660651', badge: WBBL_TEAM_BADGES['melbourne renegades women'] },
-      { re: /melbourne.*stars/i, id: '660653', badge: WBBL_TEAM_BADGES['melbourne stars women'] },
-      { re: /perth.*scorchers/i, id: '660655', badge: WBBL_TEAM_BADGES['perth scorchers women'] },
-      { re: /sydney.*sixers/i, id: '660657', badge: WBBL_TEAM_BADGES['sydney sixers women'] },
-      { re: /sydney.*thunder/i, id: '660659', badge: WBBL_TEAM_BADGES['sydney thunder women'] }
-    ];
-    for (const m of wbblMatchers) {
-      if (m.re.test(rawLower) || m.re.test(searchName)) {
-        resolved = `https://a.espncdn.com/i/teamlogos/cricket/500/${m.id}.png`;
-        break;
-      }
-    }
   }
 
   cricketLogoCache.set(cacheKey, resolved);
@@ -2340,48 +2335,34 @@ const TacticalPitch = memo(({ summary, home, away }) => {
 
 const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
   const scrollRef = useRef(null);
-  const rafRef = useRef(null);
 
-  const centerSelectedDate = useCallback(() => {
-    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      rafRef.current = null;
-      const container = scrollRef.current;
-      if (!container) return;
-      const selectedEl = container.querySelector('[data-selected="true"]');
-      if (selectedEl) {
-        const containerRect = container.getBoundingClientRect();
-        const elRect = selectedEl.getBoundingClientRect();
-        const delta = (elRect.left + elRect.width / 2) - (containerRect.left + containerRect.width / 2);
-        if (Math.abs(delta) > 1) {
-          container.scrollTo({
-            left: container.scrollLeft + delta,
-            behavior: 'smooth'
-          });
-        }
-      }
-    });
+  const centerSelectedDate = useCallback((smooth = true) => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const selectedEl = container.querySelector('[data-selected="true"]');
+    if (selectedEl) {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = selectedEl.getBoundingClientRect();
+      const delta = (elRect.left + elRect.width / 2) - (containerRect.left + containerRect.width / 2);
+      container.scrollTo({ left: container.scrollLeft + delta, behavior: smooth ? 'smooth' : 'auto' });
+    }
   }, []);
 
   useEffect(() => {
-    centerSelectedDate();
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
+    centerSelectedDate(true);
+    const t = setTimeout(() => centerSelectedDate(false), 90);
+    return () => clearTimeout(t);
   }, [selectedDate, dates, centerSelectedDate]);
 
   return (
     <div className="px-4 pt-2.5 mb-2.5 w-full">
-      <div className="bg-[#121212] h-[66px] rounded-[33px] px-3 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
-        <div
-          ref={scrollRef}
-          className="flex items-center overflow-x-auto [&::-webkit-scrollbar]:hidden w-full scroll-smooth ios-momentum"
-        >
+      <div className="bg-[#121212] h-[64px] rounded-[32px] px-3 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
+        <div ref={scrollRef} className="flex items-center overflow-x-auto scroll-smooth ios-momentum [&::-webkit-scrollbar]:hidden w-full">
           {dates.map((d, i) => {
             const isSel = isSameDay(d, selectedDate);
             const isToday = isSameDay(d, new Date());
             const diffDays = Math.abs((d - selectedDate) / (1000 * 60 * 60 * 24));
-            const fadeOpacity = isSel || isToday ? 1 : Math.max(0.32, 1 - (diffDays * 0.14));
+            const fadeOpacity = isSel || isToday ? 1 : Math.max(0.3, 1 - (diffDays * 0.15));
 
             const dayColor = isSel ? THEME.accent : isToday ? THEME.success : THEME.muted;
             const dateColor = isSel ? THEME.accent : isToday ? THEME.success : THEME.text;
@@ -2391,23 +2372,13 @@ const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
                 key={i}
                 data-selected={isSel}
                 onClick={() => onSelectDate(new Date(d))}
-                className="w-[46px] mx-1 shrink-0 flex flex-col items-center justify-center py-1.5 rounded-[18px] outline-none"
-                style={{
-                  opacity: fadeOpacity,
-                  transform: isSel ? 'translate3d(0, -1px, 0) scale3d(1.06, 1.06, 1)' : 'translate3d(0, 0, 0) scale3d(1, 1, 1)',
-                  backgroundColor: isSel ? 'rgba(10, 132, 255, 0.14)' : 'transparent'
-                }}
+                className="w-[44px] mx-1 shrink-0 flex flex-col items-center justify-center py-1 transition-all duration-200 ease-out active:scale-95 outline-none"
+                style={{ opacity: fadeOpacity }}
               >
-                <span
-                  className="text-[9px] font-bold tracking-[0.6px] mb-1 uppercase"
-                  style={{ color: dayColor, transition: 'color 0.25s cubic-bezier(0.22, 1, 0.36, 1)' }}
-                >
+                <span className="text-[9px] font-bold tracking-[0.5px] mb-1 uppercase" style={{ color: dayColor }}>
                   {d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase()}
                 </span>
-                <span
-                  className="text-[16px] font-extrabold tabular-nums leading-none"
-                  style={{ color: dateColor, transition: 'color 0.25s cubic-bezier(0.22, 1, 0.36, 1)' }}
-                >
+                <span className="text-[16px] font-extrabold tabular-nums leading-none" style={{ color: dateColor }}>
                   {d.getDate()}
                 </span>
               </button>
@@ -3703,7 +3674,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     fetchWithCache(`${API_CRICKET_BASE}/graphs/${id}`, isSilent).then(graphsRes => {
       if (graphsRes?.graphs) setMatchGraphs(graphsRes.graphs);
     }).catch(() => {});
-  }, [id]);
+  }, [id, matchDetails]);
 
   useEffect(() => {
     fetchMatchHub(false);
@@ -4320,7 +4291,7 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
     } catch {
       if (!isSilent && !summary) setSummary({});
     }
-  }, [match?.id, sumUrl]);
+  }, [match?.id, sumUrl, summary]);
 
   useEffect(() => {
     fetchActiveDetails(false);
@@ -5182,7 +5153,7 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowOpeningAnim(false), 1450);
+    const timer = setTimeout(() => setShowOpeningAnim(false), 1250);
     return () => clearTimeout(timer);
   }, []);
 
@@ -5751,7 +5722,7 @@ function App() {
         <div className="fixed inset-0 z-[100] bg-[#000000] flex items-center justify-center pointer-events-none ios-opening-overlay">
           <img
             src="./apple-touch-icon.png"
-            onerror={(e) => { e.target.onerror = null; e.target.src = './icon-512.png'; }}
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = './icon-512.png'; }}
             alt="Sideline"
             className="w-[88px] h-[88px] rounded-[22px] object-contain ios-opening-icon"
           />
