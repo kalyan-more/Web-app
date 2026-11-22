@@ -99,15 +99,15 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Sleek 120Hz GPU-accelerated spring transitions */
+    /* Sleek 120Hz GPU-accelerated Apple spring transitions */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.6;
-        transform: translate3d(0, 100%, 0);
+        opacity: 0.4;
+        transform: translate3d(0, 36px, 0) scale3d(0.985, 0.985, 1);
       }
       100% {
         opacity: 1;
-        transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
       }
     }
 
@@ -118,8 +118,8 @@
 
     @keyframes iosViewEnter {
       0% {
-        opacity: 0;
-        transform: translate3d(6px, 0, 0);
+        opacity: 0.01;
+        transform: translate3d(0, 6px, 0);
       }
       100% {
         opacity: 1;
@@ -165,17 +165,17 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.16s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosBackdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       will-change: opacity;
     }
 
     .ios-view-enter {
-      animation: iosViewEnter 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosViewEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -420,7 +420,39 @@ const CRICKET_FRANCHISE_LOGOS = {
   "west indies women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
   "wi": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
   "wi women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
-  "windies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png"
+  "windies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "adelaide strikers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "adelaide strikers": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "as-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "asw": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "brisbane heat women": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "brisbane heat": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "bh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "bhw": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "hobart hurricanes women": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hobart hurricanes": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hhw": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "melbourne renegades women": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "melbourne renegades": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "mr-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "mrw": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "melbourne stars women": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "melbourne stars": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "ms-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "msw": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "perth scorchers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
+  "perth scorchers": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
+  "ps-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
+  "psw": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
+  "sydney sixers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "sydney sixers": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "ss-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "ssw": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "sydney thunder women": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "sydney thunder": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "st-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "stw": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png"
 };
 
 const CRICKET_TEAM_COLORS = {
@@ -898,7 +930,10 @@ const getFallbackLogo = (name, customColors = null) => {
 
 const handleImageError = (e, fallbackName) => {
   e.target.onerror = null;
-  e.target.src = getFallbackLogo(fallbackName);
+  const low = String(fallbackName || '').toLowerCase().trim();
+  const norm = normalizeCricketTeamName(fallbackName).toLowerCase().trim();
+  const custom = WBBL_TEAM_BADGES[low] || WBBL_TEAM_BADGES[norm] || CRICKET_TEAM_COLORS[low] || CRICKET_TEAM_COLORS[norm] || null;
+  e.target.src = getFallbackLogo(fallbackName, custom);
 };
 
 const normalizeCricketTeamName = (name) => {
@@ -970,7 +1005,8 @@ const getCricketLeagueLogo = (title, apiLogo = null) => {
   else if (t.includes('world cup') || t.includes('t20 world') || t.includes('cwc')) { label = 'WC'; c1 = '#0A84FF'; c2 = '#4F46E5'; }
   else if (t.includes('champions trophy')) { label = 'CT'; c1 = '#10B981'; c2 = '#047857'; }
   else if (t.includes('test championship') || t.includes('wtc') || t.includes('test')) { label = 'TEST'; c1 = '#D97706'; c2 = '#78350F'; }
-  else if (t.includes('bbl') || t.includes('big bash')) { label = 'BBL'; c1 = '#10B981'; c2 = '#065F46'; }
+  else if (t.includes('wbbl') || t.includes("women's big bash") || t.includes('womens big bash')) { return 'https://a.espncdn.com/i/leaguelogos/cricket/500/1118345.png'; }
+  else if (t.includes('bbl') || t.includes('big bash')) { return 'https://a.espncdn.com/i/leaguelogos/cricket/500/486957.png'; }
   else if (t.includes('psl') || t.includes('pakistan super')) { label = 'PSL'; c1 = '#16A34A'; c2 = '#14532D'; }
   else if (t.includes('sa20')) { label = 'SA20'; c1 = '#EF4444'; c2 = '#991B1B'; }
   else if (t.includes('cpl') || t.includes('caribbean')) { label = 'CPL'; c1 = '#F59E0B'; c2 = '#7C2D12'; }
@@ -2772,7 +2808,7 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                     )}
                   </div>
                   <div className="flex px-4 mb-3 items-center">
-                    <span className="w-[22px] text-center text-[10px] text-[#8E8E93] font-bold">#</span>
+                    <span className="w-[28px] text-center text-[10px] text-[#8E8E93] font-bold">#</span>
                     <span className="flex-1 text-[#8E8E93] text-[10px] font-bold ml-2 text-left">Club</span>
                     <span className="w-[25px] text-center text-[10px] text-[#8E8E93] font-bold">P</span>
                     <span className="w-[55px] text-center text-[10px] text-[#8E8E93] font-bold">W-D-L</span>
@@ -2790,18 +2826,20 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                         onClick={() => onTeamPress(item.team, league.id, item.stats, 'soccer', rank)}
                         className="flex items-center liquid-glass p-4 rounded-[24px] mb-2.5 cursor-pointer ios-card-press overflow-hidden"
                       >
-                        <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
-                        <div className="flex-1 flex items-center ml-2 min-w-0 gap-2">
-                          <img src={getSafeSoccerLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-1 object-contain shrink-0" alt="" />
-                          <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
+                        <div className="w-[28px] flex flex-col items-center justify-center shrink-0">
+                          <span className="text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums leading-tight">{rank}</span>
                           {zoneBadge && (
                             <span
-                              className="text-[9px] font-black tracking-[0.6px] px-1.5 py-0.5 rounded-[6px] shrink-0 uppercase"
-                              style={{ color: zoneBadge.color, backgroundColor: `${zoneBadge.color}1A` }}
+                              className="mt-0.5 text-[7.5px] font-black tracking-[0.4px] px-1 py-[1px] rounded-[4px] uppercase leading-none"
+                              style={{ color: zoneBadge.color, backgroundColor: `${zoneBadge.color}1F` }}
                             >
                               {zoneBadge.code}
                             </span>
                           )}
+                        </div>
+                        <div className="flex-1 flex items-center ml-2 min-w-0">
+                          <img src={getSafeSoccerLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
+                          <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
                         </div>
                         <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{get('gamesPlayed')}</span>
                         <span className="w-[55px] text-center text-[12px] text-[#8E8E93] tracking-[0.5px] tabular-nums">{wdl}</span>
@@ -2999,7 +3037,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                   )}
                 </div>
                 <div className="flex px-4 mb-3 items-center">
-                  <span className="w-[22px] text-center text-[10px] text-[#8E8E93] font-bold">#</span>
+                  <span className="w-[28px] text-center text-[10px] text-[#8E8E93] font-bold">#</span>
                   <span className="flex-1 text-[#8E8E93] text-[10px] font-bold ml-2 text-left">Team</span>
                   <span className="w-[25px] text-center text-[10px] text-[#8E8E93] font-bold">P</span>
                   <span className="w-[45px] text-center text-[10px] text-[#8E8E93] font-bold">W/L</span>
@@ -3853,9 +3891,9 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -3984,9 +4022,9 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4386,9 +4424,9 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
   const isFav = favorites.includes(favKey);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
@@ -4708,9 +4746,9 @@ const SoccerTeamModal = ({ team, leagueId, existingStats, standingRank, favorite
   const isFav = favorites.includes(favId);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.08)] transform-gpu">
+      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
