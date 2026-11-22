@@ -99,11 +99,11 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Distinct, slightly slower Apple-like transitions for different UI elements */
+    /* Distinct, silky Apple-like transitions for different sections & UI elements */
     @keyframes iosSheetSlideUp {
       0% {
         opacity: 0.35;
-        transform: translate3d(0, 44px, 0) scale3d(0.982, 0.982, 1);
+        transform: translate3d(0, 48px, 0) scale3d(0.98, 0.98, 1);
       }
       100% {
         opacity: 1;
@@ -116,21 +116,31 @@
       100% { opacity: 1; }
     }
 
-    @keyframes iosViewEnter {
-      0% {
-        opacity: 0;
-        transform: translate3d(0, 10px, 0);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-      }
+    /* Section-specific transitions */
+    @keyframes sectionHomeEnter {
+      0% { opacity: 0; transform: translate3d(0, 14px, 0) scale3d(0.988, 0.988, 1); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+    }
+
+    @keyframes sectionScoresEnter {
+      0% { opacity: 0; transform: translate3d(12px, 0, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes sectionStandingsEnter {
+      0% { opacity: 0; transform: translate3d(0, 12px, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes sectionIntelEnter {
+      0% { opacity: 0; transform: translate3d(-10px, 6px, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes iosExpandIn {
       0% {
         opacity: 0;
-        transform: translate3d(0, 8px, 0) scale3d(0.99, 0.99, 1);
+        transform: translate3d(0, 10px, 0) scale3d(0.992, 0.992, 1);
       }
       100% {
         opacity: 1;
@@ -158,28 +168,20 @@
     }
 
     @keyframes iosOpeningOverlayFade {
-      0% {
-        opacity: 1;
-      }
-      72% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-        visibility: hidden;
-      }
+      0% { opacity: 1; }
+      72% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
     }
 
     @keyframes whitePillBounce {
-      0% {
-        transform: translate3d(-18px, 0, 0) scaleX(0.92);
-      }
-      50% {
-        transform: translate3d(18px, 0, 0) scaleX(1.06);
-      }
-      100% {
-        transform: translate3d(-18px, 0, 0) scaleX(0.92);
-      }
+      0% { transform: translate3d(-18px, 0, 0) scaleX(0.92); }
+      50% { transform: translate3d(18px, 0, 0) scaleX(1.06); }
+      100% { transform: translate3d(-18px, 0, 0) scaleX(0.92); }
+    }
+
+    @keyframes liveClockPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.48; }
     }
 
     .ios-opening-overlay {
@@ -193,46 +195,66 @@
     }
 
     .white-pill-bounce {
-      animation: whitePillBounce 1.15s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      animation: whitePillBounce 1.45s cubic-bezier(0.37, 0, 0.63, 1) infinite;
       will-change: transform;
     }
 
+    .live-clock-pulse {
+      animation: liveClockPulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      will-change: opacity;
+    }
+
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.32s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      animation: iosBackdropFadeIn 0.34s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
       will-change: opacity;
     }
 
-    .ios-view-enter {
-      animation: iosViewEnter 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    .section-enter-home {
+      animation: sectionHomeEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .section-enter-scores {
+      animation: sectionScoresEnter 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .section-enter-standings {
+      animation: sectionStandingsEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .section-enter-intel {
+      animation: sectionIntelEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-expand-in {
-      animation: iosExpandIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosExpandIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.22s ease, border-color 0.22s ease, opacity 0.22s ease;
+      transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.24s ease, border-color 0.24s ease, opacity 0.24s ease;
       will-change: transform;
     }
     .ios-card-press:active {
-      transform: scale3d(0.975, 0.975, 1);
+      transform: scale3d(0.976, 0.976, 1);
     }
 
     button {
       touch-action: manipulation;
-      transition: transform 0.20s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.22s ease, color 0.22s ease, opacity 0.22s ease;
+      transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.24s ease, color 0.24s ease, opacity 0.24s ease;
       will-change: transform;
     }
     button:active {
-      transform: scale3d(0.955, 0.955, 1);
+      transform: scale3d(0.958, 0.958, 1);
     }
   </style>
 </head>
@@ -756,6 +778,7 @@ const prewarmSportsAPIs = () => {
     fetchWithCache(`${API_CRICKET_BASE}/live`).catch(() => {});
     fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`).catch(() => {});
     fetchWithCache(`${API_CRICKET_BASE}/standings`).catch(() => {});
+    fetchWithCache(API_CRICKET_NEWS_ESPN).catch(() => {});
     fetchWithCache(CRICINFO_RSS_JSON).catch(() => {});
     SOCCER_LEAGUES.forEach(l => {
       fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${todayDs}`).catch(() => {});
@@ -1988,7 +2011,7 @@ const WhitePillLoader = memo(({ className = "py-12" }) => (
 
 const BlinkingTime = memo(({ time, color = THEME.success }) => (
   <div className="flex items-center justify-center mt-1.5 gap-1.5 w-full">
-    <span className="text-[12px] font-extrabold tracking-[1px] animate-pulse" style={{ color }}>{time}</span>
+    <span className="text-[12px] font-extrabold tracking-[1px] live-clock-pulse" style={{ color }}>{time}</span>
   </div>
 ));
 
@@ -2361,14 +2384,35 @@ const extractParagraphs = (htmlOrText) => {
     .filter(p => p.length > 0);
 };
 
+const getArticleApiUrl = (item) => {
+  const raw =
+    item?.links?.api?.news?.href ||
+    item?.links?.api?.self?.href ||
+    (item?.id && /^\d+$/.test(String(item.id))
+      ? `https://now.core.api.espn.com/v1/sports/news/${item.id}`
+      : null);
+  return raw ? String(raw).replace(/^http:\/\//i, 'https://') : null;
+};
+
+const prefetchFullArticle = (item) => {
+  const url = getArticleApiUrl(item);
+  if (!url) return Promise.resolve(null);
+  return fetchWithCache(url, false, 3500)
+    .then(res => res?.headlines?.[0] || res?.article || res || null)
+    .catch(() => null);
+};
+
 const NewsCard = memo(({ item }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [fullArticleData, setFullArticleData] = useState(null);
-  const [fetchingFull, setFetchingFull] = useState(false);
+  const [fullArticleData, setFullArticleData] = useState(() => {
+    const url = getArticleApiUrl(item);
+    if (!url) return null;
+    const cached = getCachedSync(url);
+    return cached?.headlines?.[0] || cached?.article || cached || null;
+  });
 
   const tag = categorizeNews(item.headline, item.description);
   const rawSummary = stripHtml(item.description);
-  const inlineStory = stripHtml(item.story || '');
   const formattedExactTime = item.published
     ? new Date(item.published).toLocaleString('en-GB', {
         day: 'numeric',
@@ -2379,36 +2423,35 @@ const NewsCard = memo(({ item }) => {
       })
     : '';
 
-  // On expand, fetch the full ESPN Now/Article JSON endpoint if available so the user gets full multi-paragraph reporting!
   useEffect(() => {
-    if (!isExpanded || fullArticleData || fetchingFull) return;
-    const apiHref = item.links?.api?.news?.href || item.links?.api?.self?.href || null;
-    if (!apiHref) return;
-
+    if (!isExpanded || fullArticleData) return;
     let active = true;
-    setFetchingFull(true);
-    const secureUrl = apiHref.replace(/^http:\/\//i, 'https://');
-    fetchWithCache(secureUrl, false, 6000)
-      .then(res => {
-        if (!active) return;
-        const art = res?.headlines?.[0] || res?.article || res;
-        if (art) setFullArticleData(art);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setFetchingFull(false);
-      });
+    prefetchFullArticle(item).then(art => {
+      if (active && art) setFullArticleData(art);
+    });
     return () => { active = false; };
-  }, [isExpanded, fullArticleData, fetchingFull, item]);
+  }, [isExpanded, fullArticleData, item]);
 
-  const resolvedStoryRaw = fullArticleData?.story || item.story || fullArticleData?.description || item.description || '';
+  const resolvedStoryRaw =
+    fullArticleData?.story ||
+    item.story ||
+    fullArticleData?.description ||
+    item.description ||
+    '';
+
   const paragraphs = useMemo(() => {
     const list = extractParagraphs(resolvedStoryRaw);
     if (list.length > 0) return list;
-    return rawSummary ? [rawSummary] : ['Full wire report unavailable.'];
+    return rawSummary ? [rawSummary] : ['Full report unavailable.'];
   }, [resolvedStoryRaw, rawSummary]);
 
-  const byline = fullArticleData?.byline || item.byline || item.author || item.source || 'Wire Desk';
+  const sourceLabel = item.source || 'ESPN';
+  const rawByline = stripHtml(fullArticleData?.byline || item.byline || item.author || '');
+  const cleanAuthor = rawByline && rawByline.toLowerCase() !== sourceLabel.toLowerCase()
+    ? rawByline.replace(new RegExp(`\\s*[•|-]\\s*${sourceLabel}$`, 'i'), '').trim()
+    : '';
+  const reportingValue = cleanAuthor || sourceLabel;
+
   const topicTags = useMemo(() => {
     const cats = fullArticleData?.categories || item.categories || [];
     const names = cats
@@ -2429,9 +2472,7 @@ const NewsCard = memo(({ item }) => {
           <div className="px-2.5 py-1 rounded-[8px] shrink-0" style={{ backgroundColor: tag.color + '20' }}>
             <span className="text-[10px] font-extrabold tracking-[0.6px] uppercase" style={{ color: tag.color }}>{tag.label}</span>
           </div>
-          {item.source && (
-            <span className="text-[10px] font-bold text-[#8E8E93] truncate">{item.source}</span>
-          )}
+          <span className="text-[10px] font-bold text-[#8E8E93] truncate">{sourceLabel}</span>
         </div>
         <span className="text-[11px] text-[#8E8E93] font-semibold shrink-0 tabular-nums">{getRelativeTime(item.published)}</span>
       </div>
@@ -2471,8 +2512,10 @@ const NewsCard = memo(({ item }) => {
 
           <div className="grid grid-cols-2 gap-2 mb-4">
             <div className="bg-[#1C1C1E] px-3 py-2.5 rounded-[14px] border border-white/[0.06]">
-              <span className="block text-[9px] font-extrabold text-[#8E8E93] tracking-[1px] uppercase">REPORTING / SOURCE</span>
-              <span className="block text-[12px] font-bold text-[#F5F5F7] mt-0.5 truncate">{byline}</span>
+              <span className="block text-[9px] font-extrabold text-[#8E8E93] tracking-[1px] uppercase">
+                {cleanAuthor ? 'AUTHOR' : 'DESK'}
+              </span>
+              <span className="block text-[12px] font-bold text-[#F5F5F7] mt-0.5 truncate">{reportingValue}</span>
             </div>
             <div className="bg-[#1C1C1E] px-3 py-2.5 rounded-[14px] border border-white/[0.06]">
               <span className="block text-[9px] font-extrabold text-[#8E8E93] tracking-[1px] uppercase">PUBLISHED</span>
@@ -2499,10 +2542,6 @@ const NewsCard = memo(({ item }) => {
 
           <div className="h-[1px] bg-[rgba(255,255,255,0.08)] mb-4" />
 
-          {fetchingFull && paragraphs.length <= 1 && (
-            <WhitePillLoader className="py-3" />
-          )}
-
           <div className="flex flex-col gap-3.5">
             {paragraphs.map((para, pIdx) => (
               <p key={pIdx} className="text-[#F5F5F7] text-[14px] leading-[24px] opacity-95 text-left">
@@ -2514,7 +2553,7 @@ const NewsCard = memo(({ item }) => {
           <div className="flex justify-between items-center mt-6 pt-4 border-t border-[rgba(255,255,255,0.08)] gap-2">
             <div className="flex items-center gap-2 bg-[#000000] px-3 py-2 rounded-[12px] min-w-0">
               <Shield size={14} color={THEME.success} className="shrink-0" />
-              <span className="text-[10px] font-bold text-[#8E8E93] tracking-[0.4px] truncate">{item.source || 'Sideline Wire'}</span>
+              <span className="text-[10px] font-bold text-[#8E8E93] tracking-[0.4px] truncate">Verified Wire</span>
             </div>
             <span className="text-[10px] font-extrabold text-[#0A84FF] tracking-[0.8px] shrink-0">COLLAPSE ↑</span>
           </div>
@@ -3265,31 +3304,61 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
   );
 });
 
+const API_CRICKET_NEWS_ESPN = "https://site.api.espn.com/apis/site/v2/sports/cricket/news";
+
 const SoccerIntelView = memo(() => {
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [news, setNews] = useState(() => {
+    const cached = [];
+    const seen = new Set();
+    SOCCER_LEAGUES.slice(0, 4).forEach(l => {
+      const res = getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/news`);
+      (res?.articles || []).forEach(a => {
+        if (a?.headline && !seen.has(a.headline)) {
+          seen.add(a.headline);
+          cached.push({ ...a, source: a.source || 'ESPN FC' });
+        }
+      });
+    });
+    return cached.sort((a, b) => new Date(b.published) - new Date(a.published));
+  });
+  const [loading, setLoading] = useState(() => news.length === 0);
+
   useEffect(() => {
-    setLoading(true);
-    Promise.all(SOCCER_LEAGUES.slice(0, 4).map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/news`).catch(() => ({})))).then(results => {
+    let active = true;
+    Promise.all(
+      SOCCER_LEAGUES.slice(0, 4).map(l =>
+        fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/news`).catch(() => ({}))
+      )
+    ).then(results => {
+      if (!active) return;
       let allArticles = [];
       results.forEach(res => { if (res.articles) allArticles.push(...res.articles); });
       const uniqueNews = [];
       const seen = new Set();
-      allArticles.forEach(a => { if (!seen.has(a.headline)) { seen.add(a.headline); uniqueNews.push(a); } });
+      allArticles.forEach(a => {
+        if (a?.headline && !seen.has(a.headline)) {
+          seen.add(a.headline);
+          uniqueNews.push({ ...a, source: a.source || 'ESPN FC' });
+        }
+      });
       uniqueNews.sort((a, b) => new Date(b.published) - new Date(a.published));
       setNews(uniqueNews);
       setLoading(false);
-    }).catch(() => setLoading(false));
+
+      uniqueNews.slice(0, 8).forEach(art => { prefetchFullArticle(art); });
+    }).catch(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
   }, []);
 
   return (
     <div className="flex-1 p-4 pt-2.5 w-full">
-      
       {loading && news.length === 0 ? (
         <WhitePillLoader className="mt-10 py-6" />
       ) : (
         <div className="pb-28">
-          {news.length === 0 ? <EmptyState icon={Newspaper} title="News wire offline" message="Unable to fetch latest reports." /> : news.map((item, i) => <NewsCard key={i} item={item} />)}
+          {news.length === 0 ? <EmptyState icon={Newspaper} title="News wire offline" message="Unable to fetch latest reports." /> : news.map((item, i) => <NewsCard key={item.id || i} item={item} />)}
         </div>
       )}
     </div>
@@ -3297,50 +3366,77 @@ const SoccerIntelView = memo(() => {
 });
 
 const CricketIntelView = memo(() => {
-  const [news, setNews] = useState(() => {
-    const cached = getCachedSync(CRICINFO_RSS_JSON);
-    if (cached?.items) {
-      return cached.items.map(item => ({
-        headline: item.title,
-        description: item.description.replace(/<[^>]+>/g, '').trim(),
+  const buildCricketArticles = useCallback((espnJson, rssJson) => {
+    const merged = [];
+    const seen = new Set();
+
+    (espnJson?.articles || []).forEach(a => {
+      const title = stripHtml(a?.headline || '');
+      if (!title || seen.has(title.toLowerCase())) return;
+      seen.add(title.toLowerCase());
+      merged.push({
+        ...a,
+        headline: title,
+        description: stripHtml(a.description || ''),
+        source: 'ESPNcricinfo',
+        byline: a.byline || ''
+      });
+    });
+
+    (rssJson?.items || []).forEach(item => {
+      const title = stripHtml(item?.title || '');
+      if (!title || seen.has(title.toLowerCase())) return;
+      seen.add(title.toLowerCase());
+      const rawContent = item.content || '';
+      const rawDesc = item.description || '';
+      const bestBody = stripHtml(rawContent).length > stripHtml(rawDesc).length ? rawContent : rawDesc;
+      merged.push({
+        headline: title,
+        description: stripHtml(rawDesc),
         published: item.pubDate,
+        byline: item.author ? stripHtml(item.author) : '',
+        categories: Array.isArray(item.categories) ? item.categories : [],
         images: item.enclosure?.link ? [{ url: item.enclosure.link }] : item.thumbnail ? [{ url: item.thumbnail }] : [],
-        source: 'ESPN Cricinfo',
-        story: item.content || item.description
-      }));
-    }
-    return [];
+        source: 'ESPNcricinfo',
+        story: bestBody
+      });
+    });
+
+    return merged.sort((a, b) => new Date(b.published || 0) - new Date(a.published || 0));
+  }, []);
+
+  const [news, setNews] = useState(() => {
+    const cachedEspn = getCachedSync(API_CRICKET_NEWS_ESPN);
+    const cachedRss = getCachedSync(CRICINFO_RSS_JSON);
+    return buildCricketArticles(cachedEspn, cachedRss);
   });
   const [loading, setLoading] = useState(() => news.length === 0);
 
   useEffect(() => {
-    fetchWithCache(CRICINFO_RSS_JSON).then(res => {
-      let uniqueNews = [];
-      if (res.items && res.items.length > 0) {
-        uniqueNews = res.items.map(item => ({
-          headline: item.title,
-          description: stripHtml(item.description),
-          published: item.pubDate,
-          byline: item.author ? `${item.author} • ESPN Cricinfo` : 'ESPN Cricinfo',
-          categories: Array.isArray(item.categories) ? item.categories : [],
-          images: item.enclosure?.link ? [{ url: item.enclosure.link }] : item.thumbnail ? [{ url: item.thumbnail }] : [],
-          source: 'ESPN Cricinfo',
-          story: item.content || item.description
-        }));
-      }
-      setNews(uniqueNews);
+    let active = true;
+    Promise.all([
+      fetchWithCache(API_CRICKET_NEWS_ESPN, false, 6000).catch(() => null),
+      fetchWithCache(CRICINFO_RSS_JSON, false, 6000).catch(() => null)
+    ]).then(([espnRes, rssRes]) => {
+      if (!active) return;
+      const combined = buildCricketArticles(espnRes, rssRes);
+      setNews(combined);
       setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+
+      combined.slice(0, 8).forEach(art => { prefetchFullArticle(art); });
+    }).catch(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, [buildCricketArticles]);
 
   return (
     <div className="flex-1 p-4 pt-2.5 w-full">
-      
       {loading && news.length === 0 ? (
         <WhitePillLoader className="mt-10 py-6" />
       ) : (
         <div className="pb-28">
-          {news.length === 0 ? <EmptyState icon={Newspaper} title="News Wire Offline" message="Unable to fetch latest intelligence reports." /> : news.map((item, i) => <NewsCard key={i} item={item} />)}
+          {news.length === 0 ? <EmptyState icon={Newspaper} title="News Wire Offline" message="Unable to fetch latest intelligence reports." /> : news.map((item, i) => <NewsCard key={item.id || i} item={item} />)}
         </div>
       )}
     </div>
@@ -5400,7 +5496,7 @@ function App() {
             SOCCER_LEAGUES.slice(0, 4).map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/news`, true).catch(() => null))
           );
         } else {
-          await fetchWithCache(CRICINFO_RSS_JSON, true).catch(() => null);
+          await Promise.all([fetchWithCache(API_CRICKET_NEWS_ESPN, true).catch(() => null), fetchWithCache(CRICINFO_RSS_JSON, true).catch(() => null)]);
         }
         setRefreshTick(t => t + 1);
       }
@@ -5614,7 +5710,7 @@ function App() {
       )}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes bounceBar { 0% { transform: translate3d(-12px, 0, 0); } 50% { transform: translate3d(12px, 0, 0); } 100% { transform: translate3d(-12px, 0, 0); } }
-        .animate-bounce-bar { animation: bounceBar 0.9s cubic-bezier(0.22, 1, 0.36, 1) infinite; will-change: transform; }
+        .animate-bounce-bar { animation: bounceBar 1.75s cubic-bezier(0.37, 0, 0.63, 1) infinite; will-change: transform; }
       `}} />
 
       <div
@@ -5665,7 +5761,7 @@ function App() {
         </button>
       </div>
 
-      <div key={`${activeSport}-${view}-${refreshTick}`} className="flex-1 flex flex-col ios-view-enter">
+      <div key={`${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col section-enter-${view}`}>
         {view === 'home' && (
           <div className="flex-1 px-4 pt-2.5 pb-36">
             
