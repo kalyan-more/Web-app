@@ -2180,101 +2180,141 @@ const DuelStat = memo(({ label, homeVal, awayVal }) => {
 // ⚽ TACTICAL PITCH & BELOW-PITCH MATCH EVENTS
 // ==========================================
 
-const getPositionBucketRank = (player) => {
-  const posRaw = String(
+const FOOTBALL_KIT_COLORS = {
+  "liverpool": ["#C8102E", "#FFFFFF"],
+  "man utd": ["#DA291C", "#FBE122"],
+  "manchester united": ["#DA291C", "#FBE122"],
+  "arsenal": ["#EF0107", "#FFFFFF"],
+  "man city": ["#6CABDD", "#1C2C5B"],
+  "manchester city": ["#6CABDD", "#1C2C5B"],
+  "chelsea": ["#034694", "#FFFFFF"],
+  "tottenham": ["#FFFFFF", "#132257"],
+  "tottenham hotspur": ["#FFFFFF", "#132257"],
+  "newcastle": ["#241F20", "#FFFFFF"],
+  "newcastle united": ["#241F20", "#FFFFFF"],
+  "aston villa": ["#670E36", "#95BFE5"],
+  "brighton": ["#0057B8", "#FFCD00"],
+  "west ham": ["#7A263A", "#1BB1E7"],
+  "bournemouth": ["#DA291C", "#000000"],
+  "fulham": ["#FFFFFF", "#000000"],
+  "everton": ["#003399", "#FFFFFF"],
+  "wolves": ["#FDB913", "#231F20"],
+  "crystal palace": ["#1B458F", "#C4122E"],
+  "nottingham forest": ["#DD0000", "#FFFFFF"],
+  "leicester": ["#003090", "#FDBE11"],
+  "ipswich": ["#0033A0", "#FFFFFF"],
+  "southampton": ["#D71920", "#FFFFFF"],
+  "real madrid": ["#FEBE10", "#00529F"],
+  "barcelona": ["#A50044", "#004D98"],
+  "atletico madrid": ["#CB3524", "#FFFFFF"],
+  "inter milan": ["#010E80", "#000000"],
+  "inter": ["#010E80", "#000000"],
+  "ac milan": ["#FB090B", "#000000"],
+  "milan": ["#FB090B", "#000000"],
+  "juventus": ["#FFFFFF", "#000000"],
+  "napoli": ["#12A0D7", "#FFFFFF"],
+  "bayern munich": ["#DC052D", "#0066B2"],
+  "borussia dortmund": ["#FDE100", "#111111"],
+  "bayer leverkusen": ["#E32221", "#111111"],
+  "paris saint-germain": ["#004170", "#DA291C"],
+  "psg": ["#004170", "#DA291C"]
+};
+
+const resolveTeamKitColors = (summary, comp, fallbackHex = "0A84FF") => {
+  const teamObj = comp?.team || {};
+  const nameKey = String(teamObj.shortDisplayName || teamObj.name || teamObj.displayName || '').toLowerCase().trim();
+  const sumTeam = summary?.teams?.find(t => String(t.id) === String(teamObj.id));
+  const rawApiColor = sumTeam?.color || teamObj.color;
+  const rawAltColor = sumTeam?.alternateColor || teamObj.alternateColor;
+
+  for (const [k, pair] of Object.entries(FOOTBALL_KIT_COLORS)) {
+    if (nameKey === k || nameKey.includes(k) || k.includes(nameKey)) {
+      return { primary: pair[0], secondary: pair[1] };
+    }
+  }
+
+  if (rawApiColor && /^[0-9a-fA-F]{6}$/.test(String(rawApiColor).replace('#', ''))) {
+    const cleanHex = `#${String(rawApiColor).replace('#', '')}`;
+    return {
+      primary: cleanHex,
+      secondary: rawAltColor && /^[0-9a-fA-F]{6}$/.test(String(rawAltColor).replace('#', ''))
+        ? `#${String(rawAltColor).replace('#', '')}`
+        : '#FFFFFF'
+    };
+  }
+
+  const hex = String(fallbackHex || '0A84FF').replace('#', '');
+  return { primary: `#${hex}`, secondary: '#FFFFFF' };
+};
+
+const getPlayerPositionSortScore = (player, rowIndex, totalRows, colIndexInRow, rowCount) => {
+  const posAbbr = String(
     player?.position?.abbreviation ||
-    player?.position?.shortName ||
-    player?.position?.name ||
     player?.athlete?.position?.abbreviation ||
+    player?.position?.name ||
     player?.athlete?.position?.name ||
     ''
   ).toUpperCase().trim();
 
-  if (posRaw === 'G' || posRaw === 'GK' || posRaw.includes('GOALKEEPER')) return 0;
-  if (['D', 'DF', 'CB', 'LB', 'RB', 'LWB', 'RWB', 'SW'].includes(posRaw) || posRaw.includes('DEFEN') || posRaw.includes('BACK')) return 1;
-  if (['M', 'MF', 'CM', 'CDM', 'CAM', 'LM', 'RM', 'DM', 'AM'].includes(posRaw) || posRaw.includes('MID')) return 2;
-  if (['F', 'FW', 'ST', 'CF', 'LW', 'RW', 'LF', 'RF', 'SS'].includes(posRaw) || posRaw.includes('FORW') || posRaw.includes('STRIK') || posRaw.includes('WING') || posRaw.includes('ATTACK')) return 3;
-  return 2;
+  if (posAbbr.includes('LB') || posAbbr.includes('LWB') || posAbbr === 'L') return -30 + colIndexInRow;
+  if (posAbbr.includes('LW') || posAbbr.includes('LF')) return -25 + colIndexInRow;
+  if (posAbbr.includes('LM')) return -20 + colIndexInRow;
+  if (posAbbr.includes('LAM')) return -12 + colIndexInRow;
+  if (posAbbr.includes('LCB') || posAbbr.includes('LD')) return -10 + colIndexInRow;
+  if (posAbbr === 'CB' || posAbbr === 'D' || posAbbr === 'DEF') return -5 + colIndexInRow;
+  if (posAbbr.includes('CDM') || posAbbr.includes('LDM')) return -8 + colIndexInRow;
+  if (posAbbr.includes('RDM')) return 8 + colIndexInRow;
+  if (posAbbr === 'CM' || posAbbr === 'M' || posAbbr === 'MID') return -4 + colIndexInRow * 2;
+  if (posAbbr === 'CAM' || posAbbr === 'AM') return colIndexInRow;
+  if (posAbbr.includes('RAM')) return 12 + colIndexInRow;
+  if (posAbbr.includes('RCB') || posAbbr.includes('RD')) return 10 + colIndexInRow;
+  if (posAbbr.includes('RM')) return 20 + colIndexInRow;
+  if (posAbbr.includes('RW') || posAbbr.includes('RF')) return 25 + colIndexInRow;
+  if (posAbbr.includes('RB') || posAbbr.includes('RWB') || posAbbr === 'R') return 30 + colIndexInRow;
+  if (posAbbr.includes('ST') || posAbbr.includes('CF') || posAbbr === 'F' || posAbbr === 'FWD') return colIndexInRow;
+
+  return colIndexInRow - (rowCount - 1) / 2;
 };
 
-const resolveTeamRoster = (summary, targetComp, isHome) => {
-  const rosters = summary?.rosters || [];
-  if (rosters.length === 0) return null;
-  const targetTeamId = String(targetComp?.team?.id || '');
-  const targetHomeAway = targetComp?.homeAway || (isHome ? 'home' : 'away');
-
-  if (targetTeamId) {
-    const byId = rosters.find(r => String(r?.team?.id || '') === targetTeamId);
-    if (byId) return byId;
-  }
-  const byHomeAway = rosters.find(r => String(r?.homeAway || '').toLowerCase() === targetHomeAway.toLowerCase());
-  if (byHomeAway) return byHomeAway;
-
-  return rosters[isHome ? 0 : Math.min(1, rosters.length - 1)] || null;
-};
-
-const useFootballFormations = (summary, width, height, targetComp, isHome) =>
+const useFootballFormations = (summary, width, height, isHome) =>
   useMemo(() => {
-    const teamRoster = resolveTeamRoster(summary, targetComp, isHome);
+    if (!summary?.rosters) return [];
+    const teamIndex = isHome ? 0 : 1;
+    const teamRoster = summary.rosters[teamIndex];
     if (!teamRoster) return [];
 
-    const rawRoster = Array.isArray(teamRoster.roster) ? teamRoster.roster : [];
-    let starters = rawRoster.filter(p => Boolean(p?.starter));
-    if (starters.length < 11) {
-      const nonStarters = rawRoster.filter(p => !p?.starter);
-      starters = [...starters, ...nonStarters].slice(0, 11);
-    } else if (starters.length > 11) {
-      starters = starters.slice(0, 11);
-    }
-
-    const indexed = starters.map((p, idx) => ({
-      p,
-      idx,
-      bucket: getPositionBucketRank(p)
-    }));
-    const hasExplicitPositions = indexed.some(item => item.bucket !== 2);
-    const orderedStarters = hasExplicitPositions
-      ? [...indexed].sort((a, b) => (a.bucket - b.bucket) || (a.idx - b.idx)).map(item => item.p)
-      : starters;
-
-    const parsedFormation = String(teamRoster.formation || '')
-      .split('-')
-      .map(n => parseInt(n.trim(), 10))
-      .filter(n => !isNaN(n) && n > 0);
-
-    const totalOutfield = Math.max(1, orderedStarters.length - 1);
-    let formation = parsedFormation.length > 0 ? [...parsedFormation] : [4, 4, 2];
-    const sumFormation = formation.reduce((acc, v) => acc + v, 0);
-    if (sumFormation !== totalOutfield) {
-      if (totalOutfield === 10) formation = [4, 3, 3];
-      else if (totalOutfield === 9) formation = [4, 3, 2];
-      else formation = [totalOutfield];
-    }
-
+    const formation = teamRoster.formation?.split("-").map(Number).filter(n => !isNaN(n) && n > 0) || [4, 3, 3];
+    const starters = teamRoster.roster?.filter(p => p.starter) || teamRoster.roster?.slice(0, 11) || [];
     const rows = [1, ...formation];
     const numRows = Math.max(1, rows.length - 1);
-    const topPad = 12;
-    const bottomPad = 56;
-    const usableHeight = Math.max(150, height - topPad - bottomPad);
-
+    const usableHeight = Math.max(180, height - 88);
     let cursor = 0;
+
     return rows.map((count, rowIndex) => {
-      const rowPlayers = orderedStarters.slice(cursor, cursor + count);
+      const rawRowPlayers = starters.slice(cursor, cursor + count);
       cursor += count;
-      const progress = numRows === 0 ? 0 : rowIndex / numRows;
 
+      const sortedRowPlayers = [...rawRowPlayers].sort((a, b) => {
+        const idxA = rawRowPlayers.indexOf(a);
+        const idxB = rawRowPlayers.indexOf(b);
+        const scoreA = getPlayerPositionSortScore(a, rowIndex, numRows, idxA, rawRowPlayers.length);
+        const scoreB = getPlayerPositionSortScore(b, rowIndex, numRows, idxB, rawRowPlayers.length);
+        return scoreA - scoreB;
+      });
+
+      const progress = rowIndex / numRows;
       const y = isHome
-        ? (topPad + usableHeight) - (progress * usableHeight)
-        : topPad + (progress * usableHeight);
+        ? (12 + usableHeight) - (progress * usableHeight)
+        : 12 + (progress * usableHeight);
 
-      return rowPlayers.map((p, i) => {
-        const x = ((i + 1) / (rowPlayers.length + 1)) * width;
-        return { id: p.athlete?.id || `p_${isHome ? 'h' : 'a'}_${rowIndex}_${i}`, player: p, x, y };
+      return sortedRowPlayers.map((p, i) => {
+        const x = ((i + 1) / (sortedRowPlayers.length + 1)) * width;
+        return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
-  }, [summary?.rosters, width, height, targetComp, isHome]);
+  }, [summary?.rosters, width, height, isHome]);
 
-const PlayerJersey = memo(({ player, teamColor }) => {
+const PlayerJersey = memo(({ player, teamColor, accentColor = "#FFFFFF" }) => {
   if (!player?.athlete) return null;
   const name = formatFootballShortName(player.athlete.displayName);
   const safeColor = teamColor || THEME.accent;
@@ -2291,13 +2331,17 @@ const PlayerJersey = memo(({ player, teamColor }) => {
         <div className="w-[7px] h-[12px] absolute top-[3px] -right-[4px] rounded-[2px] rotate-[15deg]" style={{ backgroundColor: safeColor }} />
         <div
           className="w-[18px] h-[23px] rounded-[4px] flex items-center justify-center relative"
-          style={{ backgroundColor: safeColor, boxShadow: `0 2px 6px ${safeColor}66` }}
+          style={{
+            backgroundColor: safeColor,
+            boxShadow: `0 2px 6px ${safeColor}66`,
+            border: `1px solid ${accentColor}55`
+          }}
         >
           <div className="w-[7px] h-[3.5px] bg-black/25 absolute top-0 rounded-b-[4px]" />
           <span className="text-[10px] font-extrabold leading-none tabular-nums" style={{ color: contrast }}>{player.jersey || '-'}</span>
         </div>
       </div>
-      <span className="text-[#F5F5F7] text-[8.5px] font-bold mt-1 text-center bg-black/75 px-1.5 py-0.5 rounded-[5px] truncate max-w-[82px] leading-tight">
+      <span className="text-[#F5F5F7] text-[8.5px] font-bold mt-1 text-center bg-black/80 px-1.5 py-0.5 rounded-[5px] truncate max-w-[82px] leading-tight">
         {name}
       </span>
     </div>
@@ -2412,7 +2456,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
     const update = () => {
       if (pitchRef.current) {
         const rect = pitchRef.current.getBoundingClientRect();
-        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(580, Math.min(740, window.innerHeight * 0.78)) });
+        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(600, Math.min(760, window.innerHeight * 0.80)) });
       }
     };
     update();
@@ -2420,18 +2464,29 @@ const TacticalPitch = memo(({ summary, home, away }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const homeRosterObj = resolveTeamRoster(summary, home, true);
-  const awayRosterObj = resolveTeamRoster(summary, away, false);
-  const hRawColor = homeRosterObj?.team?.color || summary?.teams?.find(t => String(t.id) === String(home?.team?.id))?.color || '0A84FF';
-  const aRawColor = awayRosterObj?.team?.color || summary?.teams?.find(t => String(t.id) === String(away?.team?.id))?.color || 'E4E4E7';
-  const hCol = String(hRawColor).startsWith('#') ? hRawColor : `#${hRawColor}`;
-  const aCol = String(aRawColor).startsWith('#') ? aRawColor : `#${aRawColor}`;
-  const awayFormation = awayRosterObj?.formation || '';
-  const homeFormation = homeRosterObj?.formation || '';
+  const { hCol, aCol, hAccent, aAccent } = useMemo(() => {
+    const hKit = resolveTeamKitColors(summary, home, "C8102E");
+    const aKit = resolveTeamKitColors(summary, away, "0A84FF");
+    let awayPrimary = aKit.primary;
+    if (awayPrimary.toLowerCase() === hKit.primary.toLowerCase()) {
+      awayPrimary = aKit.secondary && aKit.secondary.toLowerCase() !== hKit.primary.toLowerCase()
+        ? aKit.secondary
+        : '#FFFFFF';
+    }
+    return {
+      hCol: hKit.primary,
+      aCol: awayPrimary,
+      hAccent: hKit.secondary,
+      aAccent: aKit.secondary
+    };
+  }, [summary, home, away]);
+
+  const awayFormation = summary?.rosters?.[1]?.formation || '';
+  const homeFormation = summary?.rosters?.[0]?.formation || '';
 
   const HALF_HEIGHT = pitchSize.height / 2;
-  const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, away, false);
-  const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, home, true);
+  const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, false);
+  const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, true);
 
   if (!summary?.rosters) {
     return <WhitePillLoader className="py-16" />;
@@ -2465,17 +2520,17 @@ const TacticalPitch = memo(({ summary, home, away }) => {
         </div>
 
         <div className="absolute inset-0">
-          <div style={{ height: HALF_HEIGHT }} className="relative w-full">
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-hidden">
             {awayPlayers.map(p => (
-              <div key={p.id} style={{ position: 'absolute', left: p.x - 45, top: p.y }}>
-                <PlayerJersey player={p.player} teamColor={aCol} />
+              <div key={p.id} style={{ position: 'absolute', left: Math.max(4, Math.min(pitchSize.width - 88, p.x - 42)), top: p.y }}>
+                <PlayerJersey player={p.player} teamColor={aCol} accentColor={aAccent} />
               </div>
             ))}
           </div>
-          <div style={{ height: HALF_HEIGHT }} className="relative w-full">
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-hidden">
             {homePlayers.map(p => (
-              <div key={p.id} style={{ position: 'absolute', left: p.x - 45, top: p.y }}>
-                <PlayerJersey player={p.player} teamColor={hCol} />
+              <div key={p.id} style={{ position: 'absolute', left: Math.max(4, Math.min(pitchSize.width - 88, p.x - 42)), top: p.y }}>
+                <PlayerJersey player={p.player} teamColor={hCol} accentColor={hAccent} />
               </div>
             ))}
           </div>
