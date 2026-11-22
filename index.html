@@ -151,25 +151,47 @@
     @keyframes iosOpeningIcon {
       0% {
         opacity: 0;
-        transform: scale3d(0.72, 0.72, 1);
+        transform: scale3d(0.66, 0.66, 1);
+        filter: blur(8px);
       }
-      38% {
+      34% {
         opacity: 1;
-        transform: scale3d(1.05, 1.05, 1);
+        transform: scale3d(1.045, 1.045, 1);
+        filter: blur(0px);
       }
-      65% {
+      58% {
         opacity: 1;
-        transform: scale3d(0.99, 0.99, 1);
+        transform: scale3d(0.992, 0.992, 1);
+        filter: blur(0px);
       }
-      100% {
+      82% {
         opacity: 1;
         transform: scale3d(1, 1, 1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale3d(1.08, 1.08, 1);
+      }
+    }
+
+    @keyframes iosOpeningHalo {
+      0% {
+        opacity: 0;
+        transform: scale3d(0.5, 0.5, 1);
+      }
+      45% {
+        opacity: 0.42;
+        transform: scale3d(1.15, 1.15, 1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale3d(1.45, 1.45, 1);
       }
     }
 
     @keyframes iosOpeningOverlayFade {
       0% { opacity: 1; }
-      72% { opacity: 1; }
+      76% { opacity: 1; }
       100% { opacity: 0; visibility: hidden; }
     }
 
@@ -185,13 +207,18 @@
     }
 
     .ios-opening-overlay {
-      animation: iosOpeningOverlayFade 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningOverlayFade 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: opacity;
     }
 
-    .ios-opening-icon {
-      animation: iosOpeningIcon 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    .ios-opening-halo {
+      animation: iosOpeningHalo 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
+    }
+
+    .ios-opening-icon {
+      animation: iosOpeningIcon 1.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity, filter;
     }
 
     .white-pill-bounce {
@@ -236,6 +263,31 @@
 
     .ios-expand-in {
       animation: iosExpandIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes dateSlideNext {
+      0% { opacity: 0; transform: translate3d(22px, 0, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes dateSlidePrev {
+      0% { opacity: 0; transform: translate3d(-22px, 0, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .date-slide-next {
+      animation: dateSlideNext 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .date-slide-prev {
+      animation: dateSlidePrev 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .date-chip-btn {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease, background-color 0.28s ease, color 0.24s ease;
       will-change: transform, opacity;
     }
 
@@ -479,36 +531,66 @@ const CRICKET_FRANCHISE_LOGOS = {
   "windies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
   "adelaide strikers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "adelaide strikers": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "strikers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "strikers": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "adel strikers": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "as-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "asw": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "as": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "brisbane heat women": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "brisbane heat": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "heat women": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "heat": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "bris heat": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "bh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "bhw": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "bh": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "hobart hurricanes women": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "hobart hurricanes": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hurricanes women": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hurricanes": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hob hurricanes": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "hh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "hhw": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hh": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "melbourne renegades women": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "melbourne renegades": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "renegades women": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "renegades": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "melb renegades": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "mr-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "mrw": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "mr": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "melbourne stars women": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "melbourne stars": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "stars women": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "stars": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "melb stars": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "ms-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "msw": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "perth scorchers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
   "perth scorchers": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
+  "scorchers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
+  "scorchers": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
   "ps-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
   "psw": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
+  "ps": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
   "sydney sixers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
   "sydney sixers": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "sixers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "sixers": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "syd sixers": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
   "ss-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
   "ssw": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "ss": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
   "sydney thunder women": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
   "sydney thunder": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "thunder women": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "thunder": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "syd thunder": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
   "st-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
-  "stw": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png"
+  "stw": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "st": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png"
 };
 
 const CRICKET_TEAM_COLORS = {
@@ -985,7 +1067,26 @@ const getFallbackLogo = (name, customColors = null) => {
   return uri;
 };
 
+const WBBL_SECONDARY_CRESTS = {
+  "660643.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486958.png",
+  "660647.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486959.png",
+  "660649.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486960.png",
+  "660651.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486961.png",
+  "660653.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486962.png",
+  "660655.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486963.png",
+  "660657.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486964.png",
+  "660659.png": "https://a.espncdn.com/i/teamlogos/cricket/500/486965.png"
+};
+
 const handleImageError = (e, fallbackName) => {
+  const curSrc = String(e.target.src || '');
+  for (const [k, altUrl] of Object.entries(WBBL_SECONDARY_CRESTS)) {
+    if (curSrc.endsWith(k) && !e.target.dataset.triedAlt) {
+      e.target.dataset.triedAlt = '1';
+      e.target.src = altUrl;
+      return;
+    }
+  }
   e.target.onerror = null;
   const low = String(fallbackName || '').toLowerCase().trim();
   const norm = normalizeCricketTeamName(fallbackName).toLowerCase().trim();
@@ -1016,9 +1117,10 @@ const getCricketLogo = (team) => {
   const shortLower = String(shortRaw).toLowerCase().trim();
 
   let resolved = null;
-  if (CRICKET_FRANCHISE_LOGOS[searchName]) resolved = CRICKET_FRANCHISE_LOGOS[searchName];
-  else if (CRICKET_FRANCHISE_LOGOS[rawLower]) resolved = CRICKET_FRANCHISE_LOGOS[rawLower];
-  else if (CRICKET_FRANCHISE_LOGOS[shortLower]) resolved = CRICKET_FRANCHISE_LOGOS[shortLower];
+  if (CRICKET_FRANCHISE_LOGOS[rawLower]) resolved = CRICKET_FRANCHISE_LOGOS[rawLower];
+  else if (CRICKET_FRANCHISE_LOGOS[searchName]) resolved = CRICKET_FRANCHISE_LOGOS[searchName];
+  else if (shortLower.length >= 3 && CRICKET_FRANCHISE_LOGOS[shortLower]) resolved = CRICKET_FRANCHISE_LOGOS[shortLower];
+  else if (shortLower.endsWith('-w') && CRICKET_FRANCHISE_LOGOS[shortLower]) resolved = CRICKET_FRANCHISE_LOGOS[shortLower];
   else if (CRICKET_TEAM_COLORS[searchName]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[searchName]);
   else if (CRICKET_TEAM_COLORS[rawLower]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[rawLower]);
   else if (WBBL_TEAM_BADGES[rawLower]) resolved = getFallbackLogo(rawName, WBBL_TEAM_BADGES[rawLower]);
@@ -2315,6 +2417,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
 
 const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
   const scrollRef = useRef(null);
+  const hasMountedRef = useRef(false);
 
   const centerSelectedDate = useCallback((smooth = true) => {
     const container = scrollRef.current;
@@ -2324,25 +2427,28 @@ const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
       const containerRect = container.getBoundingClientRect();
       const elRect = selectedEl.getBoundingClientRect();
       const delta = (elRect.left + elRect.width / 2) - (containerRect.left + containerRect.width / 2);
-      container.scrollTo({ left: container.scrollLeft + delta, behavior: smooth ? 'smooth' : 'auto' });
+      if (Math.abs(delta) > 1) {
+        container.scrollTo({ left: container.scrollLeft + delta, behavior: smooth ? 'smooth' : 'auto' });
+      }
     }
   }, []);
 
   useEffect(() => {
-    centerSelectedDate(true);
-    const t = setTimeout(() => centerSelectedDate(false), 90);
-    return () => clearTimeout(t);
+    const isInitial = !hasMountedRef.current;
+    hasMountedRef.current = true;
+    const raf = requestAnimationFrame(() => centerSelectedDate(!isInitial));
+    return () => cancelAnimationFrame(raf);
   }, [selectedDate, dates, centerSelectedDate]);
 
   return (
     <div className="px-4 pt-2.5 mb-2.5 w-full">
       <div className="bg-[#121212] h-[64px] rounded-[32px] px-3 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
-        <div ref={scrollRef} className="flex items-center overflow-x-auto [&::-webkit-scrollbar]:hidden w-full">
+        <div ref={scrollRef} className="flex items-center overflow-x-auto no-scrollbar ios-momentum w-full py-1">
           {dates.map((d, i) => {
             const isSel = isSameDay(d, selectedDate);
             const isToday = isSameDay(d, new Date());
             const diffDays = Math.abs((d - selectedDate) / (1000 * 60 * 60 * 24));
-            const fadeOpacity = isSel || isToday ? 1 : Math.max(0.3, 1 - (diffDays * 0.15));
+            const fadeOpacity = isSel || isToday ? 1 : Math.max(0.32, 1 - (diffDays * 0.14));
 
             const dayColor = isSel ? THEME.accent : isToday ? THEME.success : THEME.muted;
             const dateColor = isSel ? THEME.accent : isToday ? THEME.success : THEME.text;
@@ -2352,7 +2458,7 @@ const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
                 key={i}
                 data-selected={isSel}
                 onClick={() => onSelectDate(new Date(d))}
-                className="w-[44px] mx-1 shrink-0 flex flex-col items-center justify-center py-1 transition-transform duration-150 active:scale-95 outline-none"
+                className={`w-[44px] h-[48px] mx-1 shrink-0 flex flex-col items-center justify-center rounded-[18px] date-chip-btn outline-none ${isSel ? 'bg-[#0A84FF]/15 border border-[#0A84FF]/35 scale-[1.04]' : 'border border-transparent scale-100'}`}
                 style={{ opacity: fadeOpacity }}
               >
                 <span className="text-[9px] font-bold tracking-[0.5px] mb-1 uppercase" style={{ color: dayColor }}>
@@ -3277,7 +3383,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                       }, null, { ...item.stats, rank, _leagueTitle: selectedLeague.cleanTitle }, 'cricket')}
                       className="flex items-center bg-[#121212] p-4 rounded-[24px] mb-2.5 border border-[rgba(255,255,255,0.08)] cursor-pointer active:scale-[0.99] transition-transform duration-150"
                     >
-                      <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
+                      <span className="w-[28px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
                       <div className="flex-1 flex items-center ml-2 min-w-0">
                         <img src={teamLogoUrl} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
                         <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
@@ -3630,7 +3736,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 
   const fetchMatchHub = useCallback(async (isSilent = false) => {
     if (!id) return;
-    if (!isSilent && !matchDetails) setDetailsLoading(true);
+    if (!isSilent) setDetailsLoading(prev => prev);
 
     fetchWithCache(`${API_CRICKET_BASE}/match/${id}`, isSilent).then(detailsRes => {
       if (detailsRes) {
@@ -3654,7 +3760,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     fetchWithCache(`${API_CRICKET_BASE}/graphs/${id}`, isSilent).then(graphsRes => {
       if (graphsRes?.graphs) setMatchGraphs(graphsRes.graphs);
     }).catch(() => {});
-  }, [id, matchDetails]);
+  }, [id]);
 
   useEffect(() => {
     fetchMatchHub(false);
@@ -4269,9 +4375,9 @@ const SoccerMatchModal = ({ match, onClose, onOpenTeam }) => {
       const data = await fetchWithCache(sumUrl, isSilent);
       setSummary(data);
     } catch {
-      if (!isSilent && !summary) setSummary({});
+      if (!isSilent) setSummary(prev => prev || {});
     }
-  }, [match?.id, sumUrl, summary]);
+  }, [match?.id, sumUrl]);
 
   useEffect(() => {
     fetchActiveDetails(false);
@@ -5120,6 +5226,19 @@ function App() {
   const [activeSport, setActiveSport] = useState('soccer');
   const [view, setView] = useState('scores');
   const [date, setDate] = useState(() => new Date());
+  const [dateAnimDir, setDateAnimDir] = useState('next');
+  const [dateAnimKey, setDateAnimKey] = useState(0);
+
+  const selectDateWithAnim = useCallback((nextDateObj) => {
+    setDate(prev => {
+      const next = new Date(nextDateObj);
+      if (!isSameDay(prev, next)) {
+        setDateAnimDir(next.getTime() >= prev.getTime() ? 'next' : 'prev');
+        setDateAnimKey(k => k + 1);
+      }
+      return next;
+    });
+  }, []);
   const [, startTransition] = useTransition();
 
   const [soccerMatches, setSoccerMatches] = useState([]);
@@ -5133,7 +5252,7 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowOpeningAnim(false), 1250);
+    const timer = setTimeout(() => setShowOpeningAnim(false), 1350);
     return () => clearTimeout(timer);
   }, []);
 
@@ -5225,6 +5344,8 @@ function App() {
     setDate(prev => {
       const next = new Date(prev);
       next.setDate(next.getDate() + deltaDays);
+      setDateAnimDir(deltaDays >= 0 ? 'next' : 'prev');
+      setDateAnimKey(k => k + 1);
       return next;
     });
   }, []);
@@ -5664,8 +5785,21 @@ function App() {
   useEffect(() => {
     if (view === 'home') fetchFavSchedule(false);
     else if (view === 'scores') {
-      if (activeSport === 'soccer') fetchSoccerMatches(false, false);
-      else fetchCricketMatches(false, false);
+      if (activeSport === 'soccer') {
+        fetchSoccerMatches(false, false);
+        runWhenIdle(() => {
+          [-1, 1].forEach(offset => {
+            const adj = new Date(date);
+            adj.setDate(adj.getDate() + offset);
+            const adjDs = adj.toISOString().split('T')[0].replace(/-/g, '');
+            SOCCER_LEAGUES.forEach(l => {
+              fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${adjDs}`).catch(() => {});
+            });
+          });
+        }, 350);
+      } else {
+        fetchCricketMatches(false, false);
+      }
     }
   }, [view, activeSport, date, fetchSoccerMatches, fetchCricketMatches, fetchFavSchedule]);
 
@@ -5700,12 +5834,15 @@ function App() {
     <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
       {showOpeningAnim && (
         <div className="fixed inset-0 z-[100] bg-[#000000] flex items-center justify-center pointer-events-none ios-opening-overlay">
-          <img
-            src="./apple-touch-icon.png"
-            onerror={(e) => { e.target.onerror = null; e.target.src = './icon-512.png'; }}
-            alt="Sideline"
-            className="w-[88px] h-[88px] rounded-[22px] object-contain ios-opening-icon"
-          />
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-[150px] h-[150px] rounded-full bg-white/15 blur-2xl ios-opening-halo" />
+            <img
+              src="./apple-touch-icon.png"
+              onError={(e) => { e.target.onerror = null; e.target.src = './icon-512.png'; }}
+              alt="Sideline"
+              className="relative w-[88px] h-[88px] rounded-[22px] object-contain ios-opening-icon"
+            />
+          </div>
         </div>
       )}
       <style dangerouslySetInnerHTML={{ __html: `
@@ -5783,8 +5920,8 @@ function App() {
 
         {view === 'scores' && (
           <div className="flex-1 flex flex-col">
-            <DateSelector dates={dates} selectedDate={date} onSelectDate={setDate} />
-            <div className="px-4 pb-36">
+            <DateSelector dates={dates} selectedDate={date} onSelectDate={selectDateWithAnim} />
+            <div key={`scores-day-${dateAnimKey}`} className={`px-4 pb-36 ${dateAnimKey > 0 ? (dateAnimDir === 'next' ? 'date-slide-next' : 'date-slide-prev') : ''}`}>
               {loading && (activeSport === 'soccer' ? soccerMatches.length === 0 : cricketMatches.length === 0) ? (
                 <WhitePillLoader className="py-20" />
               ) : activeSport === 'soccer' ? (
