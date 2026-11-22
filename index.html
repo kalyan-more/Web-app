@@ -252,6 +252,22 @@
     button:active {
       transform: scale3d(0.958, 0.958, 1);
     }
+    /* Smooth schedule settle animation when selecting or swiping a date */
+    @keyframes scheduleDateSettle {
+      0% {
+        opacity: 0.35;
+        transform: translate3d(0, 8px, 0) scale3d(0.992, 0.992, 1);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+      }
+    }
+
+    .schedule-date-settle {
+      animation: scheduleDateSettle 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
   </style>
 </head>
 <body class="no-scrollbar">
@@ -5804,7 +5820,10 @@ function App() {
         {view === 'scores' && (
           <div className="flex-1 flex flex-col">
             <DateSelector dates={dates} selectedDate={date} onSelectDate={setDate} />
-            <div className="px-4 pb-36">
+            <div
+              key={`sched-${activeSport}-${date.toISOString().split('T')[0]}`}
+              className="px-4 pb-36 schedule-date-settle transition-opacity duration-200 ease-out"
+            >
               {loading && (activeSport === 'soccer' ? soccerMatches.length === 0 : cricketMatches.length === 0) ? (
                 <WhitePillLoader className="py-20" />
               ) : activeSport === 'soccer' ? (
