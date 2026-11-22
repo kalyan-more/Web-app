@@ -165,7 +165,7 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.26s cubic-bezier(0.25, 0.85, 0.35, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -175,7 +175,7 @@
     }
 
     .ios-view-enter {
-      animation: iosViewEnter 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosViewEnter 0.13s cubic-bezier(0.25, 0.85, 0.35, 1) forwards;
       will-change: transform, opacity;
     }
 
@@ -488,6 +488,30 @@ const CRICKET_TEAM_COLORS = {
   "dubai capitals": ["#DC2626", "#111827", "DBC"],
   "abu dhabi knight riders": ["#4F46E5", "#F59E0B", "ADKR"],
   "mi emirates": ["#1D4ED8", "#064E3B", "MIE"]
+};
+
+
+// WBBL / WPL / BBL / Franchise short & full aliases
+const CRICKET_EXTRA_LOGOS = {
+  "hh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
+  "bh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335978.png",
+  "ps-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335970.png",
+  "as-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335971.png",
+  "ss-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335977.png",
+  "mr-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335973.png",
+  "st-w": "https://a.espncdn.com/i/teamlogos/cricket/500/335975.png",
+  "ms-w": "https://a.espncdn.com/i/teamlogos/cricket/500/628333.png"
+};
+
+const CRICKET_WBBL_BADGE_MAP = {
+  "hobart hurricanes": ["#5B21B6", "#311042", "HH"],
+  "brisbane heat": ["#0284C7", "#0F172A", "BH"],
+  "perth scorchers": ["#EA580C", "#18181B", "PS"],
+  "adelaide strikers": ["#0369A1", "#082F49", "AS"],
+  "sydney sixers": ["#DB2777", "#111111", "SS"],
+  "sydney thunder": ["#65A30D", "#14532D", "ST"],
+  "melbourne stars": ["#15803D", "#052E16", "MS"],
+  "melbourne renegades": ["#DC2626", "#450A0A", "MR"]
 };
 
 const CRICKET_DOMESTIC_LEAGUE_REGEX = /(county championship|vitality blast|one-day cup|t20 blast|bob willis|royal london|sheffield shield|marsh one-day|plunket shield|ford trophy|super smash \(domestic\)|ranji trophy|vijay hazare|duleep trophy|syed mushtaq ali)/i;
@@ -895,25 +919,37 @@ const getCricketLogo = (team) => {
   const rawName = team.team_name || team.name || team.short_name || team.displayName || 'Team';
   const shortRaw = team.short_name || team.abbreviation || '';
   const apiLogo = team.logo || team.team_logo || team.image_url || team.imageUrl || team.team_image || team.image_path || '';
-  const cacheKey = `${rawName}|${shortRaw}|${apiLogo}`;
+  const cacheKey = `${rawName}|${shortRaw}|${apiLogo}|v2`;
   if (cricketLogoCache.has(cacheKey)) return cricketLogoCache.get(cacheKey);
 
   const tName = normalizeCricketTeamName(rawName);
   const searchName = tName.toLowerCase().trim();
   const rawLower = String(rawName).toLowerCase().trim();
   const shortLower = String(shortRaw).toLowerCase().trim();
+  const isWomenTeam = /women| w | -w$/i.test(`${rawLower} ${shortLower}`);
 
   let resolved = null;
   if (CRICKET_FRANCHISE_LOGOS[searchName]) resolved = CRICKET_FRANCHISE_LOGOS[searchName];
   else if (CRICKET_FRANCHISE_LOGOS[rawLower]) resolved = CRICKET_FRANCHISE_LOGOS[rawLower];
   else if (CRICKET_FRANCHISE_LOGOS[shortLower]) resolved = CRICKET_FRANCHISE_LOGOS[shortLower];
-  else if (CRICKET_TEAM_COLORS[searchName]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[searchName]);
+  else if (CRICKET_EXTRA_LOGOS[shortLower]) resolved = CRICKET_EXTRA_LOGOS[shortLower];
+  else if (CRICKET_WBBL_BADGE_MAP[searchName]) {
+    const [c1, c2, code] = CRICKET_WBBL_BADGE_MAP[searchName];
+    resolved = getFallbackLogo(rawName, [c1, c2, isWomenTeam ? `${code}W` : code]);
+  } else if (CRICKET_TEAM_COLORS[searchName]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[searchName]);
   else if (CRICKET_TEAM_COLORS[rawLower]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[rawLower]);
 
   if (!resolved) {
+    const tokenWords = searchName.split(/[^a-z0-9]+/).filter(Boolean);
     outer: for (const { code, keys } of CRICKET_COUNTRY_ALIASES) {
       for (const key of keys) {
-        if (key === searchName || key === shortLower || key === rawLower || new RegExp(`\\b${key}\\b`, 'i').test(searchName)) {
+        if (
+          key === searchName ||
+          key === shortLower ||
+          key === rawLower ||
+          tokenWords.includes(key) ||
+          new RegExp(`\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`, 'i').test(searchName)
+        ) {
           resolved = `https://flagcdn.com/w160/${code.toLowerCase()}.png`;
           break outer;
         }
@@ -924,7 +960,13 @@ const getCricketLogo = (team) => {
   if (!resolved) {
     const isDefaultLogo = apiLogo && (String(apiLogo).includes('default') || String(apiLogo).includes('placeholder'));
     if (apiLogo && !isDefaultLogo && String(apiLogo).startsWith('http')) resolved = apiLogo;
-    else resolved = getFallbackLogo(shortRaw || rawName);
+    else {
+      const cleanCode = (shortRaw || tName || rawName)
+        .replace(/[^a-zA-Z]/g, '')
+        .toUpperCase()
+        .slice(0, 3) || 'CRK';
+      resolved = getFallbackLogo(rawName, [THEME.surfaceHighlight, THEME.surfaceLight, cleanCode]);
+    }
   }
 
   cricketLogoCache.set(cacheKey, resolved);
@@ -1954,18 +1996,32 @@ const useSoccerFormations = (summary, width, height, isHome) =>
     const teamRoster = summary.rosters[teamIndex];
     if (!teamRoster) return [];
 
-    const formation = teamRoster.formation?.split("-").map(Number) || [4, 4, 2];
+    const formation = teamRoster.formation?.split("-").map(Number).filter(n => !isNaN(n) && n > 0) || [4, 4, 2];
     const starters = teamRoster.roster?.filter(p => p.starter) || teamRoster.roster?.slice(0, 11) || [];
     const rows = [1, ...formation];
+    const numRows = Math.max(1, rows.length);
+    const topMargin = 14;
+    const bottomMargin = 34;
+    const usableHeight = Math.max(170, height - topMargin - bottomMargin);
+    const rowStep = numRows > 1 ? usableHeight / (numRows - 1) : 0;
+
     let index = 0;
 
     return rows.map((count, rowIndex) => {
       const rowPlayers = starters.slice(index, index + count);
       index += count;
+      const sideMargin = 50;
+      const spanWidth = Math.max(120, width - sideMargin * 2);
+
       return rowPlayers.map((p, i) => {
-        const x = ((i + 1) / (count + 1)) * width;
-        const yOffset = (rowIndex / Math.max(1, rows.length - 1)) * (height - 46);
-        const y = isHome ? height - yOffset - 46 : yOffset + 6;
+        const x = count === 1
+          ? width / 2
+          : sideMargin + (i / (count - 1)) * spanWidth;
+
+        const y = isHome
+          ? (height - bottomMargin - 22) - (rowIndex * rowStep)
+          : topMargin + (rowIndex * rowStep);
+
         return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
@@ -2165,7 +2221,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
               </div>
             ))}
           </div>
-          <div style={{ height: HALF_HEIGHT }} className="relative w-full">
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-visible">
             {homePlayers.map(p => (
               <div key={p.id} style={{ position: 'absolute', left: p.x - 45, top: p.y }}>
                 <PlayerJersey player={p.player} teamColor={hCol} />
@@ -2746,6 +2802,13 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                   {group.entries.map((item, index) => {
                     const rank = index + 1;
                     const zoneColor = getSoccerZoneAccent(league.id, rank, totalTeams);
+                    const zoneTag = !zoneColor
+                      ? null
+                      : zoneColor === THEME.accent
+                        ? (league.id === 'eng.2' ? 'PRO' : 'UCL')
+                        : zoneColor === THEME.warning
+                          ? (league.id === 'eng.2' ? 'PLY' : 'UEL')
+                          : 'REL';
                     const get = (n) => item.stats?.find(s => s.name === n)?.displayValue || '0';
                     const wdl = `${get('wins')}-${get('ties')}-${get('losses')}`;
                     const tName = item?.team?.shortDisplayName || item?.team?.name;
@@ -2756,8 +2819,18 @@ const SoccerStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                         style={zoneColor ? { borderLeftWidth: '3px', borderLeftColor: zoneColor } : undefined}
                         className="flex items-center liquid-glass p-4 rounded-[24px] mb-2.5 cursor-pointer ios-card-press overflow-hidden"
                       >
-                        <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
-                        <div className="flex-1 flex items-center ml-2 min-w-0">
+                        <div className="w-[34px] flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[12px] text-[#F5F5F7] font-extrabold tabular-nums leading-none">{rank}</span>
+                          {zoneTag && (
+                            <span
+                              className="text-[8px] font-black tracking-[0.6px] mt-1 px-1.5 py-[1px] rounded-full leading-tight"
+                              style={{ backgroundColor: `${zoneColor}22`, color: zoneColor }}
+                            >
+                              {zoneTag}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 flex items-center ml-1.5 min-w-0">
                           <img src={getSafeSoccerLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
                           <span className="text-[14px] font-bold text-[#F5F5F7] truncate">{tName}</span>
                         </div>
