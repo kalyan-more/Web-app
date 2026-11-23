@@ -763,7 +763,7 @@ const FOOTBALL_STADIUM_DB = {
 // ⚡ HIGH-PERFORMANCE SWR CACHE & PRE-WARMING ENGINE
 // ==========================================
 
-const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v15';
+const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v16';
 const cache = new Map();
 const inflight = new Map();
 const standingsParsedCache = new Map();
@@ -2296,7 +2296,6 @@ const parseExternalPositionCode = (rawPos) => {
   if (p === 'CB' || p === 'SW' || p.includes('CENTER BACK') || p.includes('CENTRE BACK') || p.includes('DEFENDER') || p === 'D' || p === 'DEF') {
     return { zone: 1, hRank: 0, isStriker: false, isAttacking: false };
   }
-
   if (p === 'LW' || p === 'LF' || p.includes('LEFT WING') || p.includes('LEFT FORWARD')) {
     return { zone: 3, hRank: -90, isStriker: false, isAttacking: true };
   }
@@ -2309,38 +2308,20 @@ const parseExternalPositionCode = (rawPos) => {
   if (p === 'F' || p === 'FWD' || p.includes('FORWARD') || p.includes('ATTACK')) {
     return { zone: 3, hRank: 0, isStriker: true, isAttacking: true };
   }
-
-  if (p === 'LM' || p.includes('LEFT MID')) {
-    return { zone: 2, hRank: -80, isStriker: false, isAttacking: true };
-  }
-  if (p === 'RM' || p.includes('RIGHT MID')) {
-    return { zone: 2, hRank: 80, isStriker: false, isAttacking: true };
-  }
-  if (p === 'LAM' || p.includes('LEFT ATTACKING MID')) {
-    return { zone: 2, hRank: -60, isStriker: false, isAttacking: true };
-  }
-  if (p === 'RAM' || p.includes('RIGHT ATTACKING MID')) {
-    return { zone: 2, hRank: 60, isStriker: false, isAttacking: true };
-  }
-  if (p === 'CAM' || p === 'AM' || p.includes('ATTACKING MID')) {
-    return { zone: 2, hRank: 0, isStriker: false, isAttacking: true };
-  }
-  if (p === 'LDM' || p === 'LCM' || p.includes('LEFT DEFENSIVE MID') || p.includes('LEFT CENTRAL MID')) {
-    return { zone: 2, hRank: -25, isStriker: false, isAttacking: false };
-  }
-  if (p === 'RDM' || p === 'RCM' || p.includes('RIGHT DEFENSIVE MID') || p.includes('RIGHT CENTRAL MID')) {
-    return { zone: 2, hRank: 25, isStriker: false, isAttacking: false };
-  }
-  if (p === 'CDM' || p === 'DM' || p.includes('DEFENSIVE MID')) {
-    return { zone: 2, hRank: -5, isStriker: false, isAttacking: false };
-  }
-
+  if (p === 'LM' || p.includes('LEFT MID')) return { zone: 2, hRank: -80, isStriker: false, isAttacking: true };
+  if (p === 'RM' || p.includes('RIGHT MID')) return { zone: 2, hRank: 80, isStriker: false, isAttacking: true };
+  if (p === 'LAM' || p.includes('LEFT ATTACKING MID')) return { zone: 2, hRank: -60, isStriker: false, isAttacking: true };
+  if (p === 'RAM' || p.includes('RIGHT ATTACKING MID')) return { zone: 2, hRank: 60, isStriker: false, isAttacking: true };
+  if (p === 'CAM' || p === 'AM' || p.includes('ATTACKING MID')) return { zone: 2, hRank: 0, isStriker: false, isAttacking: true };
+  if (p === 'LDM' || p === 'LCM' || p.includes('LEFT DEFENSIVE MID') || p.includes('LEFT CENTRAL MID')) return { zone: 2, hRank: -25, isStriker: false, isAttacking: false };
+  if (p === 'RDM' || p === 'RCM' || p.includes('RIGHT DEFENSIVE MID') || p.includes('RIGHT CENTRAL MID')) return { zone: 2, hRank: 25, isStriker: false, isAttacking: false };
+  if (p === 'CDM' || p === 'DM' || p.includes('DEFENSIVE MID')) return { zone: 2, hRank: -5, isStriker: false, isAttacking: false };
   return { zone: 2, hRank: 0, isStriker: false, isAttacking: false };
 };
 
 /**
- * Fetches external lineup & formation data from TheSportsDB for a match (home & away),
- * matched by team name + match date/teams so we have a second source alongside ESPN.
+ * Fetches secondary lineup & formation data from TheSportsDB when available,
+ * and also checks ESPN's league-specific summary endpoint.
  */
 const fetchExternalMatchLineups = async (match, homeComp, awayComp) => {
   const hName = homeComp?.team?.displayName || homeComp?.team?.shortDisplayName || homeComp?.team?.name || '';
@@ -2376,9 +2357,7 @@ const fetchExternalMatchLineups = async (match, homeComp, awayComp) => {
       const evA = normalizeTeamMatchName(ev?.strAwayTeam || '');
       const teamsMatch = (evH.includes(hNorm) || hNorm.includes(evH)) && (evA.includes(aNorm) || aNorm.includes(evA));
       if (!teamsMatch) return false;
-      if (evDateStr && ev?.dateEvent) {
-        return ev.dateEvent === evDateStr;
-      }
+      if (evDateStr && ev?.dateEvent) return ev.dateEvent === evDateStr;
       return true;
     }) || events.find(ev => String(ev?.strSport || '').toLowerCase() === 'soccer');
 
@@ -2391,7 +2370,7 @@ const fetchExternalMatchLineups = async (match, homeComp, awayComp) => {
     const lineupJson = await fetchWithCache(lineupUrl, false, 6000).catch(() => null);
     const rows = Array.isArray(lineupJson?.lineup) ? lineupJson.lineup : [];
 
-    const parseSide = (targetTeamName, fallbackForm) => {
+    const parseSide = (targetTeamName) => {
       const targetNorm = normalizeTeamMatchName(targetTeamName);
       const sideRows = rows.filter(r => {
         const rTeam = normalizeTeamMatchName(r?.strTeam || '');
@@ -2420,8 +2399,8 @@ const fetchExternalMatchLineups = async (match, homeComp, awayComp) => {
         });
 
       const rawForm = matchedEvent.strHomeTeam && normalizeTeamMatchName(matchedEvent.strHomeTeam).includes(targetNorm)
-        ? (matchedEvent.strHomeFormation || fallbackForm || '')
-        : (matchedEvent.strAwayFormation || fallbackForm || '');
+        ? (matchedEvent.strHomeFormation || '')
+        : (matchedEvent.strAwayFormation || '');
 
       return {
         formation: String(rawForm || '').replace(/\s+/g, ''),
@@ -2430,8 +2409,8 @@ const fetchExternalMatchLineups = async (match, homeComp, awayComp) => {
     };
 
     const result = {
-      home: parseSide(hName, ''),
-      away: parseSide(aName, '')
+      home: parseSide(hName),
+      away: parseSide(aName)
     };
     externalLineupCache.set(cacheKey, result);
     return result;
@@ -2582,53 +2561,72 @@ const getStartingEleven = (teamRoster) => {
   return [...explicitStarters, ...nonStarters].slice(0, 11);
 };
 
-const getFormationPlaceRowHint = (formationPlace, formationRows) => {
-  if (!formationPlace || !Array.isArray(formationRows) || formationRows.length < 2) return null;
-  if (formationPlace === 1) return 0;
+/**
+ * Exact ESPN `formationPlace` (`1`..`11`) slot mapping (row & left-to-right column index)
+ * for all standard formations so when ESPN provides `formationPlace` we place players
+ * on the exact same row and flank as ESPN's pitch graphic.
+ */
+const getExactFormationPlaceSlot = (formationPlace, formationRows) => {
+  if (!formationPlace || formationPlace < 1 || formationPlace > 11) return null;
+  if (formationPlace === 1) return { row: 0, col: 0 };
 
-  const numOutfieldLines = formationRows.length - 1;
   const formStr = formationRows.slice(1).join('-');
-
-  if (formStr === '4-2-3-1') {
-    if ([2, 3, 4, 5].includes(formationPlace)) return 1;
-    if ([6, 8].includes(formationPlace)) return 2;
-    if ([7, 10, 11].includes(formationPlace)) return 3;
-    if (formationPlace === 9) return 4;
-  }
-
-  if (formStr === '4-3-3' || formStr === '4-1-4-1') {
-    if ([2, 3, 4, 5].includes(formationPlace)) return 1;
-    if ([6, 8, 10].includes(formationPlace)) return 2;
-    if ([7, 9, 11].includes(formationPlace)) return 3;
-  }
-
-  if (formStr === '4-4-2' || formStr === '4-2-2-2') {
-    if ([2, 3, 4, 5].includes(formationPlace)) return 1;
-    if ([6, 7, 8, 11].includes(formationPlace)) return 2;
-    if ([9, 10].includes(formationPlace)) return 3;
-  }
-
-  if (formStr === '3-4-2-1' || formStr === '3-4-3') {
-    if ([2, 4, 5].includes(formationPlace)) return 1;
-    if ([3, 6, 8, 11].includes(formationPlace)) return 2;
-    if ([7, 10].includes(formationPlace) && numOutfieldLines >= 4) return 3;
-    if (formationPlace === 9) return numOutfieldLines;
-  }
-
-  if (formStr === '3-5-2' || formStr === '5-3-2') {
-    if (numOutfieldLines === 3) {
-      if (formationPlace <= 1 + formationRows[1]) return 1;
-      if (formationPlace <= 1 + formationRows[1] + formationRows[2]) return 2;
-      return 3;
+  const maps = {
+    '4-2-3-1': {
+      3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+      6: { row: 2, col: 0 }, 8: { row: 2, col: 1 },
+      11: { row: 3, col: 0 }, 10: { row: 3, col: 1 }, 7: { row: 3, col: 2 },
+      9: { row: 4, col: 0 }
+    },
+    '4-3-3': {
+      3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+      6: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 },
+      11: { row: 3, col: 0 }, 9: { row: 3, col: 1 }, 7: { row: 3, col: 2 }
+    },
+    '4-1-4-1': {
+      3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+      6: { row: 2, col: 0 },
+      11: { row: 3, col: 0 }, 8: { row: 3, col: 1 }, 10: { row: 3, col: 2 }, 7: { row: 3, col: 3 },
+      9: { row: 4, col: 0 }
+    },
+    '4-4-2': {
+      3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+      11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
+      10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
+    },
+    '3-4-2-1': {
+      5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 2: { row: 1, col: 2 },
+      3: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 11: { row: 2, col: 3 },
+      10: { row: 3, col: 0 }, 7: { row: 3, col: 1 },
+      9: { row: 4, col: 0 }
+    },
+    '3-4-3': {
+      5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 2: { row: 1, col: 2 },
+      3: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 11: { row: 2, col: 3 },
+      10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }, 7: { row: 3, col: 2 }
+    },
+    '3-5-2': {
+      5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 2: { row: 1, col: 2 },
+      3: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 10: { row: 2, col: 3 }, 11: { row: 2, col: 4 },
+      7: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
+    },
+    '5-3-2': {
+      3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 6: { row: 1, col: 3 }, 2: { row: 1, col: 4 },
+      11: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 7: { row: 2, col: 2 },
+      10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
     }
-  }
+  };
 
+  const table = maps[formStr];
+  if (table && table[formationPlace]) return table[formationPlace];
   return null;
 };
 
 /**
- * Builds formation rows (`[1, ...parsedFormation]`) using external source position data first
- * with ESPN role & `formationPlace` fallback, sorted strictly left-to-right.
+ * Builds formation rows (`[1, ...parsedFormation]`) using:
+ * 1) Exact `formationPlace` (`1`..`11`) slot map when ESPN provides distinct `formationPlace` values
+ * 2) Secondary source (`TheSportsDB`) position & flank data
+ * 3) Role/zone + left-to-right flank ordering fallback
  */
 const buildFormationGrid = (starters, formationRows, extSideData = null) => {
   const grid = formationRows.map(() => []);
@@ -2637,16 +2635,51 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
   const enriched = starters.map((player, idx) => {
     const extMatch = findExternalPlayerMatch(player, extSideData);
     const meta = getPlayerRoleMeta(player);
+    const exactSlot = getExactFormationPlaceSlot(meta.formationPlace, formationRows);
     return {
       player,
       idx,
       meta,
       extMatch,
+      exactSlot,
       zone: getPlayerZone(player, extMatch),
-      rowHint: extMatch ? (extMatch.zone === 3 && extMatch.isStriker && formationRows.length > 2 ? formationRows.length - 1 : extMatch.zone) : getFormationPlaceRowHint(meta.formationPlace, formationRows),
       hRank: getHorizontalRank(player, idx, extMatch)
     };
   });
+
+  // Check if starters have distinct `formationPlace` values that map cleanly to the formation
+  const distinctPlaces = new Set(enriched.map(e => e.meta.formationPlace).filter(Boolean));
+  if (distinctPlaces.size >= 8) {
+    enriched
+      .filter(e => e.exactSlot && e.exactSlot.row < grid.length)
+      .sort((a, b) => (a.exactSlot.row - b.exactSlot.row) || (a.exactSlot.col - b.exactSlot.col))
+      .forEach(item => {
+        const r = item.exactSlot.row;
+        if (grid[r].length < formationRows[r]) {
+          grid[r].push(item.player);
+          used.add(item.idx);
+        }
+      });
+
+    enriched.forEach(item => {
+      if (used.has(item.idx)) return;
+      for (let r = 0; r < grid.length; r++) {
+        if (grid[r].length < formationRows[r]) {
+          grid[r].push(item.player);
+          used.add(item.idx);
+          break;
+        }
+      }
+    });
+
+    if (used.size === starters.length) {
+      return grid;
+    }
+  }
+
+  // Fallback path when `formationPlace` is missing or incomplete
+  grid.forEach(row => { row.length = 0; });
+  used.clear();
 
   // 1. GK -> row 0
   let gkItem = enriched.find(item => item.zone === 0);
@@ -2661,7 +2694,7 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
   // 2. Backline -> row 1
   if (grid.length > 1) {
     const defList = outfield
-      .filter(o => o.zone === 1 || o.rowHint === 1)
+      .filter(o => o.zone === 1)
       .sort((a, b) => a.hRank - b.hRank);
     defList.forEach(item => {
       if (grid[1].length < formationRows[1]) {
@@ -2682,8 +2715,7 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
         o.meta.combined.includes('STRIKER') ||
         o.meta.combined.includes('CENTRE FORWARD') ||
         o.meta.combined.includes('CENTER FORWARD') ||
-        o.meta.formationPlace === 9 ||
-        o.rowHint === lastRowIdx
+        o.meta.formationPlace === 9
       ))
       .sort((a, b) => a.hRank - b.hRank);
 
@@ -2695,20 +2727,7 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     });
   }
 
-  // 4. Honor explicit rowHint for any remaining row where there is space
-  for (let r = 1; r < grid.length; r++) {
-    const hinted = outfield
-      .filter(o => !used.has(o.idx) && o.rowHint === r)
-      .sort((a, b) => a.hRank - b.hRank);
-    hinted.forEach(item => {
-      if (grid[r].length < formationRows[r]) {
-        grid[r].push(item.player);
-        used.add(item.idx);
-      }
-    });
-  }
-
-  // 5. Fill remaining rows from front to back
+  // 4. Fill remaining rows from front to back
   const remaining = outfield
     .filter(o => !used.has(o.idx))
     .sort((a, b) => {
@@ -2728,7 +2747,7 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     }
   }
 
-  // 6. Place any remaining players into any row with capacity
+  // 5. Place any remaining players into any row with capacity
   enriched.forEach(item => {
     if (used.has(item.idx)) return;
     for (let r = 0; r < grid.length; r++) {
@@ -2740,7 +2759,7 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     }
   });
 
-  // 7. Append any remaining starters to last outfield row
+  // 6. Append any remaining starters to last outfield row
   enriched.forEach(item => {
     if (!used.has(item.idx) && grid.length > 0) {
       grid[grid.length - 1].push(item.player);
@@ -2748,7 +2767,7 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     }
   });
 
-  // 8. Sort every outfield row strictly left-to-right
+  // 7. Sort every outfield row strictly left-to-right
   for (let r = 1; r < grid.length; r++) {
     grid[r].sort((pA, pB) => {
       const extA = findExternalPlayerMatch(pA, extSideData);
@@ -2786,11 +2805,11 @@ const extractTeamFormation = (summary, teamRoster, isHome, comp = null, extSideD
   const targetId = comp?.team?.id ? String(comp.team.id) : (teamRoster?.team?.id ? String(teamRoster.team.id) : null);
 
   const candidates = [
-    extSideData?.formation,
     teamRoster?.formation,
     typeof teamRoster?.formation === 'object' ? (teamRoster?.formation?.displayValue || teamRoster?.formation?.name || teamRoster?.formation?.formation) : null,
     teamRoster?.lineup?.formation,
-    teamRoster?.team?.formation
+    teamRoster?.team?.formation,
+    extSideData?.formation
   ];
 
   const headerComps = summary?.header?.competitions?.[0]?.competitors || [];
@@ -5004,7 +5023,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 // ==========================================
 
 const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
-  const sumUrl = `${API_SOCCER_SCORE_BASE}/all/summary?event=${match?.id}`;
+  const sumUrl = `${API_SOCCER_SCORE_BASE}/${match?._leagueId || 'all'}/summary?event=${match?.id}`;
   const [summary, setSummary] = useState(() => match?.id ? getCachedSync(sumUrl) : null);
   const [tab, setTab] = useState('lineup');
 
