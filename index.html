@@ -2415,151 +2415,134 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
 };
 
 /**
- * ESPN's official pitch renderer uses `formationPlace` (`1`..`11`) as a sequential slot index
- * from GK (`1`) -> left-to-right across each line (`2..11`) matching the formation's line counts!
- * E.g. for `4-2-3-1` (`[1, 4, 2, 3, 1]`):
- *   Row 0 (1): [1]
- *   Row 1 (4): [2, 3, 4, 5] (left-to-right across back line)
- *   Row 2 (2): [6, 7]       (left-to-right across holding mids)
- *   Row 3 (3): [8, 9, 10]   (left-to-right across attacking mids)
- *   Row 4 (1): [11]         (striker)
- * And for `4-3-3` (`[1, 4, 3, 3]`):
- *   Row 0 (1): [1]
- *   Row 1 (4): [2, 3, 4, 5]
- *   Row 2 (3): [6, 7, 8]
- *   Row 3 (3): [9, 10, 11]
+ * ESPN Official Soccer Formation Place (`1`..`11`) -> Tactical Line (`row`) & Lateral Order (`col`)
+ *
+ * In ESPN's `site.api.espn.com/.../summary` endpoint (`rosters[].roster[]`), `formationPlace`
+ * is Opta/ESPN's 1..11 tactical position code (NOT a 1-to-11 row slice!):
+ *   1  = Goalkeeper (GK)
+ *   2  = Right Back / Right Wing-Back (RB / RWB)
+ *   3  = Left Back / Left Wing-Back (LB / LWB)
+ *   4  = Right Center Back / Central CB (RCB / CB)
+ *   5  = Left Center Back / Left CB in back-3 (LCB)
+ *   6  = Central / Left-Central Defensive Midfielder (CDM / LDM / LCM)
+ *   7  = Right Midfielder / Right Winger / Right Inside Forward (RM / RW / RAM)
+ *   8  = Central / Right-Central Midfielder (CM / RCM / RDM)
+ *   9  = Center Forward / Striker (ST / CF)
+ *   10 = Central Attacking Midfielder / Second Striker / Left-Center Mid (CAM / CF / LCM)
+ *   11 = Left Midfielder / Left Winger / Left Inside Forward (LM / LW / LAM)
+ *
+ * Importantly, in ESPN's API, `2` is ALWAYS Right Back and `3` is ALWAYS Left Back,
+ * and `7` is ALWAYS Right Wing/Mid while `11` is ALWAYS Left Wing/Mid!
+ * Slicing `[2, 3, 4, 5]` left-to-right put RB (`2`) on the left and LB (`3`) on the right,
+ * and slicing `[8, 9, 10]` put the striker (`9`) in the attacking-mid row and LW (`11`) at striker!
  */
-const buildFormationGrid = (starters, formationRows) => {
-  const grid = formationRows.map(() => []);
-  const enriched = starters.map((player, idx) => ({
-    player,
-    idx,
-    meta: getPlayerRoleMeta(player),
-    ...getDetailedPositionScore(player, idx)
-  }));
-
-  // 1. Primary ESPN Official Path: sequential slicing of `formationPlace` 1..11 into `formationRows`
-  const withPlace = enriched.filter(e => e.meta.formationPlace !== null);
-  const uniquePlaces = new Set(withPlace.map(e => e.meta.formationPlace));
-  const totalSlots = formationRows.reduce((a, b) => a + b, 0);
-
-  if (uniquePlaces.size >= 10 && totalSlots === 11 && starters.length >= 11) {
-    const orderedByPlace = [...enriched].sort((a, b) => {
-      const pa = a.meta.formationPlace ?? 99;
-      const pb = b.meta.formationPlace ?? 99;
-      return pa - pb || a.idx - b.idx;
-    });
-
-    // Verify GK is slot 1; if slot 1 is not GK, put GK at index 0
-    const gkIdx = orderedByPlace.findIndex(e => e.roleTier === 0);
-    if (gkIdx > 0) {
-      const [gkItem] = orderedByPlace.splice(gkIdx, 1);
-      orderedByPlace.unshift(gkItem);
-    }
-
-    let cursor = 0;
-    for (let r = 0; r < formationRows.length; r++) {
-      const count = formationRows[r];
-      const slice = orderedByPlace.slice(cursor, cursor + count);
-      cursor += count;
-
-      // Within each line, if explicit flank tags (LB/RB, LCB/RCB, LW/RW) exist and contradict order,
-      // refine left-to-right flank order while preserving central players' order.
-      const hasExplicitFlanks = slice.some(it => Math.abs(it.hRank) >= 25 && it.hRank !== it.meta.formationPlace);
-      if (r >= 1 && hasExplicitFlanks) {
-        slice.sort((a, b) => {
-          const ra = Math.abs(a.hRank) >= 25 && a.hRank !== a.meta.formationPlace ? a.hRank : (a.meta.formationPlace ?? a.idx) - 6;
-          const rb = Math.abs(b.hRank) >= 25 && b.hRank !== b.meta.formationPlace ? b.hRank : (b.meta.formationPlace ?? b.idx) - 6;
-          return ra - rb;
-        });
-      }
-
-      grid[r] = slice.map(s => s.player);
-    }
-
-    if (grid.flat().length === 11) {
-      return grid;
-    }
+const ESPN_FORMATION_PLACE_TABLES = {
+  "4-2-3-1": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    6: { row: 2, col: 0 }, 8: { row: 2, col: 1 },
+    11: { row: 3, col: 0 }, 10: { row: 3, col: 1 }, 7: { row: 3, col: 2 },
+    9: { row: 4, col: 0 }
+  },
+  "4-3-3": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    10: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
+    11: { row: 3, col: 0 }, 9: { row: 3, col: 1 }, 7: { row: 3, col: 2 }
+  },
+  "4-1-4-1": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    6: { row: 2, col: 0 },
+    11: { row: 3, col: 0 }, 10: { row: 3, col: 1 }, 8: { row: 3, col: 2 }, 7: { row: 3, col: 3 },
+    9: { row: 4, col: 0 }
+  },
+  "4-4-2": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
+    10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
+  },
+  "4-4-1-1": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
+    10: { row: 3, col: 0 },
+    9: { row: 4, col: 0 }
+  },
+  "4-2-2-2": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    6: { row: 2, col: 0 }, 8: { row: 2, col: 1 },
+    11: { row: 3, col: 0 }, 7: { row: 3, col: 1 },
+    10: { row: 4, col: 0 }, 9: { row: 4, col: 1 }
+  },
+  "4-3-1-2": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
+    10: { row: 3, col: 0 },
+    7: { row: 4, col: 1 }, 9: { row: 4, col: 0 }
+  },
+  "4-1-2-1-2": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    6: { row: 2, col: 0 },
+    11: { row: 3, col: 0 }, 8: { row: 3, col: 1 },
+    10: { row: 4, col: 0 },
+    7: { row: 5, col: 1 }, 9: { row: 5, col: 0 }
+  },
+  "3-4-2-1": {
+    1: { row: 0, col: 0 },
+    5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
+    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 7: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
+    11: { row: 3, col: 0 }, 10: { row: 3, col: 1 },
+    9: { row: 4, col: 0 }
+  },
+  "3-4-3": {
+    1: { row: 0, col: 0 },
+    5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
+    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
+    11: { row: 3, col: 0 }, 9: { row: 3, col: 1 }, 7: { row: 3, col: 2 }
+  },
+  "3-4-1-2": {
+    1: { row: 0, col: 0 },
+    5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
+    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 7: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
+    10: { row: 3, col: 0 },
+    11: { row: 4, col: 0 }, 9: { row: 4, col: 1 }
+  },
+  "3-5-2": {
+    1: { row: 0, col: 0 },
+    5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
+    3: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 }, 2: { row: 2, col: 4 },
+    10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
+  },
+  "3-5-1-1": {
+    1: { row: 0, col: 0 },
+    5: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
+    3: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 }, 2: { row: 2, col: 4 },
+    10: { row: 3, col: 0 },
+    9: { row: 4, col: 0 }
+  },
+  "5-3-2": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 6: { row: 1, col: 3 }, 2: { row: 1, col: 4 },
+    11: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 7: { row: 2, col: 2 },
+    10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
+  },
+  "5-4-1": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 4: { row: 1, col: 2 }, 6: { row: 1, col: 3 }, 2: { row: 1, col: 4 },
+    11: { row: 2, col: 0 }, 10: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
+    9: { row: 3, col: 0 }
   }
-
-  // 2. Fallback Path when `formationPlace` is missing/incomplete:
-  // Group strictly by ESPN position roleTier into `formationRows`
-  grid.forEach(row => { row.length = 0; });
-  const used = new Set();
-
-  const gk = enriched.find(it => it.roleTier === 0) || enriched[0];
-  if (gk && grid[0].length < formationRows[0]) {
-    grid[0].push(gk.player);
-    used.add(gk.idx);
-  }
-
-  const outfield = enriched.filter(it => !used.has(it.idx));
-  const numOutfieldLines = formationRows.length - 1;
-  const lastRowIdx = formationRows.length - 1;
-
-  // Defenders -> Row 1
-  if (numOutfieldLines >= 1) {
-    outfield
-      .filter(it => !used.has(it.idx) && it.roleTier === 1)
-      .sort((a, b) => a.hRank - b.hRank)
-      .forEach(it => {
-        if (grid[1].length < formationRows[1]) {
-          grid[1].push(it.player);
-          used.add(it.idx);
-        }
-      });
-  }
-
-  // Strikers / Forwards -> Front Row (lastRowIdx)
-  if (numOutfieldLines >= 2) {
-    outfield
-      .filter(it => !used.has(it.idx) && it.roleTier === 4)
-      .sort((a, b) => a.hRank - b.hRank)
-      .forEach(it => {
-        if (grid[lastRowIdx].length < formationRows[lastRowIdx]) {
-          grid[lastRowIdx].push(it.player);
-          used.add(it.idx);
-        }
-      });
-  }
-
-  // Attacking Mids / Wingers -> Row behind strikers if 4+ outfield lines (e.g. 4-2-3-1 -> row 3)
-  if (numOutfieldLines >= 4) {
-    const attRowIdx = lastRowIdx - 1;
-    outfield
-      .filter(it => !used.has(it.idx) && it.roleTier === 3)
-      .sort((a, b) => a.hRank - b.hRank)
-      .forEach(it => {
-        if (grid[attRowIdx].length < formationRows[attRowIdx]) {
-          grid[attRowIdx].push(it.player);
-          used.add(it.idx);
-        }
-      });
-  }
-
-  // Remaining midfielders & unassigned outfielders fill open slots back-to-front
-  const remaining = outfield
-    .filter(it => !used.has(it.idx))
-    .sort((a, b) => (a.roleTier - b.roleTier) || (a.hRank - b.hRank));
-
-  for (let r = 1; r < formationRows.length; r++) {
-    while (grid[r].length < formationRows[r] && remaining.length > 0) {
-      const next = remaining.shift();
-      if (next && !used.has(next.idx)) {
-        grid[r].push(next.player);
-        used.add(next.idx);
-      }
-    }
-  }
-
-  const rankLookup = new Map(enriched.map(it => [it.player, it.hRank]));
-  for (let r = 1; r < grid.length; r++) {
-    grid[r].sort((pA, pB) => (rankLookup.get(pA) ?? 0) - (rankLookup.get(pB) ?? 0));
-  }
-
-  return grid;
 };
 
+/**
+ * Infers the exact ESPN formation string from `formationPlace` + starter roles when
+ * ESPN omits the explicit `formation` string in the summary JSON.
+ */
 const inferFormationFromStarters = (starters) => {
   const outfield = starters.filter((p, idx) => getDetailedPositionScore(p, idx).roleTier !== 0).slice(0, 10);
   if (outfield.length < 10) return "4-3-3";
@@ -2593,6 +2576,173 @@ const inferFormationFromStarters = (starters) => {
   if (remainingMid === 5 && clampedFwds === 1) return `${clampedDefs}-2-3-1`;
   if (remainingMid >= 2) return `${clampedDefs}-${remainingMid}-${clampedFwds}`;
   return "4-3-3";
+};
+
+const buildFormationGrid = (starters, formationRows) => {
+  const grid = formationRows.map(() => []);
+  const used = new Set();
+  const formKey = formationRows.slice(1).join("-");
+  const placeTable = ESPN_FORMATION_PLACE_TABLES[formKey] || null;
+
+  const enriched = starters.map((player, idx) => {
+    const meta = getPlayerRoleMeta(player);
+    const role = getDetailedPositionScore(player, idx);
+    const slot = placeTable && meta.formationPlace ? placeTable[meta.formationPlace] : null;
+    return { player, idx, meta, role, slot };
+  });
+
+  // 1. Primary ESPN Official Slot Mapping (`formationPlace` 1..11 -> Opta/ESPN tactical row & left-to-right column)
+  if (placeTable) {
+    enriched
+      .filter(it => it.slot && it.slot.row >= 0 && it.slot.row < grid.length)
+      .sort((a, b) => (a.slot.row - b.slot.row) || (a.slot.col - b.slot.col))
+      .forEach(it => {
+        const r = it.slot.row;
+        if (grid[r].length < formationRows[r]) {
+          grid[r].push(it);
+          used.add(it.idx);
+        }
+      });
+
+    // If any starter had a duplicate/unmapped formationPlace, place them by roleTier into open slots
+    const leftovers = enriched
+      .filter(it => !used.has(it.idx))
+      .sort((a, b) => (a.role.roleTier - b.role.roleTier) || (a.role.hRank - b.role.hRank));
+
+    leftovers.forEach(it => {
+      const preferredRows =
+        it.role.roleTier === 0 ? [0] :
+        it.role.roleTier === 1 ? [1] :
+        it.role.roleTier === 4 ? [grid.length - 1] :
+        it.role.roleTier === 3 ? [Math.max(1, grid.length - 2), grid.length - 1] :
+        [2, 1, 3];
+
+      for (const r of preferredRows) {
+        if (r >= 0 && r < grid.length && grid[r].length < formationRows[r]) {
+          grid[r].push(it);
+          used.add(it.idx);
+          return;
+        }
+      }
+      for (let r = 0; r < grid.length; r++) {
+        if (grid[r].length < formationRows[r]) {
+          grid[r].push(it);
+          used.add(it.idx);
+          return;
+        }
+      }
+    });
+
+    if (used.size === starters.length) {
+      return grid.map((rowItems, rIdx) => {
+        if (rIdx === 0) return rowItems.map(x => x.player);
+        rowItems.sort((a, b) => {
+          // Explicit flank abbr (LB/RB, LW/RW, etc.) wins if present; otherwise ESPN slot col
+          const aExp = Math.abs(a.role.hRank) >= 25 && a.role.hRank !== a.meta.formationPlace;
+          const bExp = Math.abs(b.role.hRank) >= 25 && b.role.hRank !== b.meta.formationPlace;
+          if (aExp && bExp) return a.role.hRank - b.role.hRank;
+          const colA = a.slot ? a.slot.col : (a.role.hRank + 100) / 50;
+          const colB = b.slot ? b.slot.col : (b.role.hRank + 100) / 50;
+          return colA - colB;
+        });
+        return rowItems.map(x => x.player);
+      });
+    }
+  }
+
+  // 2. Fallback for uncommon formations (e.g. 4-3-2-1, 3-1-4-2) using Opta/ESPN `formationPlace` priors + roleTier
+  grid.forEach(row => { row.length = 0; });
+  used.clear();
+
+  const gk = enriched.find(it => it.role.roleTier === 0 || it.meta.formationPlace === 1) || enriched[0];
+  if (gk && grid[0].length < formationRows[0]) {
+    grid[0].push(gk.player);
+    used.add(gk.idx);
+  }
+
+  const outfield = enriched.filter(it => !used.has(it.idx));
+  const numOutfieldLines = formationRows.length - 1;
+  const lastRowIdx = formationRows.length - 1;
+
+  // Defenders -> Row 1
+  if (numOutfieldLines >= 1) {
+    outfield
+      .filter(it => !used.has(it.idx) && (it.role.roleTier === 1 || [2, 3, 4, 5].includes(it.meta.formationPlace)))
+      .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
+      .forEach(it => {
+        if (grid[1].length < formationRows[1]) {
+          grid[1].push(it.player);
+          used.add(it.idx);
+        }
+      });
+  }
+
+  // Strikers / Forwards -> Front Row (lastRowIdx)
+  if (numOutfieldLines >= 2) {
+    outfield
+      .filter(it => !used.has(it.idx) && (it.role.roleTier === 4 || it.meta.formationPlace === 9))
+      .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
+      .forEach(it => {
+        if (grid[lastRowIdx].length < formationRows[lastRowIdx]) {
+          grid[lastRowIdx].push(it.player);
+          used.add(it.idx);
+        }
+      });
+  }
+
+  // Attacking Mids / Wingers -> Row behind strikers when 4+ outfield lines
+  if (numOutfieldLines >= 4) {
+    const attRowIdx = lastRowIdx - 1;
+    outfield
+      .filter(it => !used.has(it.idx) && (it.role.roleTier === 3 || [7, 10, 11].includes(it.meta.formationPlace)))
+      .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
+      .forEach(it => {
+        if (grid[attRowIdx].length < formationRows[attRowIdx]) {
+          grid[attRowIdx].push(it.player);
+          used.add(it.idx);
+        }
+      });
+  }
+
+  const remaining = outfield
+    .filter(it => !used.has(it.idx))
+    .sort((a, b) => (a.role.roleTier - b.role.roleTier) || (getOptaLateralOrder(a) - getOptaLateralOrder(b)));
+
+  for (let r = 1; r < formationRows.length; r++) {
+    while (grid[r].length < formationRows[r] && remaining.length > 0) {
+      const next = remaining.shift();
+      if (next && !used.has(next.idx)) {
+        grid[r].push(next.player);
+        used.add(next.idx);
+      }
+    }
+  }
+
+  const lateralLookup = new Map(enriched.map(it => [it.player, getOptaLateralOrder(it)]));
+  for (let r = 1; r < grid.length; r++) {
+    grid[r].sort((pA, pB) => (lateralLookup.get(pA) ?? 0) - (lateralLookup.get(pB) ?? 0));
+  }
+
+  return grid;
+};
+
+const getOptaLateralOrder = (item) => {
+  const { abbr, pname, formationPlace } = item.meta;
+  const tag = `${abbr} ${pname}`;
+  if (abbr === "LB" || abbr === "LWB" || tag.includes("LEFT BACK") || tag.includes("LEFT WING")) return -100;
+  if (abbr === "LW" || abbr === "LF" || abbr === "LM" || abbr === "LAM") return -90;
+  if (abbr === "LCB" || abbr === "LDM" || abbr === "LCM" || abbr === "LS") return -30;
+  if (abbr === "RCB" || abbr === "RDM" || abbr === "RCM" || abbr === "RS") return 30;
+  if (abbr === "RW" || abbr === "RF" || abbr === "RM" || abbr === "RAM") return 90;
+  if (abbr === "RB" || abbr === "RWB" || tag.includes("RIGHT BACK") || tag.includes("RIGHT WING")) return 100;
+
+  // Opta/ESPN `formationPlace` lateral priors (left-to-right):
+  // 3 (LB) < 11 (LW/LM) < 5 (LCB) < 6 (LDM) < 10 (CAM/LCF) < 9 (ST) < 8 (RCM) < 4 (RCB) < 7 (RW/RM) < 2 (RB)
+  const optaOrder = { 3: -80, 11: -70, 5: -30, 6: -15, 10: -5, 9: 0, 8: 15, 4: 30, 7: 70, 2: 80 };
+  if (formationPlace && optaOrder[formationPlace] !== undefined) {
+    return optaOrder[formationPlace];
+  }
+  return item.role.hRank;
 };
 
 const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
@@ -2674,9 +2824,10 @@ const useFootballFormations = (summary, width, height, isHome, comp = null) =>
         : 14 + (progress * usableHeight);
 
       return rowPlayers.map((p, i) => {
-        // ESPN's pitch graphic displays both teams left-to-right from the viewer's perspective
-        // (left-sided players on viewer's left, right-sided players on viewer's right)
-        const x = ((i + 1) / (rowPlayers.length + 1)) * width;
+        // Away team attacks downward (top-to-bottom), so its left flank (`col 0`) is on the viewer's right;
+        // Home team attacks upward (bottom-to-top), so its left flank (`col 0`) is on the viewer's left.
+        const colIdx = isHome ? i : (rowPlayers.length - 1 - i);
+        const x = ((colIdx + 1) / (rowPlayers.length + 1)) * width;
         return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
