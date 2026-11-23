@@ -2295,78 +2295,71 @@ const getPlayerRoleMeta = (player) => {
   };
 };
 
-/**
- * Standard tactical slot definitions for common formations.
- * Each slot specifies:
- * - row: index in [1, ...parsedFormation] (0 = GK, 1 = DEF line, 2..N = MID/FWD lines)
- * - flank: negative = left flank, 0 = central, positive = right flank
- * - expectedZones: ordered preference of player zones [primary, secondary]
- */
 const FORMATION_SLOT_SPECS = {
   '4-2-3-1': [
-    { row: 0, flank: 0,   roleHint: 'gk',         fp: 1 },
-    { row: 1, flank: -46, roleHint: 'lb',         fp: 3 },
-    { row: 1, flank: -16, roleHint: 'lcb',        fp: 5 },
-    { row: 1, flank: 16,  roleHint: 'rcb',        fp: 4 },
-    { row: 1, flank: 46,  roleHint: 'rb',         fp: 2 },
-    { row: 2, flank: -20, roleHint: 'ldm',        fp: 6 },
-    { row: 2, flank: 20,  roleHint: 'rdm',        fp: 8 },
-    { row: 3, flank: -42, roleHint: 'lw_lam',     fp: 11 },
-    { row: 3, flank: 0,   roleHint: 'cam',        fp: 10 },
-    { row: 3, flank: 42,  roleHint: 'rw_ram',     fp: 7 },
-    { row: 4, flank: 0,   roleHint: 'st',         fp: 9 }
+    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
+    { row: 1, flank: -46, roleHint: 'lb',       fp: 3 },
+    { row: 1, flank: -16, roleHint: 'lcb',      fp: 5 },
+    { row: 1, flank: 16,  roleHint: 'rcb',      fp: 4 },
+    { row: 1, flank: 46,  roleHint: 'rb',       fp: 2 },
+    { row: 2, flank: -20, roleHint: 'ldm',      fp: 6 },
+    { row: 2, flank: 20,  roleHint: 'rdm',      fp: 8 },
+    { row: 3, flank: -42, roleHint: 'lw_lam',   fp: 11 },
+    { row: 3, flank: 0,   roleHint: 'cam',      fp: 10 },
+    { row: 3, flank: 42,  roleHint: 'rw_ram',   fp: 7 },
+    { row: 4, flank: 0,   roleHint: 'st',       fp: 9 }
   ],
   '4-3-3': [
-    { row: 0, flank: 0,   roleHint: 'gk',         fp: 1 },
-    { row: 1, flank: -46, roleHint: 'lb',         fp: 3 },
-    { row: 1, flank: -16, roleHint: 'lcb',        fp: 5 },
-    { row: 1, flank: 16,  roleHint: 'rcb',        fp: 4 },
-    { row: 1, flank: 46,  roleHint: 'rb',         fp: 2 },
-    { row: 2, flank: -30, roleHint: 'lcm',        fp: 8 },
-    { row: 2, flank: 0,   roleHint: 'cdm_cm',     fp: 6 },
-    { row: 2, flank: 30,  roleHint: 'rcm',        fp: 10 },
-    { row: 3, flank: -40, roleHint: 'lw',         fp: 11 },
-    { row: 3, flank: 0,   roleHint: 'st',         fp: 9 },
-    { row: 3, flank: 40,  roleHint: 'rw',         fp: 7 }
+    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
+    { row: 1, flank: -46, roleHint: 'lb',       fp: 3 },
+    { row: 1, flank: -16, roleHint: 'lcb',      fp: 5 },
+    { row: 1, flank: 16,  roleHint: 'rcb',      fp: 4 },
+    { row: 1, flank: 46,  roleHint: 'rb',       fp: 2 },
+    { row: 2, flank: -30, roleHint: 'lcm',      fp: 8 },
+    { row: 2, flank: 0,   roleHint: 'cdm_cm',   fp: 6 },
+    { row: 2, flank: 30,  roleHint: 'rcm',      fp: 10 },
+    { row: 3, flank: -40, roleHint: 'lw',       fp: 11 },
+    { row: 3, flank: 0,   roleHint: 'st',       fp: 9 },
+    { row: 3, flank: 40,  roleHint: 'rw',       fp: 7 }
   ],
   '4-4-2': [
-    { row: 0, flank: 0,   roleHint: 'gk',         fp: 1 },
-    { row: 1, flank: -46, roleHint: 'lb',         fp: 3 },
-    { row: 1, flank: -16, roleHint: 'lcb',        fp: 5 },
-    { row: 1, flank: 16,  roleHint: 'rcb',        fp: 4 },
-    { row: 1, flank: 46,  roleHint: 'rb',         fp: 2 },
-    { row: 2, flank: -44, roleHint: 'lm_lw',      fp: 11 },
-    { row: 2, flank: -15, roleHint: 'lcm_ldm',    fp: 6 },
-    { row: 2, flank: 15,  roleHint: 'rcm_rdm',    fp: 8 },
-    { row: 2, flank: 44,  roleHint: 'rm_rw',      fp: 7 },
-    { row: 3, flank: -18, roleHint: 'st_left',    fp: 10 },
-    { row: 3, flank: 18,  roleHint: 'st_right',   fp: 9 }
+    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
+    { row: 1, flank: -46, roleHint: 'lb',       fp: 3 },
+    { row: 1, flank: -16, roleHint: 'lcb',      fp: 5 },
+    { row: 1, flank: 16,  roleHint: 'rcb',      fp: 4 },
+    { row: 1, flank: 46,  roleHint: 'rb',       fp: 2 },
+    { row: 2, flank: -44, roleHint: 'lm_lw',    fp: 11 },
+    { row: 2, flank: -15, roleHint: 'lcm_ldm',  fp: 6 },
+    { row: 2, flank: 15,  roleHint: 'rcm_rdm',  fp: 8 },
+    { row: 2, flank: 44,  roleHint: 'rm_rw',    fp: 7 },
+    { row: 3, flank: -18, roleHint: 'st_left',  fp: 10 },
+    { row: 3, flank: 18,  roleHint: 'st_right', fp: 9 }
   ],
   '3-4-2-1': [
-    { row: 0, flank: 0,   roleHint: 'gk',         fp: 1 },
-    { row: 1, flank: -32, roleHint: 'lcb',        fp: 5 },
-    { row: 1, flank: 0,   roleHint: 'cb',         fp: 6 },
-    { row: 1, flank: 32,  roleHint: 'rcb',        fp: 4 },
-    { row: 2, flank: -46, roleHint: 'lwb',        fp: 3 },
-    { row: 2, flank: -15, roleHint: 'ldm',        fp: 8 },
-    { row: 2, flank: 15,  roleHint: 'rdm',        fp: 7 },
-    { row: 2, flank: 46,  roleHint: 'rwb',        fp: 2 },
-    { row: 3, flank: -22, roleHint: 'lam',        fp: 11 },
-    { row: 3, flank: 22,  roleHint: 'ram',        fp: 10 },
-    { row: 4, flank: 0,   roleHint: 'st',         fp: 9 }
+    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
+    { row: 1, flank: -32, roleHint: 'lcb',      fp: 5 },
+    { row: 1, flank: 0,   roleHint: 'cb',       fp: 6 },
+    { row: 1, flank: 32,  roleHint: 'rcb',      fp: 4 },
+    { row: 2, flank: -46, roleHint: 'lwb',      fp: 3 },
+    { row: 2, flank: -15, roleHint: 'ldm',      fp: 8 },
+    { row: 2, flank: 15,  roleHint: 'rdm',      fp: 7 },
+    { row: 2, flank: 46,  roleHint: 'rwb',      fp: 2 },
+    { row: 3, flank: -22, roleHint: 'lam',      fp: 11 },
+    { row: 3, flank: 22,  roleHint: 'ram',      fp: 10 },
+    { row: 4, flank: 0,   roleHint: 'st',       fp: 9 }
   ],
   '3-5-2': [
-    { row: 0, flank: 0,   roleHint: 'gk',         fp: 1 },
-    { row: 1, flank: -32, roleHint: 'lcb',        fp: 5 },
-    { row: 1, flank: 0,   roleHint: 'cb',         fp: 6 },
-    { row: 1, flank: 32,  roleHint: 'rcb',        fp: 4 },
-    { row: 2, flank: -46, roleHint: 'lwb',        fp: 3 },
-    { row: 2, flank: -22, roleHint: 'lcm',        fp: 8 },
-    { row: 2, flank: 0,   roleHint: 'cam_cm',     fp: 10 },
-    { row: 2, flank: 22,  roleHint: 'rcm',        fp: 7 },
-    { row: 2, flank: 46,  roleHint: 'rwb',        fp: 2 },
-    { row: 3, flank: -18, roleHint: 'st_left',    fp: 11 },
-    { row: 3, flank: 18,  roleHint: 'st_right',   fp: 9 }
+    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
+    { row: 1, flank: -32, roleHint: 'lcb',      fp: 5 },
+    { row: 1, flank: 0,   roleHint: 'cb',       fp: 6 },
+    { row: 1, flank: 32,  roleHint: 'rcb',      fp: 4 },
+    { row: 2, flank: -46, roleHint: 'lwb',      fp: 3 },
+    { row: 2, flank: -22, roleHint: 'lcm',      fp: 8 },
+    { row: 2, flank: 0,   roleHint: 'cam_cm',   fp: 10 },
+    { row: 2, flank: 22,  roleHint: 'rcm',      fp: 7 },
+    { row: 2, flank: 46,  roleHint: 'rwb',      fp: 2 },
+    { row: 3, flank: -18, roleHint: 'st_left',  fp: 11 },
+    { row: 3, flank: 18,  roleHint: 'st_right', fp: 9 }
   ]
 };
 
@@ -2477,12 +2470,10 @@ const scorePlayerForSlot = (player, slot, totalLines, formationRows, playerIdx) 
 
   let score = 0;
 
-  // Match ESPN formationPlace if available
   if (formationPlace && slot.fp === formationPlace) {
     score += 90;
   }
 
-  // Lateral flank alignment bonus
   const flankDiff = Math.abs(pFlank - slot.flank);
   score += Math.max(-35, 35 - flankDiff * 0.7);
 
@@ -2541,7 +2532,7 @@ const scorePlayerForSlot = (player, slot, totalLines, formationRows, playerIdx) 
     }
   }
 
-  const midProgress = totalLines > 2 ? (slot.row - 1) / (totalLines - 2) : 0.5;
+  const midProgress = totalLines > 2 ? (rowIndexPlaceholder(slot.row, totalLines)) : 0.5;
   if (zone === 2) {
     if (midProgress < 0.45 && isHoldingRole) score += 155;
     else if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) score += 155;
@@ -2556,6 +2547,9 @@ const scorePlayerForSlot = (player, slot, totalLines, formationRows, playerIdx) 
 
   return score;
 };
+
+const rowIndexPlaceholder = (rowIndex, totalLines) =>
+  totalLines > 2 ? (rowIndex - 1) / (totalLines - 2) : 0.5;
 
 const buildSlotsForFormation = (formationRows, formationKey) => {
   if (FORMATION_SLOT_SPECS[formationKey]) {
@@ -2578,49 +2572,76 @@ const assignPlayersToFormationRows = (starters, formationRows, formationKey = ''
   const slots = buildSlotsForFormation(formationRows, formationKey);
   const usedPlayerIndices = new Set();
 
-  // Rank pairs (slotIdx, playerIdx) globally by best fit so constrained roles (GK, ST, flanks) claim their best slot first
-  const pairs = [];
+  // Group slots by row so we fill most constrained rows first and sort each row left-to-right
+  const rowSlotIndices = formationRows.map(() => []);
   slots.forEach((slot, sIdx) => {
-    starters.forEach((player, pIdx) => {
-      const sc = scorePlayerForSlot(player, slot, totalLines, formationRows, pIdx);
-      pairs.push({ sIdx, pIdx, row: slot.row, flank: slot.flank, sc });
-    });
+    rowSlotIndices[slot.row].push(sIdx);
   });
-  pairs.sort((a, b) => b.sc - a.sc);
 
-  const slotAssignments = new Map();
-  for (const pair of pairs) {
-    if (slotAssignments.has(pair.sIdx) || usedPlayerIndices.has(pair.pIdx)) continue;
-    slotAssignments.set(pair.sIdx, pair);
-    usedPlayerIndices.add(pair.pIdx);
-    if (slotAssignments.size === Math.min(slots.length, starters.length)) break;
+  // Order rows to fill: GK (0), final striker row (totalLines-1), backline (1), then remaining rows
+  const rowFillOrder = [];
+  if (totalLines > 0) rowFillOrder.push(0);
+  if (totalLines > 1) rowFillOrder.push(totalLines - 1);
+  if (totalLines > 2) rowFillOrder.push(1);
+  for (let r = 2; r < totalLines - 1; r++) {
+    rowFillOrder.push(r);
   }
 
-  slots.forEach((slot, sIdx) => {
-    const chosen = slotAssignments.get(sIdx);
-    if (chosen) {
-      assignedRows[slot.row].push({
-        player: starters[chosen.pIdx],
-        flank: chosen.flank
+  rowFillOrder.forEach((rIdx) => {
+    const sIndices = rowSlotIndices[rIdx] || [];
+    const chosenForRow = [];
+
+    sIndices.forEach((sIdx) => {
+      const slot = slots[sIdx];
+      let bestPIdx = -1;
+      let bestScore = -Infinity;
+      starters.forEach((player, pIdx) => {
+        if (usedPlayerIndices.has(pIdx)) return;
+        const sc = scorePlayerForSlot(player, slot, totalLines, formationRows, pIdx);
+        if (sc > bestScore) {
+          bestScore = sc;
+          bestPIdx = pIdx;
+        }
       });
-    }
+      if (bestPIdx !== -1) {
+        usedPlayerIndices.add(bestPIdx);
+        chosenForRow.push({
+          player: starters[bestPIdx],
+          flank: slot.flank,
+          flankPref: getPlayerFlankPreference(starters[bestPIdx], bestPIdx, sIndices.length)
+        });
+      }
+    });
+
+    // Order left-to-right across the pitch by flank slot & player flank preference
+    chosenForRow.sort((a, b) => {
+      const diff = (a.flank + a.flankPref * 0.35) - (b.flank + b.flankPref * 0.35);
+      if (diff !== 0) return diff;
+      const jA = parseInt(String(a.player?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
+      const jB = parseInt(String(b.player?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
+      return jA - jB;
+    });
+
+    assignedRows[rIdx] = chosenForRow;
   });
 
   return assignedRows;
 };
 
-const resolveTeamRosterBySide = (summary, isHome) => {
+const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
   const rosters = summary?.rosters || [];
   if (rosters.length === 0) return null;
 
   const targetSide = isHome ? 'home' : 'away';
+  const compTeamId = comp?.team?.id ? String(comp.team.id) : null;
   const headerComps = summary?.header?.competitions?.[0]?.competitors || [];
   const headerTarget = headerComps.find(c => c.homeAway === targetSide);
   const headerTargetId = headerTarget?.team?.id ? String(headerTarget.team.id) : null;
+  const targetId = compTeamId || headerTargetId;
 
   const matched = rosters.find(r => {
+    if (targetId && r?.team?.id && String(r.team.id) === targetId) return true;
     if (String(r?.homeAway || '').toLowerCase() === targetSide) return true;
-    if (headerTargetId && r?.team?.id && String(r.team.id) === headerTargetId) return true;
     return false;
   });
 
@@ -2628,13 +2649,32 @@ const resolveTeamRosterBySide = (summary, isHome) => {
   return rosters[isHome ? 0 : Math.min(1, rosters.length - 1)] || null;
 };
 
-const useFootballFormations = (summary, width, height, isHome) =>
+const extractTeamFormation = (summary, teamRoster, isHome, comp = null) => {
+  const directForm = teamRoster?.formation || teamRoster?.team?.formation;
+  if (directForm && String(directForm).trim()) return String(directForm).trim();
+
+  const targetSide = isHome ? 'home' : 'away';
+  const targetId = comp?.team?.id ? String(comp.team.id) : (teamRoster?.team?.id ? String(teamRoster.team.id) : null);
+  const headerComps = summary?.header?.competitions?.[0]?.competitors || [];
+  const headerComp = headerComps.find(c =>
+    (targetId && c?.team?.id && String(c.team.id) === targetId) ||
+    String(c?.homeAway || '').toLowerCase() === targetSide
+  );
+  if (headerComp?.formation && String(headerComp.formation).trim()) {
+    return String(headerComp.formation).trim();
+  }
+
+  return "4-3-3";
+};
+
+const useFootballFormations = (summary, width, height, isHome, comp = null) =>
   useMemo(() => {
     if (!summary?.rosters) return [];
-    const teamRoster = resolveTeamRosterBySide(summary, isHome);
+    const teamRoster = resolveTeamRosterBySide(summary, isHome, comp);
     if (!teamRoster) return [];
 
-    const parsedForm = (teamRoster.formation || "4-3-3")
+    const rawFormation = extractTeamFormation(summary, teamRoster, isHome, comp);
+    const parsedForm = rawFormation
       .split("-")
       .map(n => parseInt(n, 10))
       .filter(n => !isNaN(n) && n > 0);
@@ -2654,20 +2694,17 @@ const useFootballFormations = (summary, width, height, isHome) =>
     return groupedRows.map((rowItems, rowIndex) => {
       if (!rowItems || rowItems.length === 0) return [];
 
-      // Sort left-to-right on screen by flank coordinate
-      const sortedRow = [...rowItems].sort((a, b) => a.flank - b.flank);
-
       const progress = rowIndex / numRows;
       const y = isHome
         ? (14 + usableHeight) - (progress * usableHeight)
         : 14 + (progress * usableHeight);
 
-      return sortedRow.map((item, i) => {
-        const x = ((i + 1) / (sortedRow.length + 1)) * width;
+      return rowItems.map((item, i) => {
+        const x = ((i + 1) / (rowItems.length + 1)) * width;
         return { id: item.player.athlete?.id || `p_${rowIndex}_${i}`, player: item.player, x, y };
       });
     }).flat();
-  }, [summary?.rosters, summary?.header, width, height, isHome]);
+  }, [summary?.rosters, summary?.header, width, height, isHome, comp]);
 
 const PlayerJersey = memo(({ player, teamColor, accentColor = "#FFFFFF" }) => {
   if (!player?.athlete) return null;
@@ -2836,12 +2873,14 @@ const TacticalPitch = memo(({ summary, home, away }) => {
     };
   }, [summary, home, away]);
 
-  const awayFormation = summary?.rosters?.[1]?.formation || '';
-  const homeFormation = summary?.rosters?.[0]?.formation || '';
+  const awayRoster = resolveTeamRosterBySide(summary, false, away);
+  const homeRoster = resolveTeamRosterBySide(summary, true, home);
+  const awayFormation = summary?.rosters ? extractTeamFormation(summary, awayRoster, false, away) : '';
+  const homeFormation = summary?.rosters ? extractTeamFormation(summary, homeRoster, true, home) : '';
 
   const HALF_HEIGHT = pitchSize.height / 2;
-  const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, false);
-  const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, true);
+  const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, false, away);
+  const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, true, home);
 
   if (!summary?.rosters) {
     return <WhitePillLoader className="py-16" />;
