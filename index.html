@@ -2283,15 +2283,172 @@ const getPlayerRoleMeta = (player) => {
   ).toLowerCase().trim();
 
   const jerseyNum = parseInt(String(player?.jersey ?? '').replace(/[^\d]/g, ''), 10);
+  const fp = parseInt(String(player?.formationPlace ?? '').replace(/[^\d]/g, ''), 10);
   const combined = `${abbr} ${pname}`;
-  return { abbr, pname, ptype, combined, jerseyNum: isNaN(jerseyNum) ? null : jerseyNum };
+  return {
+    abbr,
+    pname,
+    ptype,
+    combined,
+    jerseyNum: isNaN(jerseyNum) ? null : jerseyNum,
+    formationPlace: !isNaN(fp) && fp >= 1 && fp <= 11 ? fp : null
+  };
 };
 
 /**
- * Jersey-number tactical profile:
- * - zone: 0=GK, 1=DEF, 2=MID, 3=FWD
- * - lineBias: 'gk' | 'def' | 'pivot' | 'attack_mid' | 'striker'
- * - flank: negative = left side of pitch, 0 = center, positive = right side of pitch
+ * ESPN / Opta `formationPlace` (1..11) -> { row, flank } coordinate map per formation.
+ * Note: In ESPN soccer summaries, `formationPlace` 1..11 encodes the exact tactical slot
+ * on the pitch (1=GK, 2=RB/RWB, 3=LB/LWB, 4=RCB, 5=LCB, 6=LDM/CDM, 7=RW/RM/RAM,
+ * 8=RCM/RDM, 9=ST/CF, 10=CAM/SS, 11=LW/LM/LAM).
+ */
+const FORMATION_PLACE_COORDS = {
+  '4-2-3-1': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -45 },
+    5:  { row: 1, flank: -15 },
+    4:  { row: 1, flank: 15 },
+    2:  { row: 1, flank: 45 },
+    6:  { row: 2, flank: -18 },
+    8:  { row: 2, flank: 18 },
+    11: { row: 3, flank: -40 },
+    10: { row: 3, flank: 0 },
+    7:  { row: 3, flank: 40 },
+    9:  { row: 4, flank: 0 }
+  },
+  '4-3-3': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -45 },
+    5:  { row: 1, flank: -15 },
+    4:  { row: 1, flank: 15 },
+    2:  { row: 1, flank: 45 },
+    8:  { row: 2, flank: -28 },
+    6:  { row: 2, flank: 0 },
+    10: { row: 2, flank: 28 },
+    11: { row: 3, flank: -38 },
+    9:  { row: 3, flank: 0 },
+    7:  { row: 3, flank: 38 }
+  },
+  '4-4-2': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -45 },
+    5:  { row: 1, flank: -15 },
+    4:  { row: 1, flank: 15 },
+    2:  { row: 1, flank: 45 },
+    11: { row: 2, flank: -42 },
+    6:  { row: 2, flank: -15 },
+    8:  { row: 2, flank: 15 },
+    7:  { row: 2, flank: 42 },
+    10: { row: 3, flank: -18 },
+    9:  { row: 3, flank: 18 }
+  },
+  '4-1-4-1': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -45 },
+    5:  { row: 1, flank: -15 },
+    4:  { row: 1, flank: 15 },
+    2:  { row: 1, flank: 45 },
+    6:  { row: 2, flank: 0 },
+    11: { row: 3, flank: -42 },
+    8:  { row: 3, flank: -15 },
+    10: { row: 3, flank: 15 },
+    7:  { row: 3, flank: 42 },
+    9:  { row: 4, flank: 0 }
+  },
+  '4-3-1-2': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -45 },
+    5:  { row: 1, flank: -15 },
+    4:  { row: 1, flank: 15 },
+    2:  { row: 1, flank: 45 },
+    11: { row: 2, flank: -28 },
+    6:  { row: 2, flank: 0 },
+    8:  { row: 2, flank: 28 },
+    10: { row: 3, flank: 0 },
+    7:  { row: 4, flank: -18 },
+    9:  { row: 4, flank: 18 }
+  },
+  '4-2-2-2': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -45 },
+    5:  { row: 1, flank: -15 },
+    4:  { row: 1, flank: 15 },
+    2:  { row: 1, flank: 45 },
+    6:  { row: 2, flank: -18 },
+    8:  { row: 2, flank: 18 },
+    11: { row: 3, flank: -26 },
+    7:  { row: 3, flank: 26 },
+    10: { row: 4, flank: -18 },
+    9:  { row: 4, flank: 18 }
+  },
+  '3-4-2-1': {
+    1:  { row: 0, flank: 0 },
+    5:  { row: 1, flank: -30 },
+    6:  { row: 1, flank: 0 },
+    4:  { row: 1, flank: 30 },
+    3:  { row: 2, flank: -45 },
+    8:  { row: 2, flank: -15 },
+    7:  { row: 2, flank: 15 },
+    2:  { row: 2, flank: 45 },
+    11: { row: 3, flank: -22 },
+    10: { row: 3, flank: 22 },
+    9:  { row: 4, flank: 0 }
+  },
+  '3-4-3': {
+    1:  { row: 0, flank: 0 },
+    5:  { row: 1, flank: -30 },
+    6:  { row: 1, flank: 0 },
+    4:  { row: 1, flank: 30 },
+    3:  { row: 2, flank: -45 },
+    8:  { row: 2, flank: -15 },
+    10: { row: 2, flank: 15 },
+    2:  { row: 2, flank: 45 },
+    11: { row: 3, flank: -38 },
+    9:  { row: 3, flank: 0 },
+    7:  { row: 3, flank: 38 }
+  },
+  '3-5-2': {
+    1:  { row: 0, flank: 0 },
+    5:  { row: 1, flank: -30 },
+    6:  { row: 1, flank: 0 },
+    4:  { row: 1, flank: 30 },
+    3:  { row: 2, flank: -46 },
+    8:  { row: 2, flank: -22 },
+    10: { row: 2, flank: 0 },
+    7:  { row: 2, flank: 22 },
+    2:  { row: 2, flank: 46 },
+    11: { row: 3, flank: -18 },
+    9:  { row: 3, flank: 18 }
+  },
+  '5-3-2': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -48 },
+    5:  { row: 1, flank: -24 },
+    6:  { row: 1, flank: 0 },
+    4:  { row: 1, flank: 24 },
+    2:  { row: 1, flank: 48 },
+    11: { row: 2, flank: -28 },
+    8:  { row: 2, flank: 0 },
+    7:  { row: 2, flank: 28 },
+    10: { row: 3, flank: -18 },
+    9:  { row: 3, flank: 18 }
+  },
+  '5-4-1': {
+    1:  { row: 0, flank: 0 },
+    3:  { row: 1, flank: -48 },
+    5:  { row: 1, flank: -24 },
+    6:  { row: 1, flank: 0 },
+    4:  { row: 1, flank: 24 },
+    2:  { row: 1, flank: 48 },
+    11: { row: 2, flank: -42 },
+    8:  { row: 2, flank: -15 },
+    10: { row: 2, flank: 15 },
+    7:  { row: 2, flank: 42 },
+    9:  { row: 3, flank: 0 }
+  }
+};
+
+/**
+ * Fallback tactical priors by squad jersey number when `formationPlace` is missing or invalid.
  */
 const JERSEY_TACTICAL_PROFILES = {
   1:  { zone: 0, lineBias: 'gk', flank: 0 },
@@ -2333,8 +2490,8 @@ const JERSEY_TACTICAL_PROFILES = {
 };
 
 const getPlayerZone = (player) => {
-  const { abbr, ptype, combined, jerseyNum } = getPlayerRoleMeta(player);
-  if (abbr === 'GK' || abbr === 'G' || combined.includes('GOALKEEPER') || ptype.includes('goal') || jerseyNum === 1) return 0;
+  const { abbr, ptype, combined, jerseyNum, formationPlace } = getPlayerRoleMeta(player);
+  if (abbr === 'GK' || abbr === 'G' || combined.includes('GOALKEEPER') || ptype.includes('goal') || formationPlace === 1 || jerseyNum === 1) return 0;
   if (
     abbr === 'D' || abbr === 'DEF' || abbr === 'CB' || abbr === 'LB' || abbr === 'RB' ||
     abbr === 'LWB' || abbr === 'RWB' || abbr === 'SW' || abbr === 'LCB' || abbr === 'RCB' ||
@@ -2355,15 +2512,11 @@ const getPlayerZone = (player) => {
   return 2;
 };
 
-/**
- * Lateral flank ordering score within a tactical row (Left-to-Right on screen):
- * Negative = Left flank, 0 = Central, Positive = Right flank.
- */
-const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
-  const { abbr, pname, jerseyNum } = getPlayerRoleMeta(player);
+const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1, formationKey = '') => {
+  const { abbr, pname, jerseyNum, formationPlace } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname}`;
 
-  // Explicit position abbreviations / names take priority
+  // 1. Explicit left/right position tags
   if (abbr === 'LB' || abbr === 'LWB' || abbr === 'L' || tag.includes('LEFT BACK') || tag.includes('LEFT WINGBACK')) return -50;
   if (abbr === 'LW' || abbr === 'LF' || tag.includes('LEFT WING') || tag.includes('LEFT FORWARD')) return -45;
   if (abbr === 'LM' || tag.includes('LEFT MID')) return -38;
@@ -2378,7 +2531,18 @@ const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
   if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 45;
   if (abbr === 'RB' || abbr === 'RWB' || abbr === 'R' || tag.includes('RIGHT BACK') || tag.includes('RIGHT WINGBACK')) return 50;
 
-  // Use jersey number lateral flank profile when position is generic (e.g. D, M, F)
+  // 2. ESPN formationPlace flank convention when available
+  if (formationPlace && FORMATION_PLACE_COORDS[formationKey]?.[formationPlace]) {
+    return FORMATION_PLACE_COORDS[formationKey][formationPlace].flank;
+  }
+  if (formationPlace) {
+    if (formationPlace === 3 || formationPlace === 11) return -40;
+    if (formationPlace === 5) return -16;
+    if (formationPlace === 4) return 16;
+    if (formationPlace === 2 || formationPlace === 7) return 40;
+  }
+
+  // 3. Squad jersey number flank profile
   if (jerseyNum && JERSEY_TACTICAL_PROFILES[jerseyNum] !== undefined) {
     return JERSEY_TACTICAL_PROFILES[jerseyNum].flank;
   }
@@ -2386,22 +2550,26 @@ const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
   return (fallbackIndex - (rowCount - 1) / 2) * 2;
 };
 
-const scorePlayerForRow = (player, rowIndex, totalLines, formationRows) => {
-  const { abbr, combined, jerseyNum } = getPlayerRoleMeta(player);
+const scorePlayerForRow = (player, rowIndex, totalLines, formationRows, formationKey = '') => {
+  const { abbr, combined, jerseyNum, formationPlace } = getPlayerRoleMeta(player);
   const zone = getPlayerZone(player);
   const jProf = jerseyNum ? JERSEY_TACTICAL_PROFILES[jerseyNum] : null;
 
   if (rowIndex === 0) {
-    return zone === 0 ? 350 : -350;
+    return zone === 0 ? 400 : -400;
   }
-  if (zone === 0) return -350;
+  if (zone === 0) return -400;
+
+  // Check if ESPN formationPlace maps directly to a row in this formation
+  const fpSlot = formationPlace ? FORMATION_PLACE_COORDS[formationKey]?.[formationPlace] : null;
+  const fpBonus = fpSlot && fpSlot.row < totalLines ? (fpSlot.row === rowIndex ? 140 : -70) : 0;
 
   // Backline (rowIndex === 1)
   if (rowIndex === 1) {
-    if (zone === 1) return 160;
-    if (jProf?.lineBias === 'def') return 145;
-    if (abbr === 'CDM' || abbr === 'DM' || combined.includes('DEFENSIVE MID')) return 20;
-    return -95;
+    if (zone === 1) return 170 + fpBonus;
+    if (jProf?.lineBias === 'def') return 145 + fpBonus;
+    if (abbr === 'CDM' || abbr === 'DM' || combined.includes('DEFENSIVE MID')) return 20 + fpBonus;
+    return -95 + fpBonus;
   }
 
   const isStrikerRole =
@@ -2420,61 +2588,80 @@ const scorePlayerForRow = (player, rowIndex, totalLines, formationRows) => {
 
   // Final attacking row (rowIndex === totalLines - 1)
   if (rowIndex === totalLines - 1) {
-    if (jProf?.lineBias === 'striker') return 185;
-    if (abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER')) return 175;
-    if (zone === 3 && !isWingerRole && !isAttackingMidRole) return 135;
-    if (isAttackingMidRole || isWingerRole) return 85;
-    if (zone === 2 && !isHoldingRole) return 25;
-    return -85;
+    if (abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER')) return 185 + fpBonus;
+    if (jProf?.lineBias === 'striker') return 175 + fpBonus;
+    if (zone === 3 && !isWingerRole && !isAttackingMidRole) return 140 + fpBonus;
+    if (isAttackingMidRole || isWingerRole) return 90 + fpBonus;
+    if (zone === 2 && !isHoldingRole) return 25 + fpBonus;
+    return -85 + fpBonus;
   }
 
   // 4-2-3-1 multi-row midfield ([1, 4, 2, 3, 1], totalLines === 5)
   if (totalLines === 5 && formationRows[2] === 2 && formationRows[3] === 3) {
     if (rowIndex === 2) {
-      // Double pivot (2 players)
-      if (jProf?.lineBias === 'pivot') return 185;
-      if (isHoldingRole) return 165;
-      if (abbr === 'CM' || abbr === 'LCM' || abbr === 'RCM') return 135;
-      if (zone === 2 && !isAttackingMidRole && !isWingerRole) return 105;
-      if (isAttackingMidRole) return 20;
-      if (isWingerRole) return -30;
-      if (isStrikerRole) return -80;
-      return 5;
+      if (isHoldingRole) return 175 + fpBonus;
+      if (abbr === 'CM' || abbr === 'LCM' || abbr === 'RCM') return 145 + fpBonus;
+      if (zone === 2 && !isAttackingMidRole && !isWingerRole) return 110 + fpBonus;
+      if (isAttackingMidRole) return 20 + fpBonus;
+      if (isWingerRole) return -30 + fpBonus;
+      if (isStrikerRole) return -80 + fpBonus;
+      return 5 + fpBonus;
     }
     if (rowIndex === 3) {
-      // Attacking midfield / wide line (3 players)
-      if (jProf?.lineBias === 'attack_mid') return 185;
-      if (isAttackingMidRole) return 170;
-      if (isWingerRole) return 155;
-      if (zone === 3 && jProf?.lineBias !== 'striker') return 120;
-      if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 55;
-      if (isHoldingRole) return -25;
-      if (jProf?.lineBias === 'striker') return -50;
-      return 15;
+      if (isAttackingMidRole) return 175 + fpBonus;
+      if (isWingerRole) return 160 + fpBonus;
+      if (zone === 3 && jProf?.lineBias !== 'striker') return 125 + fpBonus;
+      if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 55 + fpBonus;
+      if (isHoldingRole) return -25 + fpBonus;
+      if (jProf?.lineBias === 'striker') return -50 + fpBonus;
+      return 15 + fpBonus;
     }
   }
 
   // General intermediate rows (e.g. 4-3-3 where rowIndex === 2 is midfield of 3)
   const midProgress = totalLines > 2 ? (rowIndex - 1) / (totalLines - 2) : 0.5;
   if (zone === 2) {
-    if (midProgress < 0.45 && isHoldingRole) return 155;
-    if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) return 155;
-    return 120;
+    if (midProgress < 0.45 && isHoldingRole) return 155 + fpBonus;
+    if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) return 155 + fpBonus;
+    return 120 + fpBonus;
   }
-  if (zone === 3 && !isStrikerRole) return 100;
-  if (isStrikerRole) return -45;
-  if (zone === 1) return 15;
-  return 0;
+  if (zone === 3 && !isStrikerRole) return 100 + fpBonus;
+  if (isStrikerRole) return -45 + fpBonus;
+  if (zone === 1) return 15 + fpBonus;
+  return fpBonus;
 };
 
-/**
- * Assigns 11 starters across `formationRows` (e.g. [1, 4, 2, 3, 1]) using jersey-informed
- * role scoring and specificity matching so every player sits in their real-life line.
- */
-const assignPlayersToFormationRows = (starters, formationRows) => {
+const assignPlayersToFormationRows = (starters, formationRows, formationKey = '') => {
   const totalLines = formationRows.length;
   const assignedRows = formationRows.map(() => []);
   const usedPlayerIndices = new Set();
+
+  // Check if ESPN provides clean unique formationPlace 1..11 matching `formationRows`
+  const uniqueFps = new Set(
+    starters
+      .map(p => getPlayerRoleMeta(p).formationPlace)
+      .filter(fp => fp !== null && fp >= 1 && fp <= 11)
+  );
+  const slotMap = FORMATION_PLACE_COORDS[formationKey];
+  if (slotMap && uniqueFps.size >= 10) {
+    const bucketed = formationRows.map(() => []);
+    let validAll = true;
+    starters.forEach((p, idx) => {
+      const fp = getPlayerRoleMeta(p).formationPlace;
+      const spec = fp ? slotMap[fp] : null;
+      if (spec && spec.row >= 0 && spec.row < totalLines && bucketed[spec.row].length < formationRows[spec.row]) {
+        bucketed[spec.row].push(p);
+        usedPlayerIndices.add(idx);
+      } else {
+        validAll = false;
+      }
+    });
+    if (validAll && usedPlayerIndices.size === starters.length) {
+      return bucketed;
+    }
+    // Reset if partial mismatch and run scored solver with fpBonus
+    usedPlayerIndices.clear();
+  }
 
   const slots = [];
   formationRows.forEach((count, rowIndex) => {
@@ -2485,11 +2672,11 @@ const assignPlayersToFormationRows = (starters, formationRows) => {
 
   const slotCandidates = slots.map((slot) => {
     const scored = starters.map((p, pIdx) => {
-      const ownScore = scorePlayerForRow(p, slot.rowIndex, totalLines, formationRows);
+      const ownScore = scorePlayerForRow(p, slot.rowIndex, totalLines, formationRows, formationKey);
       let maxOtherScore = -Infinity;
       for (let r = 0; r < totalLines; r++) {
         if (r === slot.rowIndex || formationRows[r] === 0) continue;
-        const other = scorePlayerForRow(p, r, totalLines, formationRows);
+        const other = scorePlayerForRow(p, r, totalLines, formationRows, formationKey);
         if (other > maxOtherScore) maxOtherScore = other;
       }
       const specificityAdvantage = isFinite(maxOtherScore) ? (ownScore - maxOtherScore) : ownScore;
@@ -2537,6 +2724,7 @@ const useFootballFormations = (summary, width, height, isHome) =>
       .split("-")
       .map(n => parseInt(n, 10))
       .filter(n => !isNaN(n) && n > 0);
+    const formationKey = parsedForm.join("-");
     const formationRows = [1, ...(parsedForm.length > 0 ? parsedForm : [4, 3, 3])];
 
     const rawRoster = teamRoster.roster || [];
@@ -2545,31 +2733,34 @@ const useFootballFormations = (summary, width, height, isHome) =>
       ? explicitStarters.slice(0, 11)
       : [...explicitStarters, ...rawRoster.filter(p => p.starter !== true)].slice(0, 11);
 
-    const groupedRows = assignPlayersToFormationRows(starters, formationRows);
+    const groupedRows = assignPlayersToFormationRows(starters, formationRows, formationKey);
     const numRows = Math.max(1, formationRows.length - 1);
     const usableHeight = Math.max(180, height - 96);
 
     return groupedRows.map((rowPlayers, rowIndex) => {
       if (!rowPlayers || rowPlayers.length === 0) return [];
 
-      // Order left-to-right on screen using lateral flank score + jersey tie-breaker
+      // Order left-to-right in team's attacking orientation
       const sortedRow = [...rowPlayers].sort((a, b) => {
         const idxA = rowPlayers.indexOf(a);
         const idxB = rowPlayers.indexOf(b);
-        const diff = getLateralFlankScore(a, idxA, rowPlayers.length) - getLateralFlankScore(b, idxB, rowPlayers.length);
+        const diff = getLateralFlankScore(a, idxA, rowPlayers.length, formationKey) - getLateralFlankScore(b, idxB, rowPlayers.length, formationKey);
         if (diff !== 0) return diff;
         const jA = parseInt(String(a?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
         const jB = parseInt(String(b?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
         return jA - jB;
       });
 
+      // Away team attacks downward from top goal, so mirror left/right horizontally to match attacking orientation
+      const orientedRow = isHome ? sortedRow : [...sortedRow].reverse();
+
       const progress = rowIndex / numRows;
       const y = isHome
         ? (14 + usableHeight) - (progress * usableHeight)
         : 14 + (progress * usableHeight);
 
-      return sortedRow.map((p, i) => {
-        const x = ((i + 1) / (sortedRow.length + 1)) * width;
+      return orientedRow.map((p, i) => {
+        const x = ((i + 1) / (orientedRow.length + 1)) * width;
         return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
@@ -4803,13 +4994,75 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
             <div className="px-4 pb-10">
               {!summary?.boxscore?.teams?.[0]?.statistics ? (
                 <EmptyState icon={BarChart2} title="Stats Unavailable" message="Match statistics have not been populated yet." />
-              ) : (
-                <div className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
-                  {summary.boxscore.teams[0].statistics.map((s, i) => (
-                    <DuelStat key={i} label={s.label} homeVal={s.displayValue} awayVal={summary?.boxscore?.teams?.[1]?.statistics?.[i]?.displayValue} />
-                  ))}
-                </div>
-              )}
+              ) : (() => {
+                const homeStats = summary.boxscore.teams[0].statistics || [];
+                const awayStats = summary.boxscore.teams[1]?.statistics || [];
+                const awayByName = new Map(awayStats.map((st, idx) => [st.name || st.label || idx, st]));
+
+                const paired = homeStats.map((hs, idx) => {
+                  const as = awayByName.get(hs.name || hs.label) || awayStats[idx] || {};
+                  return {
+                    name: String(hs.name || '').toLowerCase(),
+                    label: hs.label || hs.name || 'Stat',
+                    homeVal: hs.displayValue ?? '0',
+                    awayVal: as.displayValue ?? '0'
+                  };
+                });
+
+                const classifyStatSection = (item) => {
+                  const key = `${item.name} ${item.label.toLowerCase()}`;
+                  if (/(possession|expected goals|xg|total shots|shots on target|shots on goal|big chances|corners|offside)/i.test(key)) {
+                    return 'Key Stats';
+                  }
+                  if (/(shot|goal|woodwork|post|cross|touches in|box|final third|through ball|dribb|big chance|attack)/i.test(key)) {
+                    return 'Attack';
+                  }
+                  if (/(pass|accurate|completion|long ball|throw|possession|duel|aerial|touch)/i.test(key)) {
+                    return 'General Play';
+                  }
+                  if (/(tackle|intercept|clear|block|save|keeper|recover|defen)/i.test(key)) {
+                    return 'Defence';
+                  }
+                  if (/(foul|yellow|red|card|offside|free kick|penalt)/i.test(key)) {
+                    return 'Discipline';
+                  }
+                  return 'General Play';
+                };
+
+                const SECTION_META = [
+                  { title: 'Key Stats', icon: Activity, color: THEME.accent },
+                  { title: 'Attack', icon: Zap, color: THEME.fwd },
+                  { title: 'General Play', icon: ArrowRightLeft, color: THEME.shot },
+                  { title: 'Defence', icon: Shield, color: THEME.def },
+                  { title: 'Discipline', icon: AlertCircle, color: THEME.warning }
+                ];
+
+                const grouped = SECTION_META.map(sec => ({
+                  ...sec,
+                  items: paired.filter(it => classifyStatSection(it) === sec.title)
+                })).filter(sec => sec.items.length > 0);
+
+                return (
+                  <div className="flex flex-col gap-4">
+                    {grouped.map(sec => {
+                      const IconComp = sec.icon;
+                      return (
+                        <div key={sec.title} className="bg-[#121212] p-6 rounded-[32px] border border-[rgba(255,255,255,0.08)]">
+                          <div className="flex items-center gap-2 mb-5 pb-2.5 border-b border-[rgba(255,255,255,0.08)]">
+                            <IconComp size={15} color={sec.color} className="shrink-0" />
+                            <span className="text-[11px] font-extrabold tracking-[1.5px] uppercase" style={{ color: sec.color }}>
+                              {sec.title}
+                            </span>
+                          </div>
+                          {sec.items.map((st, idx) => (
+                            <DuelStat key={`${sec.title}-${idx}`} label={st.label} homeVal={st.homeVal} awayVal={st.awayVal} />
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
