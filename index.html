@@ -763,7 +763,7 @@ const FOOTBALL_STADIUM_DB = {
 // ⚡ HIGH-PERFORMANCE SWR CACHE & PRE-WARMING ENGINE
 // ==========================================
 
-const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v16';
+const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v17';
 const cache = new Map();
 const inflight = new Map();
 const standingsParsedCache = new Map();
@@ -2628,6 +2628,56 @@ const getExactFormationPlaceSlot = (formationPlace, formationRows) => {
  * 2) Secondary source (`TheSportsDB`) position & flank data
  * 3) Role/zone + left-to-right flank ordering fallback
  */
+const getFormationPlaceRowHint = (formationPlace, formationRows) => {
+  if (!formationPlace || !Array.isArray(formationRows) || formationRows.length < 2) return null;
+  if (formationPlace === 1) return 0;
+
+  const numOutfieldLines = formationRows.length - 1;
+  const formStr = formationRows.slice(1).join('-');
+
+  if (formStr === '4-2-3-1') {
+    if ([2, 3, 4, 5].includes(formationPlace)) return 1;
+    if ([6, 8].includes(formationPlace)) return 2;
+    if ([7, 10, 11].includes(formationPlace)) return 3;
+    if (formationPlace === 9) return 4;
+  }
+
+  if (formStr === '4-3-3' || formStr === '4-1-4-1') {
+    if ([2, 3, 4, 5].includes(formationPlace)) return 1;
+    if ([6, 8, 10].includes(formationPlace)) return 2;
+    if ([7, 9, 11].includes(formationPlace)) return 3;
+  }
+
+  if (formStr === '4-4-2' || formStr === '4-2-2-2') {
+    if ([2, 3, 4, 5].includes(formationPlace)) return 1;
+    if ([6, 7, 8, 11].includes(formationPlace)) return 2;
+    if ([9, 10].includes(formationPlace)) return 3;
+  }
+
+  if (formStr === '3-4-2-1' || formStr === '3-4-3') {
+    if ([2, 4, 5].includes(formationPlace)) return 1;
+    if ([3, 6, 8, 11].includes(formationPlace)) return 2;
+    if ([7, 10].includes(formationPlace) && numOutfieldLines >= 4) return 3;
+    if (formationPlace === 9) return numOutfieldLines;
+  }
+
+  if (formStr === '3-5-2' || formStr === '5-3-2') {
+    if (numOutfieldLines === 3) {
+      if (formationPlace <= 1 + formationRows[1]) return 1;
+      if (formationPlace <= 1 + formationRows[1] + formationRows[2]) return 2;
+      return 3;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Builds formation rows (`[1, ...parsedFormation]`) using:
+ * 1) Exact `formationPlace` (`1`..`11`) slot map when ESPN provides distinct `formationPlace` values
+ * 2) Secondary source (`TheSportsDB`) position & flank data
+ * 3) Role/zone + rowHint + left-to-right flank ordering fallback
+ */
 const buildFormationGrid = (starters, formationRows, extSideData = null) => {
   const grid = formationRows.map(() => []);
   const used = new Set();
@@ -2643,11 +2693,21 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
       extMatch,
       exactSlot,
       zone: getPlayerZone(player, extMatch),
+      rowHint: extMatch
+        ? (extMatch.zone === 3 && extMatch.isStriker && formationRows.length > 2 ? formationRows.length - 1 : extMatch.zone)
+        : getFormationPlaceRowHint(meta.formationPlace, formationRows),
       hRank: getHorizontalRank(player, idx, extMatch)
     };
   });
 
-  // Check if starters have distinct `formationPlace` values that map cleanly to the formation
+  const colRankMap = new Map();
+  enriched.forEach(item => {
+    const key = item.player?.athlete?.id || `idx_${item.idx}`;
+    const colVal = item.exactSlot ? (item.exactSlot.col * 20 - 30) : item.hRank;
+    colRankMap.set(key, colVal);
+  });
+
+  // 1. Exact slot placement when >= 8 starters have distinct `formationPlace` values
   const distinctPlaces = new Set(enriched.map(e => e.meta.formationPlace).filter(Boolean));
   if (distinctPlaces.size >= 8) {
     enriched
@@ -2673,16 +2733,22 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     });
 
     if (used.size === starters.length) {
+      for (let r = 1; r < grid.length; r++) {
+        grid[r].sort((pA, pB) => {
+          const kA = pA?.athlete?.id || '';
+          const kB = pB?.athlete?.id || '';
+          return (colRankMap.get(kA) ?? 0) - (colRankMap.get(kB) ?? 0);
+        });
+      }
       return grid;
     }
   }
 
-  // Fallback path when `formationPlace` is missing or incomplete
+  // 2. Fallback path: GK -> row 0, Defenders -> row 1, Strikers -> front row, remaining rows filled cleanly
   grid.forEach(row => { row.length = 0; });
   used.clear();
 
-  // 1. GK -> row 0
-  let gkItem = enriched.find(item => item.zone === 0);
+  let gkItem = enriched.find(item => item.zone === 0 || item.rowHint === 0);
   if (!gkItem && enriched.length > 0) gkItem = enriched[0];
   if (gkItem && grid[0].length < formationRows[0]) {
     grid[0].push(gkItem.player);
@@ -2691,10 +2757,9 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
 
   const outfield = enriched.filter(item => !used.has(item.idx));
 
-  // 2. Backline -> row 1
   if (grid.length > 1) {
     const defList = outfield
-      .filter(o => o.zone === 1)
+      .filter(o => o.zone === 1 || o.rowHint === 1)
       .sort((a, b) => a.hRank - b.hRank);
     defList.forEach(item => {
       if (grid[1].length < formationRows[1]) {
@@ -2704,7 +2769,6 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     });
   }
 
-  // 3. Front striker row when there are >= 3 outfield rows
   const lastRowIdx = grid.length - 1;
   if (lastRowIdx > 1) {
     const stList = outfield
@@ -2715,7 +2779,8 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
         o.meta.combined.includes('STRIKER') ||
         o.meta.combined.includes('CENTRE FORWARD') ||
         o.meta.combined.includes('CENTER FORWARD') ||
-        o.meta.formationPlace === 9
+        o.meta.formationPlace === 9 ||
+        o.rowHint === lastRowIdx
       ))
       .sort((a, b) => a.hRank - b.hRank);
 
@@ -2727,7 +2792,18 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     });
   }
 
-  // 4. Fill remaining rows from front to back
+  for (let r = 1; r < grid.length; r++) {
+    const hinted = outfield
+      .filter(o => !used.has(o.idx) && o.rowHint === r)
+      .sort((a, b) => a.hRank - b.hRank);
+    hinted.forEach(item => {
+      if (grid[r].length < formationRows[r]) {
+        grid[r].push(item.player);
+        used.add(item.idx);
+      }
+    });
+  }
+
   const remaining = outfield
     .filter(o => !used.has(o.idx))
     .sort((a, b) => {
@@ -2747,7 +2823,6 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     }
   }
 
-  // 5. Place any remaining players into any row with capacity
   enriched.forEach(item => {
     if (used.has(item.idx)) return;
     for (let r = 0; r < grid.length; r++) {
@@ -2759,7 +2834,6 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     }
   });
 
-  // 6. Append any remaining starters to last outfield row
   enriched.forEach(item => {
     if (!used.has(item.idx) && grid.length > 0) {
       grid[grid.length - 1].push(item.player);
@@ -2767,7 +2841,6 @@ const buildFormationGrid = (starters, formationRows, extSideData = null) => {
     }
   });
 
-  // 7. Sort every outfield row strictly left-to-right
   for (let r = 1; r < grid.length; r++) {
     grid[r].sort((pA, pB) => {
       const extA = findExternalPlayerMatch(pA, extSideData);
