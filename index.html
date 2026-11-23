@@ -2310,260 +2310,132 @@ const getPlayerZone = (player) => {
 };
 
 /**
- * Exact Opta / ESPN `formationPlace` (1..11) -> { row, flank } slot lookup for standard formations.
- * `row`: 0 = GK, 1 = Backline, 2..N = Midfield/Attacking lines.
- * `flank`: negative = Left side of pitch (LB/LW/LAM/LDM), 0 = Center (CB/CAM/ST), positive = Right side (RB/RW/RAM/RDM).
+ * Lateral flank ordering score within a tactical row:
+ * Negative = Left flank, 0 = Central, Positive = Right flank.
  */
-const OPTA_FORMATION_SLOT_MAP = {
-  '4-2-3-1': {
-    1: { row: 0, flank: 0 },
-    3: { row: 1, flank: -45 }, // LB
-    5: { row: 1, flank: -15 }, // LCB
-    4: { row: 1, flank: 15 },  // RCB
-    2: { row: 1, flank: 45 },  // RB
-    6: { row: 2, flank: -18 }, // LDM
-    8: { row: 2, flank: 18 },  // RDM
-    11: { row: 3, flank: -40 }, // LAM / LW
-    10: { row: 3, flank: 0 },   // CAM
-    7: { row: 3, flank: 40 },   // RAM / RW
-    9: { row: 4, flank: 0 }     // ST
-  },
-  '4-3-3': {
-    1: { row: 0, flank: 0 },
-    3: { row: 1, flank: -45 }, // LB
-    5: { row: 1, flank: -15 }, // LCB
-    4: { row: 1, flank: 15 },  // RCB
-    2: { row: 1, flank: 45 },  // RB
-    8: { row: 2, flank: -28 }, // LCM
-    6: { row: 2, flank: 0 },   // CDM / CM
-    10: { row: 2, flank: 28 }, // RCM
-    11: { row: 3, flank: -38 }, // LW
-    9: { row: 3, flank: 0 },    // ST
-    7: { row: 3, flank: 38 }    // RW
-  },
-  '4-4-2': {
-    1: { row: 0, flank: 0 },
-    3: { row: 1, flank: -45 },
-    5: { row: 1, flank: -15 },
-    4: { row: 1, flank: 15 },
-    2: { row: 1, flank: 45 },
-    11: { row: 2, flank: -42 },
-    6: { row: 2, flank: -15 },
-    8: { row: 2, flank: 15 },
-    7: { row: 2, flank: 42 },
-    10: { row: 3, flank: -18 },
-    9: { row: 3, flank: 18 }
-  },
-  '4-1-4-1': {
-    1: { row: 0, flank: 0 },
-    3: { row: 1, flank: -45 },
-    5: { row: 1, flank: -15 },
-    4: { row: 1, flank: 15 },
-    2: { row: 1, flank: 45 },
-    6: { row: 2, flank: 0 },
-    11: { row: 3, flank: -42 },
-    8: { row: 3, flank: -15 },
-    10: { row: 3, flank: 15 },
-    7: { row: 3, flank: 42 },
-    9: { row: 4, flank: 0 }
-  },
-  '3-4-2-1': {
-    1: { row: 0, flank: 0 },
-    5: { row: 1, flank: -30 },
-    6: { row: 1, flank: 0 },
-    4: { row: 1, flank: 30 },
-    3: { row: 2, flank: -45 },
-    8: { row: 2, flank: -15 },
-    7: { row: 2, flank: 15 },
-    2: { row: 2, flank: 45 },
-    11: { row: 3, flank: -22 },
-    10: { row: 3, flank: 22 },
-    9: { row: 4, flank: 0 }
-  },
-  '3-4-3': {
-    1: { row: 0, flank: 0 },
-    5: { row: 1, flank: -30 },
-    6: { row: 1, flank: 0 },
-    4: { row: 1, flank: 30 },
-    3: { row: 2, flank: -45 },
-    8: { row: 2, flank: -15 },
-    10: { row: 2, flank: 15 },
-    2: { row: 2, flank: 45 },
-    11: { row: 3, flank: -38 },
-    9: { row: 3, flank: 0 },
-    7: { row: 3, flank: 38 }
-  },
-  '3-5-2': {
-    1: { row: 0, flank: 0 },
-    5: { row: 1, flank: -30 },
-    6: { row: 1, flank: 0 },
-    4: { row: 1, flank: 30 },
-    3: { row: 2, flank: -46 },
-    8: { row: 2, flank: -22 },
-    10: { row: 2, flank: 0 },
-    7: { row: 2, flank: 22 },
-    2: { row: 2, flank: 46 },
-    11: { row: 3, flank: -18 },
-    9: { row: 3, flank: 18 }
-  },
-  '5-3-2': {
-    1: { row: 0, flank: 0 },
-    3: { row: 1, flank: -48 },
-    5: { row: 1, flank: -24 },
-    6: { row: 1, flank: 0 },
-    4: { row: 1, flank: 24 },
-    2: { row: 1, flank: 48 },
-    11: { row: 2, flank: -28 },
-    8: { row: 2, flank: 0 },
-    7: { row: 2, flank: 28 },
-    10: { row: 3, flank: -18 },
-    9: { row: 3, flank: 18 }
-  },
-  '5-4-1': {
-    1: { row: 0, flank: 0 },
-    3: { row: 1, flank: -48 },
-    5: { row: 1, flank: -24 },
-    6: { row: 1, flank: 0 },
-    4: { row: 1, flank: 24 },
-    2: { row: 1, flank: 48 },
-    11: { row: 2, flank: -42 },
-    8: { row: 2, flank: -15 },
-    10: { row: 2, flank: 15 },
-    7: { row: 2, flank: 42 },
-    9: { row: 3, flank: 0 }
-  }
-};
-
-const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1, formationKey = '') => {
-  const fp = parseInt(player?.formationPlace, 10);
-  const slotSpec = OPTA_FORMATION_SLOT_MAP[formationKey]?.[fp];
-  if (slotSpec) return slotSpec.flank;
-
+const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
   const { abbr, pname } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname}`;
 
+  // Far-left / Left-side roles
   if (abbr === 'LB' || abbr === 'LWB' || abbr === 'L' || tag.includes('LEFT BACK') || tag.includes('LEFT WINGBACK')) return -50;
-  if (abbr === 'LW' || abbr === 'LF' || tag.includes('LEFT WING') || tag.includes('LEFT FORWARD')) return -42;
-  if (abbr === 'LM' || tag.includes('LEFT MID')) return -35;
-  if (abbr === 'LAM' || tag.includes('LEFT ATTACKING MID')) return -25;
-  if (abbr === 'LCB' || abbr === 'LD' || tag.includes('LEFT CENTER BACK') || tag.includes('LEFT CENTRE BACK')) return -16;
-  if (abbr === 'LDM' || abbr === 'LCM' || tag.includes('LEFT DEFENSIVE MID')) return -12;
-  if (abbr === 'RDM' || abbr === 'RCM' || tag.includes('RIGHT DEFENSIVE MID')) return 12;
-  if (abbr === 'RCB' || abbr === 'RD' || tag.includes('RIGHT CENTER BACK') || tag.includes('RIGHT CENTRE BACK')) return 16;
-  if (abbr === 'RAM' || tag.includes('RIGHT ATTACKING MID')) return 25;
-  if (abbr === 'RM' || tag.includes('RIGHT MID')) return 35;
-  if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 42;
+  if (abbr === 'LW' || abbr === 'LF' || tag.includes('LEFT WING') || tag.includes('LEFT FORWARD')) return -45;
+  if (abbr === 'LM' || tag.includes('LEFT MID')) return -38;
+  if (abbr === 'LAM' || tag.includes('LEFT ATTACKING MID')) return -28;
+  if (abbr === 'LCB' || abbr === 'LD' || tag.includes('LEFT CENTER BACK') || tag.includes('LEFT CENTRE BACK')) return -20;
+  if (abbr === 'LDM' || abbr === 'LCM' || tag.includes('LEFT DEFENSIVE MID') || tag.includes('LEFT CENTRAL MID')) return -15;
+
+  // Far-right / Right-side roles
+  if (abbr === 'RDM' || abbr === 'RCM' || tag.includes('RIGHT DEFENSIVE MID') || tag.includes('RIGHT CENTRAL MID')) return 15;
+  if (abbr === 'RCB' || abbr === 'RD' || tag.includes('RIGHT CENTER BACK') || tag.includes('RIGHT CENTRE BACK')) return 20;
+  if (abbr === 'RAM' || tag.includes('RIGHT ATTACKING MID')) return 28;
+  if (abbr === 'RM' || tag.includes('RIGHT MID')) return 38;
+  if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 45;
   if (abbr === 'RB' || abbr === 'RWB' || abbr === 'R' || tag.includes('RIGHT BACK') || tag.includes('RIGHT WINGBACK')) return 50;
 
-  if (!isNaN(fp) && fp >= 1 && fp <= 11) {
-    if (fp === 3 || fp === 11) return -36;
-    if (fp === 5) return -14;
-    if (fp === 4) return 14;
-    if (fp === 2 || fp === 7) return 36;
-  }
-
-  return (fallbackIndex - (rowCount - 1) / 2) * 3;
+  // Central roles default to 0, nudged slightly by fallbackIndex only when multiple central players share a line
+  return (fallbackIndex - (rowCount - 1) / 2) * 2;
 };
 
-const scorePlayerForRow = (player, rowIndex, totalLines, formationRows, formationKey = '') => {
-  const fp = parseInt(player?.formationPlace, 10);
-  const slotSpec = OPTA_FORMATION_SLOT_MAP[formationKey]?.[fp];
-  if (slotSpec && slotSpec.row < totalLines) {
-    return slotSpec.row === rowIndex ? 500 : -300;
-  }
-
+const scorePlayerForRow = (player, rowIndex, totalLines, formationRows) => {
   const { abbr, combined } = getPlayerRoleMeta(player);
   const zone = getPlayerZone(player);
 
-  if (rowIndex === 0) return zone === 0 ? 200 : -200;
-  if (zone === 0) return -200;
+  if (rowIndex === 0) {
+    return zone === 0 ? 300 : -300;
+  }
+  if (zone === 0) return -300;
 
+  // Backline (rowIndex === 1)
   if (rowIndex === 1) {
-    if (zone === 1) return 120;
+    if (zone === 1) return 150;
     if (abbr === 'CDM' || abbr === 'DM' || combined.includes('DEFENSIVE MID')) return 20;
+    return -90;
+  }
+
+  const isStrikerRole =
+    abbr === 'ST' || abbr === 'CF' ||
+    combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD');
+  const isHoldingRole =
+    abbr === 'CDM' || abbr === 'DM' || abbr === 'LDM' || abbr === 'RDM' ||
+    combined.includes('DEFENSIVE MID');
+  const isAttackingMidRole =
+    abbr === 'CAM' || abbr === 'AM' || abbr === 'LAM' || abbr === 'RAM' ||
+    combined.includes('ATTACKING MID');
+  const isWingerRole =
+    abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' ||
+    combined.includes('WING') || abbr === 'LM' || abbr === 'RM';
+
+  // Final attacking row (rowIndex === totalLines - 1)
+  if (rowIndex === totalLines - 1) {
+    if (isStrikerRole) return 160;
+    if (zone === 3 && !isWingerRole) return 130;
+    if (isWingerRole) return 90;
+    if (isAttackingMidRole) return 70;
+    if (zone === 2 && !isHoldingRole) return 30;
     return -80;
   }
 
-  const isStrikerRole = abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD');
-  const isHoldingRole = abbr === 'CDM' || abbr === 'DM' || abbr === 'LDM' || abbr === 'RDM' || combined.includes('DEFENSIVE MID');
-  const isAttackingMidRole = abbr === 'CAM' || abbr === 'AM' || abbr === 'LAM' || abbr === 'RAM' || combined.includes('ATTACKING MID');
-  const isWingerRole = abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' || combined.includes('WING') || abbr === 'LM' || abbr === 'RM';
-
-  if (rowIndex === totalLines - 1) {
-    if (isStrikerRole) return 140;
-    if (zone === 3 && !isWingerRole) return 110;
-    if (isWingerRole) return 75;
-    if (isAttackingMidRole) return 55;
-    if (zone === 2 && !isHoldingRole) return 25;
-    return -70;
-  }
-
+  // 4-2-3-1 multi-row midfield ([1, 4, 2, 3, 1], totalLines === 5)
   if (totalLines === 5 && formationRows[2] === 2 && formationRows[3] === 3) {
     if (rowIndex === 2) {
-      if (isHoldingRole) return 140;
-      if (abbr === 'CM' || abbr === 'LCM' || abbr === 'RCM') return 120;
-      if (zone === 2 && !isAttackingMidRole && !isWingerRole) return 95;
-      if (isAttackingMidRole) return 30;
-      if (isWingerRole) return -25;
-      if (isStrikerRole) return -60;
-      return 10;
+      // Double pivot (2 players)
+      if (isHoldingRole) return 160;
+      if (abbr === 'CM' || abbr === 'LCM' || abbr === 'RCM') return 135;
+      if (zone === 2 && !isAttackingMidRole && !isWingerRole) return 105;
+      if (isAttackingMidRole) return 25;
+      if (isWingerRole) return -30;
+      if (isStrikerRole) return -75;
+      return 5;
     }
     if (rowIndex === 3) {
-      if (isAttackingMidRole) return 140;
-      if (isWingerRole) return 130;
-      if (zone === 3 && !isStrikerRole) return 115;
-      if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 65;
-      if (isHoldingRole) return -15;
-      if (isStrikerRole) return -35;
-      return 20;
+      // Attacking midfield / wide line (3 players)
+      if (isAttackingMidRole) return 160;
+      if (isWingerRole) return 145;
+      if (zone === 3 && !isStrikerRole) return 125;
+      if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 60;
+      if (isHoldingRole) return -20;
+      if (isStrikerRole) return -45;
+      return 15;
     }
   }
 
+  // General intermediate rows (e.g. 4-3-3 where rowIndex === 2 is midfield of 3)
   const midProgress = totalLines > 2 ? (rowIndex - 1) / (totalLines - 2) : 0.5;
   if (zone === 2) {
-    if (midProgress < 0.45 && isHoldingRole) return 130;
-    if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) return 130;
-    return 100;
+    if (midProgress < 0.45 && isHoldingRole) return 145;
+    if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) return 145;
+    return 115;
   }
-  if (zone === 3 && !isStrikerRole) return 85;
-  if (isStrikerRole) return -30;
+  if (zone === 3 && !isStrikerRole) return 95;
+  if (isStrikerRole) return -40;
   if (zone === 1) return 15;
   return 0;
 };
 
-const assignPlayersToFormationRows = (starters, formationRows, formationKey = '') => {
+/**
+ * Assigns 11 starters across `formationRows` (e.g. [1, 4, 2, 3, 1]) by matching
+ * each starter's role to the best-fitting formation line.
+ */
+const assignPlayersToFormationRows = (starters, formationRows) => {
   const totalLines = formationRows.length;
   const assignedRows = formationRows.map(() => []);
   const usedPlayerIndices = new Set();
 
-  // First: place any starter whose `formationPlace` maps directly to a valid row in `OPTA_FORMATION_SLOT_MAP`
-  if (OPTA_FORMATION_SLOT_MAP[formationKey]) {
-    starters.forEach((p, idx) => {
-      const fp = parseInt(p?.formationPlace, 10);
-      const spec = OPTA_FORMATION_SLOT_MAP[formationKey]?.[fp];
-      if (spec && spec.row >= 0 && spec.row < totalLines && assignedRows[spec.row].length < formationRows[spec.row]) {
-        assignedRows[spec.row].push(p);
-        usedPlayerIndices.add(idx);
-      }
-    });
-  }
-
-  // Second: fill any remaining open slots using global role-specificity matching
-  const remainingSlots = [];
+  const slots = [];
   formationRows.forEach((count, rowIndex) => {
-    const open = count - assignedRows[rowIndex].length;
-    for (let s = 0; s < open; s++) {
-      remainingSlots.push({ rowIndex });
+    for (let s = 0; s < count; s++) {
+      slots.push({ rowIndex });
     }
   });
 
-  const slotCandidates = remainingSlots.map((slot) => {
+  const slotCandidates = slots.map((slot) => {
     const scored = starters.map((p, pIdx) => {
-      const ownScore = scorePlayerForRow(p, slot.rowIndex, totalLines, formationRows, formationKey);
+      const ownScore = scorePlayerForRow(p, slot.rowIndex, totalLines, formationRows);
       let maxOtherScore = -Infinity;
       for (let r = 0; r < totalLines; r++) {
         if (r === slot.rowIndex || formationRows[r] === 0) continue;
-        const other = scorePlayerForRow(p, r, totalLines, formationRows, formationKey);
+        const other = scorePlayerForRow(p, r, totalLines, formationRows);
         if (other > maxOtherScore) maxOtherScore = other;
       }
       const specificityAdvantage = isFinite(maxOtherScore) ? (ownScore - maxOtherScore) : ownScore;
@@ -2612,7 +2484,6 @@ const useFootballFormations = (summary, width, height, isHome) =>
       .map(n => parseInt(n, 10))
       .filter(n => !isNaN(n) && n > 0);
     const formationRows = [1, ...(parsedForm.length > 0 ? parsedForm : [4, 3, 3])];
-    const formationKey = parsedForm.join("-");
 
     const rawRoster = teamRoster.roster || [];
     const explicitStarters = rawRoster.filter(p => p.starter === true);
@@ -2620,17 +2491,22 @@ const useFootballFormations = (summary, width, height, isHome) =>
       ? explicitStarters.slice(0, 11)
       : [...explicitStarters, ...rawRoster.filter(p => p.starter !== true)].slice(0, 11);
 
-    const groupedRows = assignPlayersToFormationRows(starters, formationRows, formationKey);
+    const groupedRows = assignPlayersToFormationRows(starters, formationRows);
     const numRows = Math.max(1, formationRows.length - 1);
     const usableHeight = Math.max(180, height - 96);
 
     return groupedRows.map((rowPlayers, rowIndex) => {
       if (!rowPlayers || rowPlayers.length === 0) return [];
 
+      // Order left-to-right from screen-left to screen-right by lateral flank role
       const sortedRow = [...rowPlayers].sort((a, b) => {
         const idxA = rowPlayers.indexOf(a);
         const idxB = rowPlayers.indexOf(b);
-        return getLateralFlankScore(a, idxA, rowPlayers.length, formationKey) - getLateralFlankScore(b, idxB, rowPlayers.length, formationKey);
+        const diff = getLateralFlankScore(a, idxA, rowPlayers.length) - getLateralFlankScore(b, idxB, rowPlayers.length);
+        if (diff !== 0) return diff;
+        const fpA = parseInt(a?.formationPlace, 10) || 99;
+        const fpB = parseInt(b?.formationPlace, 10) || 99;
+        return fpA - fpB;
       });
 
       const progress = rowIndex / numRows;
