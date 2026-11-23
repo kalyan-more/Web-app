@@ -2295,111 +2295,125 @@ const getPlayerRoleMeta = (player) => {
   };
 };
 
-const FORMATION_SLOT_SPECS = {
-  '4-2-3-1': [
-    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
-    { row: 1, flank: -46, roleHint: 'lb',       fp: 3 },
-    { row: 1, flank: -16, roleHint: 'lcb',      fp: 5 },
-    { row: 1, flank: 16,  roleHint: 'rcb',      fp: 4 },
-    { row: 1, flank: 46,  roleHint: 'rb',       fp: 2 },
-    { row: 2, flank: -20, roleHint: 'ldm',      fp: 6 },
-    { row: 2, flank: 20,  roleHint: 'rdm',      fp: 8 },
-    { row: 3, flank: -42, roleHint: 'lw_lam',   fp: 11 },
-    { row: 3, flank: 0,   roleHint: 'cam',      fp: 10 },
-    { row: 3, flank: 42,  roleHint: 'rw_ram',   fp: 7 },
-    { row: 4, flank: 0,   roleHint: 'st',       fp: 9 }
-  ],
-  '4-3-3': [
-    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
-    { row: 1, flank: -46, roleHint: 'lb',       fp: 3 },
-    { row: 1, flank: -16, roleHint: 'lcb',      fp: 5 },
-    { row: 1, flank: 16,  roleHint: 'rcb',      fp: 4 },
-    { row: 1, flank: 46,  roleHint: 'rb',       fp: 2 },
-    { row: 2, flank: -30, roleHint: 'lcm',      fp: 8 },
-    { row: 2, flank: 0,   roleHint: 'cdm_cm',   fp: 6 },
-    { row: 2, flank: 30,  roleHint: 'rcm',      fp: 10 },
-    { row: 3, flank: -40, roleHint: 'lw',       fp: 11 },
-    { row: 3, flank: 0,   roleHint: 'st',       fp: 9 },
-    { row: 3, flank: 40,  roleHint: 'rw',       fp: 7 }
-  ],
-  '4-4-2': [
-    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
-    { row: 1, flank: -46, roleHint: 'lb',       fp: 3 },
-    { row: 1, flank: -16, roleHint: 'lcb',      fp: 5 },
-    { row: 1, flank: 16,  roleHint: 'rcb',      fp: 4 },
-    { row: 1, flank: 46,  roleHint: 'rb',       fp: 2 },
-    { row: 2, flank: -44, roleHint: 'lm_lw',    fp: 11 },
-    { row: 2, flank: -15, roleHint: 'lcm_ldm',  fp: 6 },
-    { row: 2, flank: 15,  roleHint: 'rcm_rdm',  fp: 8 },
-    { row: 2, flank: 44,  roleHint: 'rm_rw',    fp: 7 },
-    { row: 3, flank: -18, roleHint: 'st_left',  fp: 10 },
-    { row: 3, flank: 18,  roleHint: 'st_right', fp: 9 }
-  ],
-  '3-4-2-1': [
-    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
-    { row: 1, flank: -32, roleHint: 'lcb',      fp: 5 },
-    { row: 1, flank: 0,   roleHint: 'cb',       fp: 6 },
-    { row: 1, flank: 32,  roleHint: 'rcb',      fp: 4 },
-    { row: 2, flank: -46, roleHint: 'lwb',      fp: 3 },
-    { row: 2, flank: -15, roleHint: 'ldm',      fp: 8 },
-    { row: 2, flank: 15,  roleHint: 'rdm',      fp: 7 },
-    { row: 2, flank: 46,  roleHint: 'rwb',      fp: 2 },
-    { row: 3, flank: -22, roleHint: 'lam',      fp: 11 },
-    { row: 3, flank: 22,  roleHint: 'ram',      fp: 10 },
-    { row: 4, flank: 0,   roleHint: 'st',       fp: 9 }
-  ],
-  '3-5-2': [
-    { row: 0, flank: 0,   roleHint: 'gk',       fp: 1 },
-    { row: 1, flank: -32, roleHint: 'lcb',      fp: 5 },
-    { row: 1, flank: 0,   roleHint: 'cb',       fp: 6 },
-    { row: 1, flank: 32,  roleHint: 'rcb',      fp: 4 },
-    { row: 2, flank: -46, roleHint: 'lwb',      fp: 3 },
-    { row: 2, flank: -22, roleHint: 'lcm',      fp: 8 },
-    { row: 2, flank: 0,   roleHint: 'cam_cm',   fp: 10 },
-    { row: 2, flank: 22,  roleHint: 'rcm',      fp: 7 },
-    { row: 2, flank: 46,  roleHint: 'rwb',      fp: 2 },
-    { row: 3, flank: -18, roleHint: 'st_left',  fp: 11 },
-    { row: 3, flank: 18,  roleHint: 'st_right', fp: 9 }
-  ]
-};
-
-const JERSEY_TACTICAL_PROFILES = {
-  1:  { zone: 0, lineBias: 'gk',         flank: 0 },
-  2:  { zone: 1, lineBias: 'def',        flank: 46 },
-  3:  { zone: 1, lineBias: 'def',        flank: -46 },
-  4:  { zone: 1, lineBias: 'def',        flank: -14 },
-  5:  { zone: 1, lineBias: 'def',        flank: -22 },
-  6:  { zone: 2, lineBias: 'pivot',      flank: -18 },
-  7:  { zone: 3, lineBias: 'attack_mid', flank: 40 },
-  8:  { zone: 2, lineBias: 'attack_mid', flank: 0 },
-  9:  { zone: 3, lineBias: 'striker',    flank: 0 },
-  10: { zone: 3, lineBias: 'striker',    flank: -6 },
-  11: { zone: 3, lineBias: 'attack_mid', flank: -40 },
-  12: { zone: 1, lineBias: 'def',        flank: 36 },
-  13: { zone: 2, lineBias: 'attack_mid', flank: -42 },
-  14: { zone: 2, lineBias: 'attack_mid', flank: -18 },
-  15: { zone: 1, lineBias: 'def',        flank: 14 },
-  16: { zone: 2, lineBias: 'pivot',      flank: -12 },
-  17: { zone: 3, lineBias: 'attack_mid', flank: 26 },
-  18: { zone: 2, lineBias: 'pivot',      flank: 18 },
-  19: { zone: 3, lineBias: 'attack_mid', flank: 42 },
-  20: { zone: 2, lineBias: 'attack_mid', flank: 14 },
-  21: { zone: 2, lineBias: 'attack_mid', flank: 8 },
-  22: { zone: 1, lineBias: 'def',        flank: 30 },
-  23: { zone: 1, lineBias: 'def',        flank: -28 },
-  24: { zone: 2, lineBias: 'pivot',      flank: 12 },
-  25: { zone: 2, lineBias: 'pivot',      flank: 6 },
-  26: { zone: 1, lineBias: 'def',        flank: -18 },
-  27: { zone: 3, lineBias: 'attack_mid', flank: 32 },
-  28: { zone: 2, lineBias: 'pivot',      flank: 15 },
-  29: { zone: 3, lineBias: 'striker',    flank: 10 },
-  30: { zone: 2, lineBias: 'attack_mid', flank: 16 },
-  31: { zone: 1, lineBias: 'def',        flank: 10 },
-  32: { zone: 1, lineBias: 'def',        flank: -32 },
-  33: { zone: 1, lineBias: 'def',        flank: -24 },
-  35: { zone: 1, lineBias: 'def',        flank: 18 },
-  36: { zone: 2, lineBias: 'pivot',      flank: -10 },
-  37: { zone: 2, lineBias: 'pivot',      flank: -18 }
+/**
+ * ESPN's canonical `formationPlace` (`1`..`11`) mapping for standard formations:
+ * - ESPN `formationPlace` `1` is GK (back/goal line).
+ * - Remaining slots map onto the formation lines from goal line toward midfield,
+ *   ordered left-to-right across each line (`order`).
+ */
+const ESPN_FORMATION_ROW_MAP = {
+  '4-2-3-1': {
+    rows: [1, 4, 2, 3, 1],
+    byFp: {
+      1:  { row: 0, order: 0 },
+      3:  { row: 1, order: 0 },
+      5:  { row: 1, order: 1 },
+      4:  { row: 1, order: 2 },
+      2:  { row: 1, order: 3 },
+      6:  { row: 2, order: 0 },
+      8:  { row: 2, order: 1 },
+      11: { row: 3, order: 0 },
+      10: { row: 3, order: 1 },
+      7:  { row: 3, order: 2 },
+      9:  { row: 4, order: 0 }
+    }
+  },
+  '4-3-3': {
+    rows: [1, 4, 3, 3],
+    byFp: {
+      1:  { row: 0, order: 0 },
+      3:  { row: 1, order: 0 },
+      5:  { row: 1, order: 1 },
+      4:  { row: 1, order: 2 },
+      2:  { row: 1, order: 3 },
+      8:  { row: 2, order: 0 },
+      6:  { row: 2, order: 1 },
+      10: { row: 2, order: 2 },
+      11: { row: 3, order: 0 },
+      9:  { row: 3, order: 1 },
+      7:  { row: 3, order: 2 }
+    }
+  },
+  '4-4-2': {
+    rows: [1, 4, 4, 2],
+    byFp: {
+      1:  { row: 0, order: 0 },
+      3:  { row: 1, order: 0 },
+      5:  { row: 1, order: 1 },
+      4:  { row: 1, order: 2 },
+      2:  { row: 1, order: 3 },
+      11: { row: 2, order: 0 },
+      6:  { row: 2, order: 1 },
+      8:  { row: 2, order: 2 },
+      7:  { row: 2, order: 3 },
+      10: { row: 3, order: 0 },
+      9:  { row: 3, order: 1 }
+    }
+  },
+  '4-1-4-1': {
+    rows: [1, 4, 1, 4, 1],
+    byFp: {
+      1:  { row: 0, order: 0 },
+      3:  { row: 1, order: 0 },
+      5:  { row: 1, order: 1 },
+      4:  { row: 1, order: 2 },
+      2:  { row: 1, order: 3 },
+      6:  { row: 2, order: 0 },
+      11: { row: 3, order: 0 },
+      8:  { row: 3, order: 1 },
+      10: { row: 3, order: 2 },
+      7:  { row: 3, order: 3 },
+      9:  { row: 4, order: 0 }
+    }
+  },
+  '3-4-2-1': {
+    rows: [1, 3, 4, 2, 1],
+    byFp: {
+      1:  { row: 0, order: 0 },
+      5:  { row: 1, order: 0 },
+      6:  { row: 1, order: 1 },
+      4:  { row: 1, order: 2 },
+      3:  { row: 2, order: 0 },
+      8:  { row: 2, order: 1 },
+      7:  { row: 2, order: 2 },
+      2:  { row: 2, order: 3 },
+      11: { row: 3, order: 0 },
+      10: { row: 3, order: 1 },
+      9:  { row: 4, order: 0 }
+    }
+  },
+  '3-5-2': {
+    rows: [1, 3, 5, 2],
+    byFp: {
+      1:  { row: 0, order: 0 },
+      5:  { row: 1, order: 0 },
+      6:  { row: 1, order: 1 },
+      4:  { row: 1, order: 2 },
+      3:  { row: 2, order: 0 },
+      8:  { row: 2, order: 1 },
+      10: { row: 2, order: 2 },
+      7:  { row: 2, order: 3 },
+      2:  { row: 2, order: 4 },
+      11: { row: 3, order: 0 },
+      9:  { row: 3, order: 1 }
+    }
+  },
+  '5-3-2': {
+    rows: [1, 5, 3, 2],
+    byFp: {
+      1:  { row: 0, order: 0 },
+      3:  { row: 1, order: 0 },
+      5:  { row: 1, order: 1 },
+      6:  { row: 1, order: 2 },
+      4:  { row: 1, order: 3 },
+      2:  { row: 1, order: 4 },
+      11: { row: 2, order: 0 },
+      8:  { row: 2, order: 1 },
+      7:  { row: 2, order: 2 },
+      10: { row: 3, order: 0 },
+      9:  { row: 3, order: 1 }
+    }
+  }
 };
 
 const getPlayerZone = (player) => {
@@ -2421,12 +2435,11 @@ const getPlayerZone = (player) => {
     combined.includes('FORWARD') || combined.includes('STRIKER') || combined.includes('WING') ||
     ptype.includes('forw') || ptype.includes('striker') || ptype.includes('att')
   ) return 3;
-  if (jerseyNum && JERSEY_TACTICAL_PROFILES[jerseyNum]) return JERSEY_TACTICAL_PROFILES[jerseyNum].zone;
   return 2;
 };
 
-const getPlayerFlankPreference = (player, fallbackIndex = 0, rowCount = 1) => {
-  const { abbr, pname, jerseyNum, formationPlace } = getPlayerRoleMeta(player);
+const getLateralSortKey = (player, fallbackIndex = 0) => {
+  const { abbr, pname, formationPlace, jerseyNum } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname}`;
 
   if (abbr === 'LB' || abbr === 'LWB' || abbr === 'L' || tag.includes('LEFT BACK') || tag.includes('LEFT WINGBACK')) return -50;
@@ -2443,189 +2456,90 @@ const getPlayerFlankPreference = (player, fallbackIndex = 0, rowCount = 1) => {
   if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 45;
   if (abbr === 'RB' || abbr === 'RWB' || abbr === 'R' || tag.includes('RIGHT BACK') || tag.includes('RIGHT WINGBACK')) return 50;
 
-  if (jerseyNum && JERSEY_TACTICAL_PROFILES[jerseyNum] !== undefined) {
-    return JERSEY_TACTICAL_PROFILES[jerseyNum].flank;
-  }
-
   if (formationPlace) {
     if (formationPlace === 3 || formationPlace === 11) return -40;
     if (formationPlace === 5) return -16;
+    if (formationPlace === 6) return -12;
+    if (formationPlace === 8) return 12;
     if (formationPlace === 4) return 16;
     if (formationPlace === 2 || formationPlace === 7) return 40;
   }
 
-  return (fallbackIndex - (rowCount - 1) / 2) * 2;
+  if (jerseyNum === 3 || jerseyNum === 11 || jerseyNum === 13) return -30;
+  if (jerseyNum === 2 || jerseyNum === 7 || jerseyNum === 19) return 30;
+  return fallbackIndex;
 };
 
-const scorePlayerForSlot = (player, slot, totalLines, formationRows, playerIdx) => {
-  const { abbr, combined, jerseyNum, formationPlace } = getPlayerRoleMeta(player);
-  const zone = getPlayerZone(player);
-  const jProf = jerseyNum ? JERSEY_TACTICAL_PROFILES[jerseyNum] : null;
-  const pFlank = getPlayerFlankPreference(player, playerIdx, 11);
+/**
+ * Builds formation rows directly from ESPN's roster `formationPlace` (`1`..`11`) and `formation` string,
+ * with position-zone fallback when `formationPlace` is absent or incomplete.
+ */
+const buildEspnFormationRows = (starters, formationRows, formationKey) => {
+  const rows = formationRows.map(() => []);
+  const spec = ESPN_FORMATION_ROW_MAP[formationKey];
 
-  if (slot.row === 0) {
-    return zone === 0 ? 500 : -500;
-  }
-  if (zone === 0) return -500;
+  const startersWithFp = starters.map((p, idx) => ({
+    player: p,
+    meta: getPlayerRoleMeta(p),
+    idx
+  }));
 
-  let score = 0;
+  const uniqueFpCount = new Set(
+    startersWithFp
+      .map(item => item.meta.formationPlace)
+      .filter(fp => fp !== null && fp >= 1 && fp <= 11)
+  ).size;
 
-  if (formationPlace && slot.fp === formationPlace) {
-    score += 90;
-  }
+  const used = new Set();
 
-  const flankDiff = Math.abs(pFlank - slot.flank);
-  score += Math.max(-35, 35 - flankDiff * 0.7);
-
-  if (slot.row === 1) {
-    if (zone === 1) score += 170;
-    else if (jProf?.lineBias === 'def') score += 140;
-    else if (abbr === 'CDM' || abbr === 'DM' || combined.includes('DEFENSIVE MID')) score += 20;
-    else score -= 95;
-    return score;
-  }
-
-  const isStrikerRole =
-    abbr === 'ST' || abbr === 'CF' ||
-    combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD') ||
-    jProf?.lineBias === 'striker';
-  const isHoldingRole =
-    abbr === 'CDM' || abbr === 'DM' || abbr === 'LDM' || abbr === 'RDM' ||
-    combined.includes('DEFENSIVE MID') || jProf?.lineBias === 'pivot';
-  const isAttackingMidRole =
-    abbr === 'CAM' || abbr === 'AM' || abbr === 'LAM' || abbr === 'RAM' ||
-    combined.includes('ATTACKING MID') || jProf?.lineBias === 'attack_mid';
-  const isWingerRole =
-    abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' ||
-    combined.includes('WING') || abbr === 'LM' || abbr === 'RM';
-
-  if (slot.row === totalLines - 1) {
-    if (abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER')) score += 185;
-    else if (jProf?.lineBias === 'striker') score += 175;
-    else if (zone === 3 && !isWingerRole && !isAttackingMidRole) score += 140;
-    else if (isAttackingMidRole || isWingerRole) score += 85;
-    else if (zone === 2 && !isHoldingRole) score += 25;
-    else score -= 85;
-    return score;
-  }
-
-  if (totalLines === 5 && formationRows[2] === 2 && formationRows[3] === 3) {
-    if (slot.row === 2) {
-      if (isHoldingRole) score += 175;
-      else if (abbr === 'CM' || abbr === 'LCM' || abbr === 'RCM') score += 145;
-      else if (zone === 2 && !isAttackingMidRole && !isWingerRole) score += 110;
-      else if (isAttackingMidRole) score += 20;
-      else if (isWingerRole) score -= 30;
-      else if (isStrikerRole) score -= 80;
-      else score += 5;
-      return score;
-    }
-    if (slot.row === 3) {
-      if (isAttackingMidRole) score += 175;
-      else if (isWingerRole) score += 160;
-      else if (zone === 3 && jProf?.lineBias !== 'striker') score += 125;
-      else if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') score += 55;
-      else if (isHoldingRole) score -= 25;
-      else if (jProf?.lineBias === 'striker') score -= 50;
-      else score += 15;
-      return score;
-    }
-  }
-
-  const midProgress = totalLines > 2 ? (rowIndexPlaceholder(slot.row, totalLines)) : 0.5;
-  if (zone === 2) {
-    if (midProgress < 0.45 && isHoldingRole) score += 155;
-    else if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) score += 155;
-    else score += 120;
-  } else if (zone === 3 && !isStrikerRole) {
-    score += 100;
-  } else if (isStrikerRole) {
-    score -= 45;
-  } else if (zone === 1) {
-    score += 15;
-  }
-
-  return score;
-};
-
-const rowIndexPlaceholder = (rowIndex, totalLines) =>
-  totalLines > 2 ? (rowIndex - 1) / (totalLines - 2) : 0.5;
-
-const buildSlotsForFormation = (formationRows, formationKey) => {
-  if (FORMATION_SLOT_SPECS[formationKey]) {
-    return FORMATION_SLOT_SPECS[formationKey];
-  }
-  const slots = [];
-  let fpCounter = 1;
-  formationRows.forEach((count, rowIndex) => {
-    for (let i = 0; i < count; i++) {
-      const flank = count === 1 ? 0 : ((i / (count - 1)) * 2 - 1) * 45;
-      slots.push({ row: rowIndex, flank, roleHint: 'flex', fp: fpCounter++ });
-    }
-  });
-  return slots;
-};
-
-const assignPlayersToFormationRows = (starters, formationRows, formationKey = '') => {
-  const totalLines = formationRows.length;
-  const assignedRows = formationRows.map(() => []);
-  const slots = buildSlotsForFormation(formationRows, formationKey);
-  const usedPlayerIndices = new Set();
-
-  // Group slots by row so we fill most constrained rows first and sort each row left-to-right
-  const rowSlotIndices = formationRows.map(() => []);
-  slots.forEach((slot, sIdx) => {
-    rowSlotIndices[slot.row].push(sIdx);
-  });
-
-  // Order rows to fill: GK (0), final striker row (totalLines-1), backline (1), then remaining rows
-  const rowFillOrder = [];
-  if (totalLines > 0) rowFillOrder.push(0);
-  if (totalLines > 1) rowFillOrder.push(totalLines - 1);
-  if (totalLines > 2) rowFillOrder.push(1);
-  for (let r = 2; r < totalLines - 1; r++) {
-    rowFillOrder.push(r);
-  }
-
-  rowFillOrder.forEach((rIdx) => {
-    const sIndices = rowSlotIndices[rIdx] || [];
-    const chosenForRow = [];
-
-    sIndices.forEach((sIdx) => {
-      const slot = slots[sIdx];
-      let bestPIdx = -1;
-      let bestScore = -Infinity;
-      starters.forEach((player, pIdx) => {
-        if (usedPlayerIndices.has(pIdx)) return;
-        const sc = scorePlayerForSlot(player, slot, totalLines, formationRows, pIdx);
-        if (sc > bestScore) {
-          bestScore = sc;
-          bestPIdx = pIdx;
-        }
-      });
-      if (bestPIdx !== -1) {
-        usedPlayerIndices.add(bestPIdx);
-        chosenForRow.push({
-          player: starters[bestPIdx],
-          flank: slot.flank,
-          flankPref: getPlayerFlankPreference(starters[bestPIdx], bestPIdx, sIndices.length)
-        });
+  if (spec && uniqueFpCount >= 9) {
+    startersWithFp.forEach(({ player, meta, idx }) => {
+      const fp = meta.formationPlace;
+      const mapping = fp ? spec.byFp[fp] : null;
+      if (mapping && mapping.row >= 0 && mapping.row < rows.length && rows[mapping.row].length < formationRows[mapping.row]) {
+        rows[mapping.row].push({ player, sortKey: mapping.order });
+        used.add(idx);
       }
     });
 
-    // Order left-to-right across the pitch by flank slot & player flank preference
-    chosenForRow.sort((a, b) => {
-      const diff = (a.flank + a.flankPref * 0.35) - (b.flank + b.flankPref * 0.35);
-      if (diff !== 0) return diff;
-      const jA = parseInt(String(a.player?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
-      const jB = parseInt(String(b.player?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
-      return jA - jB;
-    });
+    rows.forEach(r => r.sort((a, b) => a.sortKey - b.sortKey));
+  }
 
-    assignedRows[rIdx] = chosenForRow;
+  const remaining = startersWithFp.filter(item => !used.has(item.idx));
+  remaining.forEach(({ player, idx }) => {
+    const zone = getPlayerZone(player);
+    let targetRow = -1;
+
+    if (zone === 0 && rows[0].length < formationRows[0]) {
+      targetRow = 0;
+    } else if (zone === 1 && rows[1] && rows[1].length < formationRows[1]) {
+      targetRow = 1;
+    } else if (zone === 3 && rows[rows.length - 1].length < formationRows[rows.length - 1]) {
+      targetRow = rows.length - 1;
+    } else {
+      for (let r = 1; r < rows.length; r++) {
+        if (rows[r].length < formationRows[r]) {
+          targetRow = r;
+          break;
+        }
+      }
+      if (targetRow === -1) {
+        for (let r = 0; r < rows.length; r++) {
+          if (rows[r].length < formationRows[r]) {
+            targetRow = r;
+            break;
+          }
+        }
+      }
+    }
+
+    if (targetRow !== -1) {
+      rows[targetRow].push({ player, sortKey: getLateralSortKey(player, idx) });
+      rows[targetRow].sort((a, b) => a.sortKey - b.sortKey);
+    }
   });
 
-  return assignedRows;
+  return rows.map(r => r.map(entry => entry.player));
 };
 
 const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
@@ -2687,21 +2601,21 @@ const useFootballFormations = (summary, width, height, isHome, comp = null) =>
       ? explicitStarters.slice(0, 11)
       : [...explicitStarters, ...rawRoster.filter(p => p.starter !== true)].slice(0, 11);
 
-    const groupedRows = assignPlayersToFormationRows(starters, formationRows, formationKey);
+    const groupedRows = buildEspnFormationRows(starters, formationRows, formationKey);
     const numRows = Math.max(1, formationRows.length - 1);
     const usableHeight = Math.max(180, height - 96);
 
-    return groupedRows.map((rowItems, rowIndex) => {
-      if (!rowItems || rowItems.length === 0) return [];
+    return groupedRows.map((rowPlayers, rowIndex) => {
+      if (!rowPlayers || rowPlayers.length === 0) return [];
 
       const progress = rowIndex / numRows;
       const y = isHome
         ? (14 + usableHeight) - (progress * usableHeight)
         : 14 + (progress * usableHeight);
 
-      return rowItems.map((item, i) => {
-        const x = ((i + 1) / (rowItems.length + 1)) * width;
-        return { id: item.player.athlete?.id || `p_${rowIndex}_${i}`, player: item.player, x, y };
+      return rowPlayers.map((p, i) => {
+        const x = ((i + 1) / (rowPlayers.length + 1)) * width;
+        return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
   }, [summary?.rosters, summary?.header, width, height, isHome, comp]);
