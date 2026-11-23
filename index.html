@@ -2282,14 +2282,59 @@ const getPlayerRoleMeta = (player) => {
     ''
   ).toLowerCase().trim();
 
+  const jerseyNum = parseInt(String(player?.jersey ?? '').replace(/[^\d]/g, ''), 10);
   const combined = `${abbr} ${pname}`;
-  return { abbr, pname, ptype, combined };
+  return { abbr, pname, ptype, combined, jerseyNum: isNaN(jerseyNum) ? null : jerseyNum };
+};
+
+/**
+ * Jersey-number tactical profile:
+ * - zone: 0=GK, 1=DEF, 2=MID, 3=FWD
+ * - lineBias: 'gk' | 'def' | 'pivot' | 'attack_mid' | 'striker'
+ * - flank: negative = left side of pitch, 0 = center, positive = right side of pitch
+ */
+const JERSEY_TACTICAL_PROFILES = {
+  1:  { zone: 0, lineBias: 'gk', flank: 0 },
+  2:  { zone: 1, lineBias: 'def', flank: 46 },
+  3:  { zone: 1, lineBias: 'def', flank: -46 },
+  4:  { zone: 1, lineBias: 'def', flank: -14 },
+  5:  { zone: 1, lineBias: 'def', flank: -22 },
+  6:  { zone: 2, lineBias: 'pivot', flank: -16 },
+  7:  { zone: 3, lineBias: 'attack_mid', flank: 38 },
+  8:  { zone: 2, lineBias: 'attack_mid', flank: 0 },
+  9:  { zone: 3, lineBias: 'striker', flank: 0 },
+  10: { zone: 3, lineBias: 'striker', flank: -6 },
+  11: { zone: 3, lineBias: 'attack_mid', flank: -38 },
+  12: { zone: 1, lineBias: 'def', flank: 36 },
+  13: { zone: 2, lineBias: 'attack_mid', flank: -42 },
+  14: { zone: 2, lineBias: 'attack_mid', flank: -18 },
+  15: { zone: 1, lineBias: 'def', flank: 14 },
+  16: { zone: 2, lineBias: 'pivot', flank: -12 },
+  17: { zone: 3, lineBias: 'attack_mid', flank: 26 },
+  18: { zone: 2, lineBias: 'pivot', flank: 18 },
+  19: { zone: 3, lineBias: 'attack_mid', flank: 42 },
+  20: { zone: 2, lineBias: 'attack_mid', flank: 14 },
+  21: { zone: 2, lineBias: 'attack_mid', flank: 8 },
+  22: { zone: 1, lineBias: 'def', flank: 30 },
+  23: { zone: 1, lineBias: 'def', flank: -28 },
+  24: { zone: 2, lineBias: 'pivot', flank: 12 },
+  25: { zone: 2, lineBias: 'pivot', flank: 6 },
+  26: { zone: 1, lineBias: 'def', flank: -18 },
+  27: { zone: 3, lineBias: 'attack_mid', flank: 32 },
+  28: { zone: 2, lineBias: 'pivot', flank: 15 },
+  29: { zone: 3, lineBias: 'striker', flank: 10 },
+  30: { zone: 2, lineBias: 'attack_mid', flank: 16 },
+  31: { zone: 1, lineBias: 'def', flank: 10 },
+  32: { zone: 1, lineBias: 'def', flank: -32 },
+  33: { zone: 1, lineBias: 'def', flank: -24 },
+  35: { zone: 1, lineBias: 'def', flank: 18 },
+  36: { zone: 2, lineBias: 'pivot', flank: -10 },
+  37: { zone: 2, lineBias: 'pivot', flank: -18 }
 };
 
 const getPlayerZone = (player) => {
-  const { abbr, ptype, combined } = getPlayerRoleMeta(player);
-  const fp = parseInt(player?.formationPlace, 10);
-  if (abbr === 'GK' || abbr === 'G' || combined.includes('GOALKEEPER') || ptype.includes('goal') || fp === 1) return 0;
+  const { abbr, ptype, combined, jerseyNum } = getPlayerRoleMeta(player);
+  if (abbr === 'GK' || abbr === 'G' || combined.includes('GOALKEEPER') || ptype.includes('goal') || jerseyNum === 1) return 0;
   if (
     abbr === 'D' || abbr === 'DEF' || abbr === 'CB' || abbr === 'LB' || abbr === 'RB' ||
     abbr === 'LWB' || abbr === 'RWB' || abbr === 'SW' || abbr === 'LCB' || abbr === 'RCB' ||
@@ -2306,18 +2351,19 @@ const getPlayerZone = (player) => {
     combined.includes('FORWARD') || combined.includes('STRIKER') || combined.includes('WING') ||
     ptype.includes('forw') || ptype.includes('striker') || ptype.includes('att')
   ) return 3;
+  if (jerseyNum && JERSEY_TACTICAL_PROFILES[jerseyNum]) return JERSEY_TACTICAL_PROFILES[jerseyNum].zone;
   return 2;
 };
 
 /**
- * Lateral flank ordering score within a tactical row:
+ * Lateral flank ordering score within a tactical row (Left-to-Right on screen):
  * Negative = Left flank, 0 = Central, Positive = Right flank.
  */
 const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
-  const { abbr, pname } = getPlayerRoleMeta(player);
+  const { abbr, pname, jerseyNum } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname}`;
 
-  // Far-left / Left-side roles
+  // Explicit position abbreviations / names take priority
   if (abbr === 'LB' || abbr === 'LWB' || abbr === 'L' || tag.includes('LEFT BACK') || tag.includes('LEFT WINGBACK')) return -50;
   if (abbr === 'LW' || abbr === 'LF' || tag.includes('LEFT WING') || tag.includes('LEFT FORWARD')) return -45;
   if (abbr === 'LM' || tag.includes('LEFT MID')) return -38;
@@ -2325,7 +2371,6 @@ const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
   if (abbr === 'LCB' || abbr === 'LD' || tag.includes('LEFT CENTER BACK') || tag.includes('LEFT CENTRE BACK')) return -20;
   if (abbr === 'LDM' || abbr === 'LCM' || tag.includes('LEFT DEFENSIVE MID') || tag.includes('LEFT CENTRAL MID')) return -15;
 
-  // Far-right / Right-side roles
   if (abbr === 'RDM' || abbr === 'RCM' || tag.includes('RIGHT DEFENSIVE MID') || tag.includes('RIGHT CENTRAL MID')) return 15;
   if (abbr === 'RCB' || abbr === 'RD' || tag.includes('RIGHT CENTER BACK') || tag.includes('RIGHT CENTRE BACK')) return 20;
   if (abbr === 'RAM' || tag.includes('RIGHT ATTACKING MID')) return 28;
@@ -2333,69 +2378,78 @@ const getLateralFlankScore = (player, fallbackIndex = 0, rowCount = 1) => {
   if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 45;
   if (abbr === 'RB' || abbr === 'RWB' || abbr === 'R' || tag.includes('RIGHT BACK') || tag.includes('RIGHT WINGBACK')) return 50;
 
-  // Central roles default to 0, nudged slightly by fallbackIndex only when multiple central players share a line
+  // Use jersey number lateral flank profile when position is generic (e.g. D, M, F)
+  if (jerseyNum && JERSEY_TACTICAL_PROFILES[jerseyNum] !== undefined) {
+    return JERSEY_TACTICAL_PROFILES[jerseyNum].flank;
+  }
+
   return (fallbackIndex - (rowCount - 1) / 2) * 2;
 };
 
 const scorePlayerForRow = (player, rowIndex, totalLines, formationRows) => {
-  const { abbr, combined } = getPlayerRoleMeta(player);
+  const { abbr, combined, jerseyNum } = getPlayerRoleMeta(player);
   const zone = getPlayerZone(player);
+  const jProf = jerseyNum ? JERSEY_TACTICAL_PROFILES[jerseyNum] : null;
 
   if (rowIndex === 0) {
-    return zone === 0 ? 300 : -300;
+    return zone === 0 ? 350 : -350;
   }
-  if (zone === 0) return -300;
+  if (zone === 0) return -350;
 
   // Backline (rowIndex === 1)
   if (rowIndex === 1) {
-    if (zone === 1) return 150;
+    if (zone === 1) return 160;
+    if (jProf?.lineBias === 'def') return 145;
     if (abbr === 'CDM' || abbr === 'DM' || combined.includes('DEFENSIVE MID')) return 20;
-    return -90;
+    return -95;
   }
 
   const isStrikerRole =
     abbr === 'ST' || abbr === 'CF' ||
-    combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD');
+    combined.includes('STRIKER') || combined.includes('CENTRE FORWARD') || combined.includes('CENTER FORWARD') ||
+    jProf?.lineBias === 'striker';
   const isHoldingRole =
     abbr === 'CDM' || abbr === 'DM' || abbr === 'LDM' || abbr === 'RDM' ||
-    combined.includes('DEFENSIVE MID');
+    combined.includes('DEFENSIVE MID') || jProf?.lineBias === 'pivot';
   const isAttackingMidRole =
     abbr === 'CAM' || abbr === 'AM' || abbr === 'LAM' || abbr === 'RAM' ||
-    combined.includes('ATTACKING MID');
+    combined.includes('ATTACKING MID') || jProf?.lineBias === 'attack_mid';
   const isWingerRole =
     abbr === 'LW' || abbr === 'RW' || abbr === 'LF' || abbr === 'RF' ||
     combined.includes('WING') || abbr === 'LM' || abbr === 'RM';
 
   // Final attacking row (rowIndex === totalLines - 1)
   if (rowIndex === totalLines - 1) {
-    if (isStrikerRole) return 160;
-    if (zone === 3 && !isWingerRole) return 130;
-    if (isWingerRole) return 90;
-    if (isAttackingMidRole) return 70;
-    if (zone === 2 && !isHoldingRole) return 30;
-    return -80;
+    if (jProf?.lineBias === 'striker') return 185;
+    if (abbr === 'ST' || abbr === 'CF' || combined.includes('STRIKER')) return 175;
+    if (zone === 3 && !isWingerRole && !isAttackingMidRole) return 135;
+    if (isAttackingMidRole || isWingerRole) return 85;
+    if (zone === 2 && !isHoldingRole) return 25;
+    return -85;
   }
 
   // 4-2-3-1 multi-row midfield ([1, 4, 2, 3, 1], totalLines === 5)
   if (totalLines === 5 && formationRows[2] === 2 && formationRows[3] === 3) {
     if (rowIndex === 2) {
       // Double pivot (2 players)
-      if (isHoldingRole) return 160;
+      if (jProf?.lineBias === 'pivot') return 185;
+      if (isHoldingRole) return 165;
       if (abbr === 'CM' || abbr === 'LCM' || abbr === 'RCM') return 135;
       if (zone === 2 && !isAttackingMidRole && !isWingerRole) return 105;
-      if (isAttackingMidRole) return 25;
+      if (isAttackingMidRole) return 20;
       if (isWingerRole) return -30;
-      if (isStrikerRole) return -75;
+      if (isStrikerRole) return -80;
       return 5;
     }
     if (rowIndex === 3) {
       // Attacking midfield / wide line (3 players)
-      if (isAttackingMidRole) return 160;
-      if (isWingerRole) return 145;
-      if (zone === 3 && !isStrikerRole) return 125;
-      if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 60;
-      if (isHoldingRole) return -20;
-      if (isStrikerRole) return -45;
+      if (jProf?.lineBias === 'attack_mid') return 185;
+      if (isAttackingMidRole) return 170;
+      if (isWingerRole) return 155;
+      if (zone === 3 && jProf?.lineBias !== 'striker') return 120;
+      if (abbr === 'CM' || abbr === 'M' || abbr === 'MID') return 55;
+      if (isHoldingRole) return -25;
+      if (jProf?.lineBias === 'striker') return -50;
       return 15;
     }
   }
@@ -2403,19 +2457,19 @@ const scorePlayerForRow = (player, rowIndex, totalLines, formationRows) => {
   // General intermediate rows (e.g. 4-3-3 where rowIndex === 2 is midfield of 3)
   const midProgress = totalLines > 2 ? (rowIndex - 1) / (totalLines - 2) : 0.5;
   if (zone === 2) {
-    if (midProgress < 0.45 && isHoldingRole) return 145;
-    if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) return 145;
-    return 115;
+    if (midProgress < 0.45 && isHoldingRole) return 155;
+    if (midProgress >= 0.55 && (isAttackingMidRole || isWingerRole)) return 155;
+    return 120;
   }
-  if (zone === 3 && !isStrikerRole) return 95;
-  if (isStrikerRole) return -40;
+  if (zone === 3 && !isStrikerRole) return 100;
+  if (isStrikerRole) return -45;
   if (zone === 1) return 15;
   return 0;
 };
 
 /**
- * Assigns 11 starters across `formationRows` (e.g. [1, 4, 2, 3, 1]) by matching
- * each starter's role to the best-fitting formation line.
+ * Assigns 11 starters across `formationRows` (e.g. [1, 4, 2, 3, 1]) using jersey-informed
+ * role scoring and specificity matching so every player sits in their real-life line.
  */
 const assignPlayersToFormationRows = (starters, formationRows) => {
   const totalLines = formationRows.length;
@@ -2498,15 +2552,15 @@ const useFootballFormations = (summary, width, height, isHome) =>
     return groupedRows.map((rowPlayers, rowIndex) => {
       if (!rowPlayers || rowPlayers.length === 0) return [];
 
-      // Order left-to-right from screen-left to screen-right by lateral flank role
+      // Order left-to-right on screen using lateral flank score + jersey tie-breaker
       const sortedRow = [...rowPlayers].sort((a, b) => {
         const idxA = rowPlayers.indexOf(a);
         const idxB = rowPlayers.indexOf(b);
         const diff = getLateralFlankScore(a, idxA, rowPlayers.length) - getLateralFlankScore(b, idxB, rowPlayers.length);
         if (diff !== 0) return diff;
-        const fpA = parseInt(a?.formationPlace, 10) || 99;
-        const fpB = parseInt(b?.formationPlace, 10) || 99;
-        return fpA - fpB;
+        const jA = parseInt(String(a?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
+        const jB = parseInt(String(b?.jersey ?? '').replace(/[^\d]/g, ''), 10) || 999;
+        return jA - jB;
       });
 
       const progress = rowIndex / numRows;
