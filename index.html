@@ -2253,29 +2253,23 @@ const resolveTeamKitColors = (summary, comp, fallbackHex = "0A84FF") => {
 };
 
 const normalizeFormationString = (rawFormation) => {
-  if (!rawFormation) return "4-3-3";
+  if (!rawFormation) return "";
   const str = typeof rawFormation === "object"
     ? (rawFormation.displayValue || rawFormation.name || rawFormation.formation || "")
     : String(rawFormation);
   const match = str.trim().match(/(\d+(?:\s*[-–]\s*\d+)+)/);
-  if (!match) return "4-3-3";
+  if (!match) return "";
   const nums = match[1]
     .split(/[-–]/)
     .map(n => parseInt(n.trim(), 10))
     .filter(n => !isNaN(n) && n > 0);
-  if (nums.length === 0) return "4-3-3";
+  if (nums.length === 0) return "";
   const sum = nums.reduce((a, b) => a + b, 0);
   if (sum === 10) return nums.join("-");
-  if (sum > 10) {
-    // Strip leading GK '1' if formation was given as 1-4-3-3
-    if (nums[0] === 1 && nums.slice(1).reduce((a, b) => a + b, 0) === 10) {
-      return nums.slice(1).join("-");
-    }
+  if (nums[0] === 1 && nums.slice(1).reduce((a, b) => a + b, 0) === 10) {
+    return nums.slice(1).join("-");
   }
-  const diff = 10 - sum;
-  const adjusted = [...nums];
-  adjusted[adjusted.length - 1] = Math.max(1, adjusted[adjusted.length - 1] + diff);
-  return adjusted.join("-");
+  return nums.join("-");
 };
 
 const getPlayerRoleMeta = (player) => {
@@ -2322,8 +2316,8 @@ const getPlayerRoleMeta = (player) => {
 };
 
 /**
- * Horizontal rank (left-to-right across the pitch from that team's perspective).
- * Negative = left flank, 0 = central spine, Positive = right flank.
+ * Lateral flank priority (left-to-right from the team's own goal perspective).
+ * Negative = left flank, 0 = center, Positive = right flank.
  */
 const getHorizontalRank = (player, fallbackIdx = 0) => {
   const { abbr, pname, formationPlace, jerseyNum } = getPlayerRoleMeta(player);
@@ -2345,14 +2339,7 @@ const getHorizontalRank = (player, fallbackIdx = 0) => {
   if (abbr === "RW" || abbr === "RF" || tag.includes("RIGHT WING") || tag.includes("RIGHT FORWARD")) return 92;
   if (abbr === "RB" || abbr === "RWB" || abbr === "R" || tag.includes("RIGHT BACK") || tag.includes("RIGHT WINGBACK") || tag.includes("RIGHT WING BACK")) return 100;
 
-  // Traditional tactical shirt / formationPlace flank priors when ESPN only gives generic D / M / F
-  if (formationPlace === 3 || formationPlace === 11) return -75;
-  if (formationPlace === 5) return -25;
-  if (formationPlace === 6) return -18;
-  if (formationPlace === 8) return 18;
-  if (formationPlace === 4) return 25;
-  if (formationPlace === 2 || formationPlace === 7) return 75;
-
+  if (formationPlace !== null) return formationPlace;
   if (jerseyNum === 3 || jerseyNum === 11) return -45;
   if (jerseyNum === 2 || jerseyNum === 7) return 45;
   return (fallbackIdx - 5) * 0.1;
@@ -2378,13 +2365,16 @@ const getStartingEleven = (teamRoster) => {
   return [...explicitStarters, ...nonStarters].slice(0, 11);
 };
 
+/**
+ * Classifies player role tier strictly from ESPN position metadata:
+ * 0 = GK, 1 = DEF, 2 = DEF/CENTRAL MID, 3 = ATT MID / WINGER, 4 = STRIKER / CF
+ */
 const getDetailedPositionScore = (player, fallbackIdx = 0) => {
-  const { abbr, pname, ptype, combined, jerseyNum } = getPlayerRoleMeta(player);
+  const { abbr, pname, ptype, combined, formationPlace } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname} ${ptype}`.toUpperCase();
 
-  // roleTier: 0 = GK, 1 = DEF, 2 = DEEP_MID / CM, 3 = ATT_MID / WIDE, 4 = FWD / ST
   let roleTier = 2;
-  if (abbr === "GK" || abbr === "G" || tag.includes("GOALKEEPER") || jerseyNum === 1) {
+  if (abbr === "GK" || abbr === "G" || tag.includes("GOALKEEPER") || formationPlace === 1) {
     roleTier = 0;
   } else if (
     ["CB", "LCB", "RCB", "LB", "RB", "LWB", "RWB", "SW", "D", "DEF"].includes(abbr) ||
@@ -2392,13 +2382,23 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   ) {
     roleTier = 1;
   } else if (
-    ["ST", "CF", "F", "FWD", "LS", "RS"].includes(abbr) ||
+    ["ST", "CF", "LS", "RS"].includes(abbr) ||
     tag.includes("STRIKER") || tag.includes("CENTRE FORWARD") || tag.includes("CENTER FORWARD")
   ) {
     roleTier = 4;
   } else if (
-    ["CAM", "AM", "LAM", "RAM", "LW", "RW", "LF", "RF", "LM", "RM"].includes(abbr) ||
-    tag.includes("ATTACKING MID") || tag.includes("WING")
+    ["LW", "RW", "LF", "RF"].includes(abbr) ||
+    tag.includes("WING")
+  ) {
+    roleTier = 3;
+  } else if (
+    ["F", "FWD"].includes(abbr) ||
+    combined.includes("FORWARD") || tag.includes("ATT")
+  ) {
+    roleTier = 4;
+  } else if (
+    ["CAM", "AM", "LAM", "RAM", "LM", "RM"].includes(abbr) ||
+    tag.includes("ATTACKING MID") || tag.includes("LEFT MID") || tag.includes("RIGHT MID")
   ) {
     roleTier = 3;
   } else if (
@@ -2406,8 +2406,6 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
     tag.includes("MIDFIELD")
   ) {
     roleTier = 2;
-  } else if (combined.includes("FORWARD") || tag.includes("ATT")) {
-    roleTier = 4;
   }
 
   return {
@@ -2417,8 +2415,151 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
 };
 
 /**
- * Infers a realistic formation from actual starter role counts when ESPN omits the formation string.
+ * ESPN's official pitch renderer uses `formationPlace` (`1`..`11`) as a sequential slot index
+ * from GK (`1`) -> left-to-right across each line (`2..11`) matching the formation's line counts!
+ * E.g. for `4-2-3-1` (`[1, 4, 2, 3, 1]`):
+ *   Row 0 (1): [1]
+ *   Row 1 (4): [2, 3, 4, 5] (left-to-right across back line)
+ *   Row 2 (2): [6, 7]       (left-to-right across holding mids)
+ *   Row 3 (3): [8, 9, 10]   (left-to-right across attacking mids)
+ *   Row 4 (1): [11]         (striker)
+ * And for `4-3-3` (`[1, 4, 3, 3]`):
+ *   Row 0 (1): [1]
+ *   Row 1 (4): [2, 3, 4, 5]
+ *   Row 2 (3): [6, 7, 8]
+ *   Row 3 (3): [9, 10, 11]
  */
+const buildFormationGrid = (starters, formationRows) => {
+  const grid = formationRows.map(() => []);
+  const enriched = starters.map((player, idx) => ({
+    player,
+    idx,
+    meta: getPlayerRoleMeta(player),
+    ...getDetailedPositionScore(player, idx)
+  }));
+
+  // 1. Primary ESPN Official Path: sequential slicing of `formationPlace` 1..11 into `formationRows`
+  const withPlace = enriched.filter(e => e.meta.formationPlace !== null);
+  const uniquePlaces = new Set(withPlace.map(e => e.meta.formationPlace));
+  const totalSlots = formationRows.reduce((a, b) => a + b, 0);
+
+  if (uniquePlaces.size >= 10 && totalSlots === 11 && starters.length >= 11) {
+    const orderedByPlace = [...enriched].sort((a, b) => {
+      const pa = a.meta.formationPlace ?? 99;
+      const pb = b.meta.formationPlace ?? 99;
+      return pa - pb || a.idx - b.idx;
+    });
+
+    // Verify GK is slot 1; if slot 1 is not GK, put GK at index 0
+    const gkIdx = orderedByPlace.findIndex(e => e.roleTier === 0);
+    if (gkIdx > 0) {
+      const [gkItem] = orderedByPlace.splice(gkIdx, 1);
+      orderedByPlace.unshift(gkItem);
+    }
+
+    let cursor = 0;
+    for (let r = 0; r < formationRows.length; r++) {
+      const count = formationRows[r];
+      const slice = orderedByPlace.slice(cursor, cursor + count);
+      cursor += count;
+
+      // Within each line, if explicit flank tags (LB/RB, LCB/RCB, LW/RW) exist and contradict order,
+      // refine left-to-right flank order while preserving central players' order.
+      const hasExplicitFlanks = slice.some(it => Math.abs(it.hRank) >= 25 && it.hRank !== it.meta.formationPlace);
+      if (r >= 1 && hasExplicitFlanks) {
+        slice.sort((a, b) => {
+          const ra = Math.abs(a.hRank) >= 25 && a.hRank !== a.meta.formationPlace ? a.hRank : (a.meta.formationPlace ?? a.idx) - 6;
+          const rb = Math.abs(b.hRank) >= 25 && b.hRank !== b.meta.formationPlace ? b.hRank : (b.meta.formationPlace ?? b.idx) - 6;
+          return ra - rb;
+        });
+      }
+
+      grid[r] = slice.map(s => s.player);
+    }
+
+    if (grid.flat().length === 11) {
+      return grid;
+    }
+  }
+
+  // 2. Fallback Path when `formationPlace` is missing/incomplete:
+  // Group strictly by ESPN position roleTier into `formationRows`
+  grid.forEach(row => { row.length = 0; });
+  const used = new Set();
+
+  const gk = enriched.find(it => it.roleTier === 0) || enriched[0];
+  if (gk && grid[0].length < formationRows[0]) {
+    grid[0].push(gk.player);
+    used.add(gk.idx);
+  }
+
+  const outfield = enriched.filter(it => !used.has(it.idx));
+  const numOutfieldLines = formationRows.length - 1;
+  const lastRowIdx = formationRows.length - 1;
+
+  // Defenders -> Row 1
+  if (numOutfieldLines >= 1) {
+    outfield
+      .filter(it => !used.has(it.idx) && it.roleTier === 1)
+      .sort((a, b) => a.hRank - b.hRank)
+      .forEach(it => {
+        if (grid[1].length < formationRows[1]) {
+          grid[1].push(it.player);
+          used.add(it.idx);
+        }
+      });
+  }
+
+  // Strikers / Forwards -> Front Row (lastRowIdx)
+  if (numOutfieldLines >= 2) {
+    outfield
+      .filter(it => !used.has(it.idx) && it.roleTier === 4)
+      .sort((a, b) => a.hRank - b.hRank)
+      .forEach(it => {
+        if (grid[lastRowIdx].length < formationRows[lastRowIdx]) {
+          grid[lastRowIdx].push(it.player);
+          used.add(it.idx);
+        }
+      });
+  }
+
+  // Attacking Mids / Wingers -> Row behind strikers if 4+ outfield lines (e.g. 4-2-3-1 -> row 3)
+  if (numOutfieldLines >= 4) {
+    const attRowIdx = lastRowIdx - 1;
+    outfield
+      .filter(it => !used.has(it.idx) && it.roleTier === 3)
+      .sort((a, b) => a.hRank - b.hRank)
+      .forEach(it => {
+        if (grid[attRowIdx].length < formationRows[attRowIdx]) {
+          grid[attRowIdx].push(it.player);
+          used.add(it.idx);
+        }
+      });
+  }
+
+  // Remaining midfielders & unassigned outfielders fill open slots back-to-front
+  const remaining = outfield
+    .filter(it => !used.has(it.idx))
+    .sort((a, b) => (a.roleTier - b.roleTier) || (a.hRank - b.hRank));
+
+  for (let r = 1; r < formationRows.length; r++) {
+    while (grid[r].length < formationRows[r] && remaining.length > 0) {
+      const next = remaining.shift();
+      if (next && !used.has(next.idx)) {
+        grid[r].push(next.player);
+        used.add(next.idx);
+      }
+    }
+  }
+
+  const rankLookup = new Map(enriched.map(it => [it.player, it.hRank]));
+  for (let r = 1; r < grid.length; r++) {
+    grid[r].sort((pA, pB) => (rankLookup.get(pA) ?? 0) - (rankLookup.get(pB) ?? 0));
+  }
+
+  return grid;
+};
+
 const inferFormationFromStarters = (starters) => {
   const outfield = starters.filter((p, idx) => getDetailedPositionScore(p, idx).roleTier !== 0).slice(0, 10);
   if (outfield.length < 10) return "4-3-3";
@@ -2454,95 +2595,6 @@ const inferFormationFromStarters = (starters) => {
   return "4-3-3";
 };
 
-/**
- * Builds formation rows (`[1, ...parsedFormation]`) strictly matching the team's formation line counts
- * while keeping each player in their true tactical line and left-to-right flank.
- */
-const buildFormationGrid = (starters, formationRows) => {
-  const grid = formationRows.map(() => []);
-  const used = new Set();
-
-  const items = starters.map((player, idx) => ({
-    player,
-    idx,
-    ...getDetailedPositionScore(player, idx)
-  }));
-
-  // 1. Goalkeeper -> row 0
-  const gk = items.find(it => it.roleTier === 0) || items[0];
-  if (gk && grid[0].length < formationRows[0]) {
-    grid[0].push(gk.player);
-    used.add(gk.idx);
-  }
-
-  const outfield = items.filter(it => !used.has(it.idx));
-  const numOutfieldLines = formationRows.length - 1;
-  const lastRowIdx = formationRows.length - 1;
-
-  // 2. Defenders -> row 1
-  if (numOutfieldLines >= 1) {
-    const defs = outfield
-      .filter(it => !used.has(it.idx) && it.roleTier === 1)
-      .sort((a, b) => a.hRank - b.hRank);
-    defs.forEach(it => {
-      if (grid[1].length < formationRows[1]) {
-        grid[1].push(it.player);
-        used.add(it.idx);
-      }
-    });
-  }
-
-  // 3. Strikers / Forwards -> front row (lastRowIdx)
-  if (numOutfieldLines >= 2) {
-    const fwds = outfield
-      .filter(it => !used.has(it.idx) && it.roleTier === 4)
-      .sort((a, b) => a.hRank - b.hRank);
-    fwds.forEach(it => {
-      if (grid[lastRowIdx].length < formationRows[lastRowIdx]) {
-        grid[lastRowIdx].push(it.player);
-        used.add(it.idx);
-      }
-    });
-  }
-
-  // 4. Attacking Mids / Wingers -> row just behind strikers when >= 4 outfield lines (e.g. 4-2-3-1 -> row 3)
-  if (numOutfieldLines >= 4) {
-    const attRowIdx = lastRowIdx - 1;
-    const attMids = outfield
-      .filter(it => !used.has(it.idx) && it.roleTier === 3)
-      .sort((a, b) => a.hRank - b.hRank);
-    attMids.forEach(it => {
-      if (grid[attRowIdx].length < formationRows[attRowIdx]) {
-        grid[attRowIdx].push(it.player);
-        used.add(it.idx);
-      }
-    });
-  }
-
-  // 5. Remaining midfielders & unassigned outfielders fill remaining slots from back-to-front by roleTier
-  const remaining = outfield
-    .filter(it => !used.has(it.idx))
-    .sort((a, b) => (a.roleTier - b.roleTier) || (a.hRank - b.hRank));
-
-  for (let r = 1; r < formationRows.length; r++) {
-    while (grid[r].length < formationRows[r] && remaining.length > 0) {
-      const next = remaining.shift();
-      if (next && !used.has(next.idx)) {
-        grid[r].push(next.player);
-        used.add(next.idx);
-      }
-    }
-  }
-
-  // 6. Sort every outfield row left-to-right by lateral flank rank
-  const rankLookup = new Map(items.map(it => [it.player, it.hRank]));
-  for (let r = 1; r < grid.length; r++) {
-    grid[r].sort((pA, pB) => (rankLookup.get(pA) ?? 0) - (rankLookup.get(pB) ?? 0));
-  }
-
-  return grid;
-};
-
 const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
   const rosters = summary?.rosters || [];
   if (rosters.length === 0) return null;
@@ -2574,22 +2626,21 @@ const extractTeamFormation = (summary, teamRoster, isHome, comp = null) => {
     String(c?.homeAway || "").toLowerCase() === targetSide
   );
 
+  // Check all places ESPN stores the official match formation string
   const candidates = [
     teamRoster?.formation,
     teamRoster?.lineup?.formation,
     teamRoster?.team?.formation,
     headerComp?.formation,
-    headerComp?.lineup?.formation
+    headerComp?.lineup?.formation,
+    summary?.boxscore?.form?.find?.(f => String(f?.team?.id) === targetId)?.formation,
+    summary?.lineups?.find?.(l => String(l?.team?.id) === targetId)?.formation
   ];
 
   for (const cand of candidates) {
     if (!cand) continue;
-    const rawStr = typeof cand === "object"
-      ? (cand.displayValue || cand.name || cand.formation || "")
-      : String(cand);
-    if (rawStr.trim()) {
-      return normalizeFormationString(rawStr);
-    }
+    const norm = normalizeFormationString(cand);
+    if (norm) return norm;
   }
 
   const starters = getStartingEleven(teamRoster);
@@ -2623,13 +2674,13 @@ const useFootballFormations = (summary, width, height, isHome, comp = null) =>
         : 14 + (progress * usableHeight);
 
       return rowPlayers.map((p, i) => {
-        // Away team attacks downward (top-to-bottom), so its left flank is on viewer's right
-        const colIdx = isHome ? i : (rowPlayers.length - 1 - i);
-        const x = ((colIdx + 1) / (rowPlayers.length + 1)) * width;
+        // ESPN's pitch graphic displays both teams left-to-right from the viewer's perspective
+        // (left-sided players on viewer's left, right-sided players on viewer's right)
+        const x = ((i + 1) / (rowPlayers.length + 1)) * width;
         return { id: p.athlete?.id || `p_${rowIndex}_${i}`, player: p, x, y };
       });
     }).flat();
-  }, [summary?.rosters, summary?.header, width, height, isHome, comp]);
+  }, [summary?.rosters, summary?.header, summary?.boxscore, width, height, isHome, comp]);
 
 const PlayerJersey = memo(({ player, teamColor, accentColor = "#FFFFFF" }) => {
   if (!player?.athlete) return null;
