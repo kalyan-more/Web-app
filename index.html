@@ -763,7 +763,7 @@ const FOOTBALL_STADIUM_DB = {
 // ⚡ HIGH-PERFORMANCE SWR CACHE & PRE-WARMING ENGINE
 // ==========================================
 
-const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v7';
+const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v8';
 const cache = new Map();
 const inflight = new Map();
 const standingsParsedCache = new Map();
@@ -2295,12 +2295,6 @@ const getPlayerRoleMeta = (player) => {
   };
 };
 
-/**
- * ESPN's canonical `formationPlace` (`1`..`11`) mapping for standard formations:
- * - ESPN `formationPlace` `1` is GK (back/goal line).
- * - Remaining slots map onto the formation lines from goal line toward midfield,
- *   ordered left-to-right across each line (`order`).
- */
 const ESPN_FORMATION_ROW_MAP = {
   '4-2-3-1': {
     rows: [1, 4, 2, 3, 1],
@@ -2470,10 +2464,6 @@ const getLateralSortKey = (player, fallbackIndex = 0) => {
   return fallbackIndex;
 };
 
-/**
- * Builds formation rows directly from ESPN's roster `formationPlace` (`1`..`11`) and `formation` string,
- * with position-zone fallback when `formationPlace` is absent or incomplete.
- */
 const buildEspnFormationRows = (starters, formationRows, formationKey) => {
   const rows = formationRows.map(() => []);
   const spec = ESPN_FORMATION_ROW_MAP[formationKey];
@@ -2564,7 +2554,7 @@ const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
 };
 
 const extractTeamFormation = (summary, teamRoster, isHome, comp = null) => {
-  const directForm = teamRoster?.formation || teamRoster?.team?.formation;
+  const directForm = teamRoster?.formation || teamRoster?.lineup?.formation || teamRoster?.team?.formation;
   if (directForm && String(directForm).trim()) return String(directForm).trim();
 
   const targetSide = isHome ? 'home' : 'away';
