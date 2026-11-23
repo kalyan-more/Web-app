@@ -2315,6 +2315,10 @@ const getPlayerRoleMeta = (player) => {
   };
 };
 
+/**
+ * Lateral flank rank (left-to-right from the team's own goal perspective).
+ * Negative = left flank, 0 = center, Positive = right flank.
+ */
 const getHorizontalRank = (player, fallbackIdx = 0) => {
   const { abbr, pname, formationPlace, jerseyNum } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname}`;
@@ -2361,6 +2365,14 @@ const getStartingEleven = (teamRoster) => {
   return [...explicitStarters, ...nonStarters].slice(0, 11);
 };
 
+/**
+ * Classifies player role tier strictly from ESPN position metadata:
+ * 0 = GK
+ * 1 = DEF (LB, LCB, CB, RCB, RB, LWB, RWB, SW)
+ * 2 = DEEP_MID / PIVOT (CDM, DM, LDM, RDM, CM, LCM, RCM)
+ * 3 = ATT_MID / WING (CAM, AM, LAM, RAM, LW, RW, LF, RF, LM, RM)
+ * 4 = FWD / ST (ST, CF, LS, RS, F, FWD)
+ */
 const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   const { abbr, pname, ptype, combined, formationPlace } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname} ${ptype}`.toUpperCase();
@@ -2406,6 +2418,29 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   };
 };
 
+/**
+ * In ESPN's `site.api.espn.com/.../summary` endpoint (`rosters[].roster[]`),
+ * `formationPlace` (`1`..`11`) is ESPN's position slot code:
+ *   1  = Goalkeeper (GK)
+ *   2  = Right Back / Right Wing-Back (RB / RWB)
+ *   3  = Left Back / Left Wing-Back (LB / LWB)
+ *   4  = Right Center Back / Center Back (RCB / CB)
+ *   5  = Left Center Back / Left CB (LCB)
+ *   6  = Left / Defensive Central Midfielder (LDM / CDM / LCM)
+ *   7  = Right Winger / Right Midfielder (RW / RM / RAM)
+ *   8  = Right / Central Midfielder (RCM / CM / RDM)
+ *   9  = Center Forward / Striker (ST / CF)
+ *   10 = Attacking Midfielder / Second Striker (CAM / CF / LCM)
+ *   11 = Left Winger / Left Midfielder (LW / LM / LAM)
+ *
+ * Notice why `4` and `37` needed swapping in `4-2-3-1`:
+ * When a center-back (`roleTier === 1`, such as `4` J. Branthwaite) has `formationPlace` or
+ * position tags placing them on row 2 while a midfielder (`roleTier === 2`, such as `37` J. Garner)
+ * has `formationPlace` on row 1, `4` and `37` end up in each other's row/slot.
+ * Role-first assignment ensures true defenders (`roleTier === 1`) occupy row 1 (`4` defenders),
+ * holding/central midfielders (`roleTier === 2`) occupy the pivot row (`row 2` in `4-2-3-1`),
+ * attacking mids/wingers (`roleTier === 3`) occupy `row 3`, and strikers (`roleTier === 4`) occupy the front row.
+ */
 const ESPN_FORMATION_PLACE_TABLES = {
   "4-2-3-1": {
     1: { row: 0, col: 0 },
@@ -2574,6 +2609,24 @@ const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
   return [1];
 };
 
+/**
+ * Checks whether a player's `slot.row` in `ESPN_FORMATION_PLACE_TABLES` agrees with
+ * their actual `roleTier` (`1` = DEF, `2` = MID, `3` = ATT MID/WING, `4` = FWD).
+ * When a defender (`roleTier === 1`, e.g. #4 CB) or midfielder (`roleTier === 2`, e.g. #37 CM)
+ * has an out-of-tier `formationPlace`, role-aware placement puts them in their true line
+ * so players like #4 and #37 never land in each other's row/position.
+ */
+const isSlotCompatibleWithRole = (slotRow, roleTier, numOutfieldLines) => {
+  if (slotRow === 0) return roleTier === 0;
+  if (roleTier === 0) return slotRow === 0;
+  if (roleTier === 1) return slotRow === 1;
+  if (roleTier === 4) return slotRow === numOutfieldLines;
+  if (roleTier === 3) return numOutfieldLines >= 4 ? (slotRow === numOutfieldLines - 1 || slotRow === numOutfieldLines) : slotRow >= 2;
+  // roleTier === 2 (central / holding midfield)
+  if (numOutfieldLines >= 4) return slotRow === 2 || slotRow === 3;
+  return slotRow >= 2;
+};
+
 const buildFormationGrid = (starters, formationRows) => {
   const grid = formationRows.map(() => []);
   const used = new Set();
@@ -2584,7 +2637,10 @@ const buildFormationGrid = (starters, formationRows) => {
   const enriched = starters.map((player, idx) => {
     const meta = getPlayerRoleMeta(player);
     const role = getDetailedPositionScore(player, idx);
-    const slot = placeTable && meta.formationPlace ? placeTable[meta.formationPlace] : null;
+    const rawSlot = placeTable && meta.formationPlace ? placeTable[meta.formationPlace] : null;
+    const slot = rawSlot && isSlotCompatibleWithRole(rawSlot.row, role.roleTier, numOutfieldLines)
+      ? rawSlot
+      : null;
     return { player, idx, meta, role, slot };
   });
 
@@ -2654,7 +2710,7 @@ const buildFormationGrid = (starters, formationRows) => {
 
   if (numOutfieldLines >= 1) {
     outfield
-      .filter(it => !used.has(it.idx) && (it.role.roleTier === 1 || [2, 3, 4, 5].includes(it.meta.formationPlace)))
+      .filter(it => !used.has(it.idx) && it.role.roleTier === 1)
       .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
       .forEach(it => {
         if (grid[1].length < formationRows[1]) {
@@ -2667,7 +2723,7 @@ const buildFormationGrid = (starters, formationRows) => {
   if (numOutfieldLines >= 2) {
     const lastRowIdx = formationRows.length - 1;
     outfield
-      .filter(it => !used.has(it.idx) && (it.role.roleTier === 4 || it.meta.formationPlace === 9))
+      .filter(it => !used.has(it.idx) && it.role.roleTier === 4)
       .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
       .forEach(it => {
         if (grid[lastRowIdx].length < formationRows[lastRowIdx]) {
@@ -2680,7 +2736,7 @@ const buildFormationGrid = (starters, formationRows) => {
   if (numOutfieldLines >= 4) {
     const attRowIdx = formationRows.length - 2;
     outfield
-      .filter(it => !used.has(it.idx) && (it.role.roleTier === 3 || [7, 10, 11].includes(it.meta.formationPlace)))
+      .filter(it => !used.has(it.idx) && it.role.roleTier === 3)
       .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
       .forEach(it => {
         if (grid[attRowIdx].length < formationRows[attRowIdx]) {
@@ -2763,11 +2819,6 @@ const extractTeamFormation = (summary, teamRoster, isHome, comp = null) => {
   return inferFormationFromStarters(starters);
 };
 
-/**
- * Computes pitch coordinates with clear vertical depth separation between lines so
- * players in consecutive rows (e.g. `6` & `4`, `37` & `45`) stay cleanly separated along
- * the pitch length and never look "next to" an adjacent row.
- */
 const useFootballFormations = (summary, width, height, isHome, comp = null) =>
   useMemo(() => {
     if (!summary?.rosters) return [];
@@ -2791,8 +2842,6 @@ const useFootballFormations = (summary, width, height, isHome, comp = null) =>
     return groupedRows.map((rowPlayers, rowIndex) => {
       if (!rowPlayers || rowPlayers.length === 0) return [];
 
-      // Non-linear depth curve pushes back-four and midfield pivot further apart vertically
-      // so rows never crowd or visually collide with the row ahead/behind.
       const linearT = rowIndex / numRows;
       const depthT = Math.pow(linearT, 0.92);
       const y = isHome
