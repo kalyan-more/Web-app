@@ -2627,23 +2627,23 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
-    // Swap any defender in slot 4 with a central/pivot midfielder across lines for BOTH home & away
-    // teams across ALL matches without touching any other positions.
+    // Swap slot-4 defender and slot-8 (or pivot) midfielder across lines for BOTH home & away
+    // teams across ALL matches without moving any other position.
     const flatItems = grid.flat();
     const defSlot4 = flatItems.find(
       x => x?.meta?.formationPlace === 4 && x?.role?.roleTier === 1
     );
-    const midInWrongLine = flatItems.find(
+    const midSlot8 = flatItems.find(
       x => x !== defSlot4 &&
         (x?.role?.roleTier === 2 || x?.role?.roleTier === 3) &&
-        (x?.meta?.formationPlace === 8 || x?.meta?.formationPlace === 6 || String(x?.player?.jersey) === '27' || String(x?.player?.jersey) === '37')
+        (x?.meta?.formationPlace === 8 || x?.meta?.formationPlace === 6 || x?.meta?.formationPlace === 5 || String(x?.player?.jersey) === '27' || String(x?.player?.jersey) === '37')
     );
-    if (defSlot4 && midInWrongLine) {
+    if (defSlot4 && midSlot8) {
       let locA = null, locB = null;
       for (let r = 0; r < grid.length; r++) {
         for (let c = 0; c < grid[r].length; c++) {
           if (grid[r][c] === defSlot4) locA = { r, c };
-          if (grid[r][c] === midInWrongLine) locB = { r, c };
+          if (grid[r][c] === midSlot8) locB = { r, c };
         }
       }
       if (locA && locB && (locA.r !== locB.r || locA.c !== locB.c)) {
