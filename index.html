@@ -99,11 +99,15 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Distinct, silky Apple-like transitions for different sections & UI elements */
+    /* Distinct, silky Apple-like spring transitions & GPU-composited motion */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.35;
-        transform: translate3d(0, 48px, 0) scale3d(0.98, 0.98, 1);
+        opacity: 0;
+        transform: translate3d(0, 44px, 0) scale3d(0.975, 0.975, 1);
+      }
+      65% {
+        opacity: 1;
+        transform: translate3d(0, -2px, 0) scale3d(1.002, 1.002, 1);
       }
       100% {
         opacity: 1;
@@ -116,31 +120,31 @@
       100% { opacity: 1; }
     }
 
-    /* Section-specific transitions */
+    /* Snappy, fluid section transitions */
     @keyframes sectionHomeEnter {
-      0% { opacity: 0; transform: translate3d(0, 14px, 0) scale3d(0.988, 0.988, 1); }
+      0% { opacity: 0; transform: translate3d(0, 10px, 0) scale3d(0.99, 0.99, 1); }
       100% { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
     }
 
     @keyframes sectionScoresEnter {
-      0% { opacity: 0; transform: translate3d(12px, 0, 0); }
+      0% { opacity: 0; transform: translate3d(10px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes sectionStandingsEnter {
-      0% { opacity: 0; transform: translate3d(0, 12px, 0); }
+      0% { opacity: 0; transform: translate3d(0, 10px, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes sectionIntelEnter {
-      0% { opacity: 0; transform: translate3d(-10px, 6px, 0); }
+      0% { opacity: 0; transform: translate3d(-8px, 4px, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes iosExpandIn {
       0% {
         opacity: 0;
-        transform: translate3d(0, 10px, 0) scale3d(0.992, 0.992, 1);
+        transform: translate3d(0, 8px, 0) scale3d(0.992, 0.992, 1);
       }
       100% {
         opacity: 1;
@@ -148,29 +152,41 @@
       }
     }
 
+    /* Crisp iOS-style launch reveal: fast spring pop-in, brief settle, swift zoom-out */
     @keyframes iosOpeningIcon {
       0% {
         opacity: 0;
-        transform: scale3d(0.82, 0.82, 1);
+        transform: scale3d(0.76, 0.76, 1);
       }
-      45% {
+      38% {
         opacity: 1;
-        transform: scale3d(1.015, 1.015, 1);
+        transform: scale3d(1.035, 1.035, 1);
       }
-      75% {
+      62% {
         opacity: 1;
         transform: scale3d(1, 1, 1);
       }
       100% {
         opacity: 0;
-        transform: scale3d(1.04, 1.04, 1);
+        transform: scale3d(1.12, 1.12, 1);
       }
     }
 
     @keyframes iosOpeningOverlayFade {
       0% { opacity: 1; }
-      68% { opacity: 1; }
+      65% { opacity: 1; }
       100% { opacity: 0; }
+    }
+
+    @keyframes iosAppShellReveal {
+      0% {
+        opacity: 0.72;
+        transform: scale3d(0.978, 0.978, 1);
+      }
+      100% {
+        opacity: 1;
+        transform: scale3d(1, 1, 1);
+      }
     }
 
     @keyframes whitePillBounce {
@@ -185,17 +201,22 @@
     }
 
     .ios-opening-overlay {
-      animation: iosOpeningOverlayFade 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningOverlayFade 0.88s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: opacity;
     }
 
     .ios-opening-icon {
-      animation: iosOpeningIcon 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningIcon 0.88s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .ios-app-shell {
+      animation: iosAppShellReveal 0.56s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both;
       will-change: transform, opacity;
     }
 
     .white-pill-bounce {
-      animation: whitePillBounce 1.45s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      animation: whitePillBounce 1.3s cubic-bezier(0.37, 0, 0.63, 1) infinite;
       will-change: transform;
     }
 
@@ -205,46 +226,24 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.34s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      animation: iosBackdropFadeIn 0.24s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
       will-change: opacity;
     }
 
     .section-enter-home {
-      animation: sectionHomeEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: sectionHomeEnter 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     @keyframes scheduleLoadNext {
       0% {
         opacity: 0;
-        transform: translate3d(18px, 6px, 0) scale3d(0.992, 0.992, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-      }
-    }
-
-    @keyframes scheduleLoadPrev {
-      0% {
-        opacity: 0;
-        transform: translate3d(-18px, 6px, 0) scale3d(0.992, 0.992, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-      }
-    }
-
-    @keyframes scheduleCardGlide {
-      0% {
-        opacity: 0;
-        transform: translate3d(0, 10px, 0);
+        transform: translate3d(14px, 0, 0);
       }
       100% {
         opacity: 1;
@@ -252,60 +251,80 @@
       }
     }
 
+    @keyframes scheduleLoadPrev {
+      0% {
+        opacity: 0;
+        transform: translate3d(-14px, 0, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes scheduleCardGlide {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 8px, 0) scale3d(0.992, 0.992, 1);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+      }
+    }
+
     .schedule-load-next {
-      opacity: 0;
-      animation: scheduleLoadNext 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.16s forwards;
+      animation: scheduleLoadNext 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .schedule-load-prev {
-      opacity: 0;
-      animation: scheduleLoadPrev 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.16s forwards;
+      animation: scheduleLoadPrev 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .schedule-card-item {
       opacity: 0;
-      animation: scheduleCardGlide 0.56s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: scheduleCardGlide 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .section-enter-scores {
-      animation: sectionScoresEnter 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: sectionScoresEnter 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .section-enter-standings {
-      animation: sectionStandingsEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: sectionStandingsEnter 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .section-enter-intel {
-      animation: sectionIntelEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: sectionIntelEnter 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-expand-in {
-      animation: iosExpandIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosExpandIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.20s ease, border-color 0.20s ease, opacity 0.20s ease;
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
       will-change: transform;
     }
     .ios-card-press:active {
-      transform: scale3d(0.974, 0.974, 1);
+      transform: scale3d(0.978, 0.978, 1);
     }
 
     button {
       touch-action: manipulation;
-      transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.24s ease, color 0.24s ease, opacity 0.24s ease;
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
       will-change: transform;
     }
     button:active {
-      transform: scale3d(0.958, 0.958, 1);
+      transform: scale3d(0.962, 0.962, 1);
     }
   </style>
 </head>
@@ -3043,9 +3062,9 @@ const useFootballFormations = (summary, width, height, isHome, comp = null) =>
     const starters = getStartingEleven(teamRoster);
     const groupedRows = buildFormationGrid(starters, formationRows);
     const numRows = Math.max(1, formationRows.length - 1);
-    const topPad = 12;
-    const bottomPad = 42;
-    const usableHeight = Math.max(220, height - topPad - bottomPad);
+    const topPad = 16;
+    const bottomPad = 48;
+    const usableHeight = Math.max(280, height - topPad - bottomPad);
 
     return groupedRows.map((rowPlayers, rowIndex) => {
       if (!rowPlayers || rowPlayers.length === 0) return [];
@@ -3090,7 +3109,10 @@ const PlayerJersey = memo(({ player, teamColor, accentColor = "#FFFFFF" }) => {
           <span className="text-[10px] font-extrabold leading-none tabular-nums" style={{ color: contrast }}>{player.jersey || '-'}</span>
         </div>
       </div>
-      <span className="text-[#F5F5F7] text-[8.5px] font-bold mt-1 text-center bg-black/85 px-1.5 py-0.5 rounded-[5px] truncate max-w-[82px] leading-tight">
+      <span
+        className="text-[#F5F5F7] text-[9.5px] font-extrabold mt-1 text-center whitespace-normal break-words max-w-[92px] leading-[1.15] tracking-[-0.1px]"
+        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.85)' }}
+      >
         {name}
       </span>
     </div>
@@ -3199,13 +3221,16 @@ const PitchMatchEventsSection = memo(({ summary, home, away }) => {
 
 const TacticalPitch = memo(({ summary, home, away }) => {
   const pitchRef = useRef(null);
-  const [pitchSize, setPitchSize] = useState({ width: 392, height: 640 });
+  const [pitchSize, setPitchSize] = useState({ width: 392, height: 820 });
 
   useEffect(() => {
     const update = () => {
       if (pitchRef.current) {
         const rect = pitchRef.current.getBoundingClientRect();
-        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(600, Math.min(760, window.innerHeight * 0.80)) });
+        if (rect.width > 0) {
+          const targetH = Math.max(780, Math.min(960, Math.round(Math.max(window.innerHeight * 1.04, rect.width * 2.08))));
+          setPitchSize({ width: rect.width, height: targetH });
+        }
       }
     };
     update();
@@ -3265,12 +3290,12 @@ const TacticalPitch = memo(({ summary, home, away }) => {
         className="mx-2.5 rounded-[34px] overflow-hidden border border-[rgba(255,255,255,0.12)] relative"
       >
         <div className="absolute inset-3 border-[1.5px] border-[rgba(255,255,255,0.15)] pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90px] h-[90px] rounded-full border-[1.5px] border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[104px] h-[104px] rounded-full border-[1.5px] border-[rgba(255,255,255,0.15)]" />
           <div className="absolute top-1/2 left-0 w-full h-[1.5px] bg-[rgba(255,255,255,0.15)]" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[55%] h-[65px] border-[1.5px] border-t-0 border-[rgba(255,255,255,0.15)]" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[55%] h-[65px] border-[1.5px] border-b-0 border-[rgba(255,255,255,0.15)]" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[25%] h-[25px] border-[1.5px] border-t-0 border-[rgba(255,255,255,0.15)]" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[25%] h-[25px] border-[1.5px] border-b-0 border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[56%] h-[82px] border-[1.5px] border-t-0 border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[56%] h-[82px] border-[1.5px] border-b-0 border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[26%] h-[32px] border-[1.5px] border-t-0 border-[rgba(255,255,255,0.15)]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[26%] h-[32px] border-[1.5px] border-b-0 border-[rgba(255,255,255,0.15)]" />
         </div>
 
         <div className="absolute inset-0">
@@ -3522,7 +3547,7 @@ const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideD
         {isLive ? (
           <BlinkingTime time={match?.status?.displayClock} color={THEME.success} />
         ) : isPre ? (
-          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] truncate w-full">{getFavFormattedDate(match.date, hideDate)}</span>
+          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] whitespace-normal break-words w-full">{getFavFormattedDate(match.date, hideDate)}</span>
         ) : (
           <span className="text-[10px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[1px]">{match?.status?.type?.shortDetail || 'FT'}</span>
         )}
@@ -3567,13 +3592,13 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
           <>
             <LiveIndicator label={displayLabel} isActionLive={isActionLive} color={color} />
             {detailedStatus && detailedStatus.toUpperCase() !== displayLabel && (
-              <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1 line-clamp-2 leading-tight">{detailedStatus}</span>
+              <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1 whitespace-normal break-words leading-tight">{detailedStatus}</span>
             )}
           </>
         ) : isPre ? (
-          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] truncate w-full">{getFavFormattedDate(match.start_time, hideDate)}</span>
+          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] whitespace-normal break-words w-full">{getFavFormattedDate(match.start_time, hideDate)}</span>
         ) : (
-          <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1.5 line-clamp-2 leading-tight">{detailedStatus || match.status_text || displayLabel}</span>
+          <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1.5 whitespace-normal break-words leading-tight">{detailedStatus || match.status_text || displayLabel}</span>
         )}
       </div>
 
@@ -4705,7 +4730,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
       <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hTeam, null, null, 'cricket')}>
           <img src={getCricketLogo(hTeam)} onError={(e) => handleImageError(e, hTeam.short_name || hTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
-          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{hTeam.short_name || hTeam.name}</span>
+          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 whitespace-normal break-words">{hTeam.short_name || hTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore.runs || '-'}</span>
             {hScore.overs && <span className="text-[11px] text-[#8E8E93] font-bold mt-1">{hScore.overs}</span>}
@@ -4720,7 +4745,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
         </div>
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aTeam, null, null, 'cricket')}>
           <img src={getCricketLogo(aTeam)} onError={(e) => handleImageError(e, aTeam.short_name || aTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
-          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{aTeam.short_name || aTeam.name}</span>
+          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 whitespace-normal break-words">{aTeam.short_name || aTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             {aScore.runs ? (
               <>
@@ -5150,7 +5175,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`min-w-0 py-2.5 px-1 rounded-[12px] text-[11px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                    className={`min-w-0 py-2.5 px-1 rounded-[12px] text-[11px] leading-none text-center whitespace-normal break-words transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {t.label}
                   </button>
@@ -5251,7 +5276,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
         <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hComp?.team, match._leagueId, null, 'soccer')}>
             <img src={getSafeFootballLogo(hComp?.team)} onError={(e) => handleImageError(e, hComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
-            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{hComp?.team?.shortDisplayName}</span>
+            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 whitespace-normal break-words">{hComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore}</span>
             </div>
@@ -5263,7 +5288,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
 
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aComp?.team, match._leagueId, null, 'soccer')}>
             <img src={getSafeFootballLogo(aComp?.team)} onError={(e) => handleImageError(e, aComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
-            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{aComp?.team?.shortDisplayName}</span>
+            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 whitespace-normal break-words">{aComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{aScore}</span>
             </div>
@@ -5277,7 +5302,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center whitespace-normal break-words transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
               >
                 {capitalize(t)}
               </button>
@@ -5590,7 +5615,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                       <div className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border my-1" style={{ backgroundColor: bgColor, borderColor: color }}>
                         <span className="font-black text-[13px] leading-none" style={{ color }}>{res}</span>
                       </div>
-                      <span className="text-[9px] font-bold text-[#8E8E93] text-center truncate w-full leading-tight">
+                      <span className="text-[9px] font-bold text-[#8E8E93] text-center whitespace-normal break-words w-full leading-tight">
                         {item.opp ? `vs ${item.opp}` : `M${i + 1}`}
                       </span>
                     </div>
@@ -5745,7 +5770,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   <button
                     key={t}
                     onClick={() => setTeamTab(t)}
-                    className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                    className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center whitespace-normal break-words transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {capitalize(t)}
                   </button>
@@ -5802,7 +5827,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                         <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{h.short_name || h.name}</span>
                       </div>
                       <div className="w-[120px] flex flex-col items-center justify-center">
-                        <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase truncate max-w-[100px]">{getShortLeagueName(m.league)}</span>
+                        <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase whitespace-normal break-words max-w-[100px]">{getShortLeagueName(m.league)}</span>
                         <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.start_time, false)}</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center gap-1.5">
@@ -6070,7 +6095,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                     <button
                       key={t}
                       onClick={() => setTeamTab(t)}
-                      className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                      className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center whitespace-normal break-words transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                     >
                       {capitalize(t)}
                     </button>
@@ -6116,7 +6141,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                           <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{h?.team?.shortDisplayName}</span>
                         </div>
                         <div className="w-[120px] flex flex-col items-center justify-center">
-                          <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase truncate max-w-[100px]">{getFootballMatchLeagueName(m)}</span>
+                          <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase whitespace-normal break-words max-w-[100px]">{getFootballMatchLeagueName(m)}</span>
                           <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.date, false)}</span>
                         </div>
                         <div className="flex-1 flex flex-col items-center gap-1.5">
@@ -6170,7 +6195,7 @@ function App() {
     if (!el) return;
     const timer = setTimeout(() => {
       if (el && el.parentNode) el.parentNode.removeChild(el);
-    }, 1500);
+    }, 920);
     return () => clearTimeout(timer);
   }, []);
 
@@ -6738,7 +6763,7 @@ function App() {
   const pullProgress = Math.min(1, pullVisibleHeight / 54);
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
+    <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden ios-app-shell">
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes bounceBar { 0% { transform: translate3d(-12px, 0, 0); } 50% { transform: translate3d(12px, 0, 0); } 100% { transform: translate3d(-12px, 0, 0); } }
@@ -6830,7 +6855,7 @@ function App() {
                     <div
                       key={m.id}
                       className="schedule-card-item"
-                      style={{ animationDelay: `${170 + Math.min(idx, 8) * 55}ms` }}
+                      style={{ animationDelay: `${Math.min(idx, 7) * 26}ms` }}
                     >
                       <FootballMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                     </div>
@@ -6843,7 +6868,7 @@ function App() {
                   <div
                     key={m.match_id}
                     className="schedule-card-item"
-                    style={{ animationDelay: `${170 + Math.min(idx, 8) * 55}ms` }}
+                    style={{ animationDelay: `${Math.min(idx, 7) * 26}ms` }}
                   >
                     <CricketMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                   </div>
