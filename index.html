@@ -2617,35 +2617,30 @@ const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
 };
 
 /**
- * Why attackers and midfielders end up in each other's positions:
- * In ESPN's `summary` roster JSON, `formationPlace` (`7`..`11`) is a generic attacking/midfield
- * slot code that can be assigned to a midfielder (e.g. #16 S. Berge) or an attacker/winger
- * (e.g. #14) whose actual position metadata (`position` / `subPosition`) is an attacker (`roleTier >= 3`)
- * or midfielder (`roleTier === 2`), causing a midfielder to sit in the attacking/upper-mid slot
- * and an attacker/winger to sit in the lower midfield/pivot slot.
+ * Why #14 and #16 didn't swap in the previous build:
+ * When ESPN's `position.abbreviation` / `position.type` for an attacker/winger (e.g. #14)
+ * or central midfielder (e.g. #16 S. Berge) is reported generically (such as `M` / `MID` or `F` / `FWD`),
+ * `roleTier` for both can evaluate to `2` or `3` even though one is deployed higher up in the
+ * attacking/front-mid line and the other sits in the deeper midfield pivot line—or vice versa.
  *
- * This pass reconciles role tiers across outfield lines (`row 2..lastRow`) so that:
- * - A midfielder (`roleTier === 2`) placed in an attacking/front line (`row > 2` when 4+ outfield rows,
- *   or `row === lastRow` when a striker `roleTier === 4` is in a lower line) swaps with a misplaced
- *   attacker/forward (`roleTier === 3` or `4`) sitting in a midfield line (`row === 2`).
- * - In particular, if an attacker (`roleTier === 3` or `4`) is placed in `row 2` alongside a
- *   midfielder (`roleTier === 2`) placed in `row 3` (as with #14 and #16), they swap places cleanly
- *   while leaving all other players untouched.
+ * This function reconciles mismatched midfield/attacking pairs across lines (`row >= 2`) by:
+ * 1. Swapping any midfielder (`roleTier === 2`) in an upper/front attacking line (`row >= 3`)
+ *    with an attacking/forward player (`roleTier === 3` or `4`) in a deeper midfield line (`row >= 2`).
+ * 2. When `row 2` and `row 3` both hold central/attacking midfielders/forwards, ordering by
+ *    tactical depth/role (`roleTier` ascending from deeper midfield `2` -> attacking mid `3` ->
+ *    striker `4`) so deeper midfielders stay in `row 2` and attackers/forwards sit ahead in `row 3`+.
  */
 const reconcileMidfieldAndAttackerSwap = (grid) => {
   if (!Array.isArray(grid) || grid.length < 3) return;
   const lastRowIdx = grid.length - 1;
   if (lastRowIdx < 2) return;
 
-  // Check if a midfielder (roleTier === 2) is sitting in a row ahead of a midfield row (row >= 3)
-  // while an attacker/forward (roleTier === 3 or 4) is sitting in row 2 (or a row behind row >= 3).
   for (let rAhead = lastRowIdx; rAhead >= 3; rAhead--) {
     const aheadRow = grid[rAhead];
     if (!Array.isArray(aheadRow)) continue;
     const midAheadIdx = aheadRow.findIndex(item => item && item.role && item.role.roleTier === 2);
     if (midAheadIdx === -1) continue;
 
-    // Look for an attacker/forward (roleTier === 3 or 4) in row 2 (or any row < rAhead that is outfield)
     for (let rBack = 2; rBack < rAhead; rBack++) {
       const backRow = grid[rBack];
       if (!Array.isArray(backRow)) continue;
@@ -2659,8 +2654,7 @@ const reconcileMidfieldAndAttackerSwap = (grid) => {
     }
   }
 
-  // Also check if a pure striker/forward (roleTier === 4) was placed in midfield (row 2)
-  // while a midfielder/attacking-mid (roleTier === 2 or 3) was placed on the striker line (lastRowIdx)
+  // If a pure striker/forward (`roleTier === 4`) is in `row 2` while a non-forward (`roleTier < 4`) is on the front line
   const midRow = grid[2];
   const frontRow = grid[lastRowIdx];
   if (Array.isArray(midRow) && Array.isArray(frontRow) && lastRowIdx > 2) {
@@ -2889,6 +2883,10 @@ const extractTeamFormation = (summary, teamRoster, isHome, comp = null) => {
   return inferFormationFromStarters(starters);
 };
 
+/**
+ * Computes pitch coordinates with clear vertical depth separation and orientation-aware
+ * horizontal ordering so home and away halves match ESPN's pitch layout cleanly.
+ */
 const useFootballFormations = (summary, width, height, isHome, comp = null) =>
   useMemo(() => {
     if (!summary?.rosters) return [];
