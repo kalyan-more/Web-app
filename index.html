@@ -1060,9 +1060,13 @@ const fetchWithCache = async (url, forceRefresh = false, timeoutMs = 8000) => {
       return res.json();
     })
     .then(json => {
-      cache.set(url, { data: json, timestamp: Date.now() });
+      const isEmptyArray = Array.isArray(json) && json.length === 0;
+      const isErrorPayload = json && typeof json === 'object' && !Array.isArray(json) && (json.error || json.detail === 'Not Found');
+      if (!isEmptyArray && !isErrorPayload) {
+        cache.set(url, { data: json, timestamp: Date.now() });
+        scheduleCachePersist();
+      }
       inflight.delete(url);
-      scheduleCachePersist();
       return json;
     })
     .catch(err => {
@@ -1093,9 +1097,8 @@ const prewarmSportsAPIs = () => {
       ['eng.1', 'uefa.champions', 'esp.1'].forEach(id => {
         fetchWithCache(`${API_SOCCER_SCORE_BASE}/${id}/scoreboard?dates=${todayDs}`).catch(() => {});
       });
-      fetchWithCache(`${API_CRICKET_BASE}/live`, false, 12000).catch(() => {});
-      fetchWithCache(CRICKET_SCHEDULE_URL, false, 12000).catch(() => {});
-      fetchWithCache(`${API_ESPN_CRICKET_HEADER}&dates=${todayDs}`, false, 6000).catch(() => {});
+      fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
+      fetchWithCache(`${API_CRICKET_BASE}/live`, false, 25000).catch(() => {});
     }, 250);
   }, 1450);
 
@@ -1691,13 +1694,14 @@ const filterAndSortCricketForDate = (mergedList, targetDate) => {
     const rawStart = m.start_time || m.startTime || m.date || m.start_date || m.match_date || '';
     const parsedStart = parseSafeCricketDate(rawStart);
     const localStartStr = parsedStart ? toLocalIsoDate(parsedStart) : '';
+    const utcStartStr = parsedStart ? parsedStart.toISOString().split('T')[0] : '';
     const rawStartDay = extractRawIsoDay(rawStart);
 
     // Live matches must always appear on Today even if start_time is absent or began on an earlier day
     if (isViewingToday && Boolean(m._fromLive)) return true;
 
     if (!rawStart && !parsedStart) return false;
-    if (localStartStr === selectedDateStr || rawStartDay === selectedDateStr) return true;
+    if (localStartStr === selectedDateStr || utcStartStr === selectedDateStr || rawStartDay === selectedDateStr) return true;
 
     const baseStartStr = localStartStr || rawStartDay;
     if (!baseStartStr) return false;
@@ -6527,23 +6531,30 @@ function App() {
     return hitCount > 0 ? events : null;
   }, []);
 
+  const getAllCachedCricketSchedules = useCallback(() => {
+    return [
+      ...extractCricketArray(getCachedSync(CRICKET_SCHEDULE_URL)),
+      ...extractCricketArray(getCachedSync(CRICKET_SCHEDULE_EXT_URL)),
+      ...extractCricketArray(getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=30&days_ahead=30`)),
+      ...extractCricketArray(getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=45&days_ahead=30`))
+    ];
+  }, []);
+
   const getCachedCricketForDate = useCallback((targetDate) => {
     const isViewingToday = isSameDay(targetDate, new Date());
     const ds = toLocalIsoDate(targetDate).replace(/-/g, '');
     const cachedLive = getCachedSync(`${API_CRICKET_BASE}/live`);
-    const cachedSched = getCachedSync(CRICKET_SCHEDULE_URL);
-    const cachedSchedExt = getCachedSync(CRICKET_SCHEDULE_EXT_URL);
+    const combinedSched = getAllCachedCricketSchedules();
     const cachedEspnDay = getCachedSync(`${API_ESPN_CRICKET_HEADER}&dates=${ds}`);
     const cachedEspnNow = isViewingToday ? getCachedSync(API_ESPN_CRICKET_HEADER) : null;
-    if (!cachedLive && !cachedSched && !cachedSchedExt && !cachedEspnDay && !cachedEspnNow) return null;
-    const combinedSched = [...extractCricketArray(cachedSched), ...extractCricketArray(cachedSchedExt)];
+    if (!cachedLive && combinedSched.length === 0 && !cachedEspnDay && !cachedEspnNow) return null;
     const extra = [
       ...normalizeEspnCricketHeader(cachedEspnDay),
       ...normalizeEspnCricketHeader(cachedEspnNow)
     ];
     const merged = mergeCricketSources(combinedSched, cachedLive, extra, isViewingToday);
     return filterAndSortCricketForDate(merged, targetDate);
-  }, []);
+  }, [getAllCachedCricketSchedules]);
 
   const fetchFootballMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
     const reqId = ++fetchSeqRef.current;
@@ -6594,53 +6605,65 @@ function App() {
       setLoading(true);
     }
 
-    // Stream fast ESPN Cricket Header first (~150ms) so Today's full match list renders immediately even if Render API is cold
-    const espnPromise = Promise.all([
-      fetchWithCache(`${API_ESPN_CRICKET_HEADER}&dates=${ds}`, isSilent || forceRefresh, 6500).catch(() => null),
-      isViewingToday ? fetchWithCache(API_ESPN_CRICKET_HEADER, isSilent || forceRefresh, 6500).catch(() => null) : Promise.resolve(null)
-    ]);
-
-    const renderPromise = Promise.all([
-      isViewingToday ? fetchWithCache(`${API_CRICKET_BASE}/live`, isSilent || forceRefresh, 12000).catch(() => []) : Promise.resolve([]),
-      fetchWithCache(CRICKET_SCHEDULE_URL, isSilent || forceRefresh, 12000).catch(() => []),
-      needExtendedRender ? fetchWithCache(CRICKET_SCHEDULE_EXT_URL, isSilent || forceRefresh, 12000).catch(() => []) : Promise.resolve([])
-    ]);
-
-    let espnMatches = [];
-    try {
-      const [espnDayRes, espnNowRes] = await espnPromise;
-      espnMatches = [
-        ...normalizeEspnCricketHeader(espnDayRes),
-        ...normalizeEspnCricketHeader(espnNowRes)
-      ];
-      if (reqId === fetchSeqRef.current && espnMatches.length > 0) {
-        const cachedLive = getCachedSync(`${API_CRICKET_BASE}/live`);
-        const cachedSched = getCachedSync(CRICKET_SCHEDULE_URL);
-        const fastMerged = mergeCricketSources(cachedSched, cachedLive, espnMatches, isViewingToday);
-        const fastFiltered = filterAndSortCricketForDate(fastMerged, date);
-        startTransition(() => {
-          setCricketState({ dateKey, items: fastFiltered });
-          setLoading(false);
-        });
+    const fetchRenderWithRetry = async (url) => {
+      try {
+        return await fetchWithCache(url, isSilent || forceRefresh, 25000);
+      } catch {
+        // Automatic retry once Render container finishes waking up
+        return await fetchWithCache(url, true, 25000).catch(() => []);
       }
+    };
 
-      const [liveRes, schedRes, schedExtRes] = await renderPromise;
+    try {
+      // Primary Render API calls (/schedule includes finished + upcoming matches for today)
+      const [schedRes, liveRes, schedExtRes] = await Promise.all([
+        fetchRenderWithRetry(CRICKET_SCHEDULE_URL),
+        isViewingToday ? fetchRenderWithRetry(`${API_CRICKET_BASE}/live`) : Promise.resolve([]),
+        needExtendedRender ? fetchRenderWithRetry(CRICKET_SCHEDULE_EXT_URL) : Promise.resolve([])
+      ]);
       if (reqId !== fetchSeqRef.current) return;
-      const combinedSched = [...extractCricketArray(schedRes), ...extractCricketArray(schedExtRes)];
-      const merged = mergeCricketSources(combinedSched, liveRes, espnMatches, isViewingToday);
-      const finalFiltered = filterAndSortCricketForDate(merged, date);
+
+      const primarySched = [
+        ...extractCricketArray(schedRes),
+        ...extractCricketArray(schedExtRes),
+        ...getAllCachedCricketSchedules()
+      ];
+
+      // Render immediately with full Render API results (finished + live + upcoming)
+      const primaryMerged = mergeCricketSources(primarySched, liveRes, [], isViewingToday);
+      const primaryFiltered = filterAndSortCricketForDate(primaryMerged, date);
       startTransition(() => {
-        setCricketState({ dateKey, items: finalFiltered });
+        setCricketState({ dateKey, items: primaryFiltered });
+        if (!isSilent) setLoading(false);
       });
+
+      // Non-blocking supplemental ESPN header enrichment only for fixtures missing from Render
+      Promise.all([
+        fetchWithCache(`${API_ESPN_CRICKET_HEADER}&dates=${ds}`, isSilent || forceRefresh, 6000).catch(() => null),
+        isViewingToday ? fetchWithCache(API_ESPN_CRICKET_HEADER, isSilent || forceRefresh, 6000).catch(() => null) : Promise.resolve(null)
+      ]).then(([espnDayRes, espnNowRes]) => {
+        if (reqId !== fetchSeqRef.current) return;
+        const espnMatches = [
+          ...normalizeEspnCricketHeader(espnDayRes),
+          ...normalizeEspnCricketHeader(espnNowRes)
+        ];
+        if (espnMatches.length > 0) {
+          const enrichedMerged = mergeCricketSources(primarySched, liveRes, espnMatches, isViewingToday);
+          const enrichedFiltered = filterAndSortCricketForDate(enrichedMerged, date);
+          startTransition(() => {
+            setCricketState({ dateKey, items: enrichedFiltered });
+          });
+        }
+      }).catch(() => {});
     } catch {
       if (reqId !== fetchSeqRef.current) return;
-      if (!isSilent && cachedItems === null && espnMatches.length === 0) {
+      if (!isSilent && cachedItems === null) {
         setCricketState({ dateKey, items: [] });
       }
     } finally {
       if (reqId === fetchSeqRef.current && !isSilent) setLoading(false);
     }
-  }, [date, getCachedCricketForDate, startTransition]);
+  }, [date, getCachedCricketForDate, getAllCachedCricketSchedules, startTransition]);
 
   // Silently warm adjacent dates (yesterday & tomorrow) on idle for BOTH Football and Cricket
   useEffect(() => {
