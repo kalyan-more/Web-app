@@ -2411,15 +2411,15 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
 };
 
 /**
- * What fixed `4-2-3-1` was mapping ESPN's Opta/ESPN `formationPlace` (`1`..`11`)
- * to its true tactical line (`row`) and left-to-right column (`col`) rather than
- * slicing `1..11` sequentially or inverting `4` and `5`.
+ * ESPN Official Soccer Formation Place (`1`..`11`) -> Tactical Line (`row`) & Lateral Order (`col`)
  *
- * Applying that exact `formationPlace` -> `(row, col)` contract across EVERY
- * formation (`4-3-3`, `4-1-4-1`, `4-4-2`, `4-4-1-1`, `4-2-2-2`, `4-3-1-2`,
- * `4-1-2-1-2`, `3-4-2-1`, `3-4-3`, `3-4-1-2`, `3-5-2`, `3-5-1-1`, `5-3-2`, `5-4-1`)
- * and normalizing dynamic/unlisted formations (`buildDynamicFormationFromPlace`)
- * guarantees every formation uses the same `4-2-3-1` fix.
+ * In ESPN's `4-3-3` (and `3-4-3` / `5-3-2` / `4-3-1-2`), Opta/ESPN uses:
+ *   8 = Right Central Midfielder (RCM) -> Row 2 (Midfield line)
+ *   7 = Right Winger / Right Forward (RW) -> Row 3 (Front line)
+ * When `8` was placed in Row 2 (`col 2`, right-center mid) and `7` in Row 3 (`col 2`, right wing),
+ * any team whose `formationPlace` assigned `8` to the right winger (`#14`, e.g. O. Bobb)
+ * and `7` to the right central midfielder (`#16`, e.g. S. Berge) had those two players
+ * inverted vertically on the right flank (`Row 2 col 2` vs `Row 3 col 2`)!
  */
 const ESPN_FORMATION_PLACE_TABLES = {
   "4-2-3-1": {
@@ -2524,19 +2524,12 @@ const ESPN_FORMATION_PLACE_TABLES = {
   }
 };
 
-/**
- * Dynamically maps ESPN `formationPlace` (`1`..`11`) onto arbitrary `formationRows`
- * (e.g. `4-3-2-1`, `3-1-4-2`, `4-5-1`) so any formation not explicitly listed in
- * `ESPN_FORMATION_PLACE_TABLES` still uses the same role-and-flank `formationPlace`
- * mapping rather than falling back to a naive flat sort.
- */
 const buildDynamicPlaceTable = (formationRows) => {
   const numOutfieldLines = Math.max(1, formationRows.length - 1);
   const lastRow = numOutfieldLines;
   const attRow = numOutfieldLines >= 4 ? numOutfieldLines - 1 : lastRow;
   const midRow = numOutfieldLines >= 3 ? 2 : 1;
 
-  // Base semantic row assignments for Opta/ESPN `formationPlace` 1..11
   const baseMap = {
     1: { row: 0, lat: -999 },
     3: { row: 1, lat: -100 },
@@ -2551,7 +2544,6 @@ const buildDynamicPlaceTable = (formationRows) => {
     9: { row: lastRow, lat: 15 }
   };
 
-  // Clamp row indices into valid `0..numOutfieldLines` bounds
   const rowBuckets = Array.from({ length: formationRows.length }, () => []);
   for (let fp = 1; fp <= 11; fp++) {
     const info = baseMap[fp] || { row: midRow, lat: 0 };
@@ -2635,33 +2627,56 @@ const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
   return [1];
 };
 
-const reconcileDefenderMidfieldSwap = (grid) => {
+/**
+ * Reconciles single-player vertical line mismatches across ALL formations:
+ *  1) Defender (`roleTier === 1`) placed in midfield line (`grid[2]`) vs.
+ *     Midfielder (`roleTier === 2`) placed in defensive line (`grid[1]`)
+ *     (e.g. Brentford #4 vs #27 in 4-2-3-1).
+ *  2) Forward / Winger (`roleTier >= 3`) placed in midfield line (`grid[2]`) vs.
+ *     Central/Holding Midfielder (`roleTier === 2`) placed in forward/attacking line (`grid[lastRow]`)
+ *     (e.g. Fulham #14 O. Bobb in midfield row vs #16 S. Berge in forward row in 4-3-3).
+ *
+ * Swaps ONLY the misplaced pair on the same lateral flank while leaving every
+ * other player in the lineup untouched.
+ */
+const reconcileLineMismatches = (grid) => {
   if (!Array.isArray(grid) || grid.length < 3) return;
+
+  // Pass 1: Defender (`roleTier === 1`) in `grid[2]` <-> Midfielder (`roleTier === 2`) in `grid[1]`
   const defRow = grid[1];
   const midRow = grid[2];
-  if (!Array.isArray(defRow) || !Array.isArray(midRow)) return;
-
-  const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
-  if (midIdx === -1) return;
-
-  let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
-  if (defIdx === -1 && defRow.length >= 2) {
-    defIdx = 1;
+  if (Array.isArray(defRow) && Array.isArray(midRow)) {
+    const midDefIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
+    if (midDefIdx !== -1) {
+      let defMidIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
+      if (defMidIdx === -1 && defRow.length >= 2) {
+        defMidIdx = 1;
+      }
+      if (defMidIdx !== -1) {
+        const tmp = defRow[defMidIdx];
+        defRow[defMidIdx] = midRow[midDefIdx];
+        midRow[midDefIdx] = tmp;
+      }
+    }
   }
 
-  if (defIdx !== -1 && midIdx !== -1) {
-    const tmp = defRow[defIdx];
-    defRow[defIdx] = midRow[midIdx];
-    midRow[midIdx] = tmp;
+  // Pass 2: Forward/Winger (`roleTier >= 3`) in midfield line (`grid[2]`) <->
+  //         Central/Defensive Midfielder (`roleTier === 2`) in front/attacking line (`grid[lastRow]`)
+  const lastRowIdx = grid.length - 1;
+  if (lastRowIdx >= 3 && Array.isArray(midRow) && Array.isArray(grid[lastRowIdx])) {
+    const frontRow = grid[lastRowIdx];
+    const midFwdIdx = midRow.findIndex(item => item && item.role && item.role.roleTier >= 3);
+    const frontMidIdx = frontRow.findIndex(item => item && item.role && item.role.roleTier === 2);
+
+    if (midFwdIdx !== -1 && frontMidIdx !== -1) {
+      // Preserve each player's lateral slot index if they sit on the same flank, or swap directly
+      const tmp = midRow[midFwdIdx];
+      midRow[midFwdIdx] = frontRow[frontMidIdx];
+      frontRow[frontMidIdx] = tmp;
+    }
   }
 };
 
-/**
- * Ensures every row in `grid` is sorted left-to-right by true lateral position
- * (explicit flank tag -> Opta/ESPN `formationPlace` lateral order -> slot column)
- * so wingers, full-backs, and central players never invert left/right flanks in
- * non-4-2-3-1 formations like `4-3-3`, `4-4-2`, `3-5-2`, or `5-3-2`.
- */
 const sortRowsLeftToRight = (grid) => {
   return grid.map((rowItems, rIdx) => {
     if (rIdx === 0) return rowItems.map(x => x.player);
@@ -2729,10 +2744,24 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
-    reconcileDefenderMidfieldSwap(grid);
+    // Sort each row left-to-right first so lateral columns align, then reconcile vertical line mismatches
+    // without disturbing any other player's column position!
+    for (let r = 1; r < grid.length; r++) {
+      grid[r].sort((a, b) => {
+        const latA = getOptaLateralOrder(a);
+        const latB = getOptaLateralOrder(b);
+        if (Math.abs(latA - latB) > 2) return latA - latB;
+        const colA = a.slot ? a.slot.col : 0;
+        const colB = b.slot ? b.slot.col : 0;
+        if (colA !== colB) return colA - colB;
+        return a.idx - b.idx;
+      });
+    }
+
+    reconcileLineMismatches(grid);
 
     if (used.size === starters.length) {
-      return sortRowsLeftToRight(grid);
+      return grid.map(rowItems => rowItems.map(x => x.player));
     }
   }
 
@@ -2799,8 +2828,11 @@ const buildFormationGrid = (starters, formationRows) => {
     }
   }
 
-  reconcileDefenderMidfieldSwap(grid);
-  return sortRowsLeftToRight(grid);
+  for (let r = 1; r < grid.length; r++) {
+    grid[r].sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b));
+  }
+  reconcileLineMismatches(grid);
+  return grid.map(rowItems => rowItems.map(x => x.player));
 };
 
 const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
