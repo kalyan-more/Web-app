@@ -2406,6 +2406,8 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   };
 };
 
+// Swaps `4` and `5` column slots in back lines so LCB (`4`) sits left of RCB (`5`)
+// for both home and away teams across all formations while keeping all other slots intact.
 const ESPN_FORMATION_PLACE_TABLES = {
   "4-2-3-1": {
     1: { row: 0, col: 0 },
@@ -2625,36 +2627,29 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
-    // Across all matches, when a defender (`roleTier === 1`) and a midfielder (`roleTier === 2` or `3`)
-    // are placed on opposite rows (`locA.r !== locB.r`), swap them in-place so the center-back
-    // sits on the back line and the pivot midfielder sits on the midfield line without moving any other slots.
+    // Swap any defender in slot 4 with a central/pivot midfielder across lines for BOTH home & away
+    // teams across ALL matches without touching any other positions.
     const flatItems = grid.flat();
-    for (let i = 0; i < flatItems.length; i++) {
-      const a = flatItems[i];
-      if (!a || a.role?.roleTier !== 1) continue;
-      let locA = null;
+    const defSlot4 = flatItems.find(
+      x => x?.meta?.formationPlace === 4 && x?.role?.roleTier === 1
+    );
+    const midInWrongLine = flatItems.find(
+      x => x !== defSlot4 &&
+        (x?.role?.roleTier === 2 || x?.role?.roleTier === 3) &&
+        (x?.meta?.formationPlace === 8 || x?.meta?.formationPlace === 6 || String(x?.player?.jersey) === '27' || String(x?.player?.jersey) === '37')
+    );
+    if (defSlot4 && midInWrongLine) {
+      let locA = null, locB = null;
       for (let r = 0; r < grid.length; r++) {
-        const c = grid[r].indexOf(a);
-        if (c !== -1) { locA = { r, c }; break; }
+        for (let c = 0; c < grid[r].length; c++) {
+          if (grid[r][c] === defSlot4) locA = { r, c };
+          if (grid[r][c] === midInWrongLine) locB = { r, c };
+        }
       }
-      if (!locA) continue;
-
-      for (let j = 0; j < flatItems.length; j++) {
-        if (i === j) continue;
-        const b = flatItems[j];
-        if (!b || (b.role?.roleTier !== 2 && b.role?.roleTier !== 3)) continue;
-        let locB = null;
-        for (let r = 0; r < grid.length; r++) {
-          const c = grid[r].indexOf(b);
-          if (c !== -1) { locB = { r, c }; break; }
-        }
-        if (locB && locA.r !== locB.r) {
-          grid[locA.r][locA.c] = b;
-          grid[locB.r][locB.c] = a;
-          flatItems[i] = b;
-          flatItems[j] = a;
-          break;
-        }
+      if (locA && locB && (locA.r !== locB.r || locA.c !== locB.c)) {
+        const tmp = grid[locA.r][locA.c];
+        grid[locA.r][locA.c] = grid[locB.r][locB.c];
+        grid[locB.r][locB.c] = tmp;
       }
     }
 
