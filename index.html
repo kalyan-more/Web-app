@@ -2617,75 +2617,82 @@ const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
 };
 
 /**
- * Why #14 and #16 didn't swap in the previous build:
- * When ESPN's `position.abbreviation` / `position.type` for an attacker/winger (e.g. #14)
- * or central midfielder (e.g. #16 S. Berge) is reported generically (such as `M` / `MID` or `F` / `FWD`),
- * `roleTier` for both can evaluate to `2` or `3` even though one is deployed higher up in the
- * attacking/front-mid line and the other sits in the deeper midfield pivot line—or vice versa.
- *
- * This function reconciles mismatched midfield/attacking pairs across lines (`row >= 2`) by:
- * 1. Swapping any midfielder (`roleTier === 2`) in an upper/front attacking line (`row >= 3`)
- *    with an attacking/forward player (`roleTier === 3` or `4`) in a deeper midfield line (`row >= 2`).
- * 2. When `row 2` and `row 3` both hold central/attacking midfielders/forwards, ordering by
- *    tactical depth/role (`roleTier` ascending from deeper midfield `2` -> attacking mid `3` ->
- *    striker `4`) so deeper midfielders stay in `row 2` and attackers/forwards sit ahead in `row 3`+.
+ * Reconciles misplaced players across lines when ESPN's `formationPlace` assigns
+ * a player to a slot that conflicts with their true position tier (e.g. an attacker
+ * `roleTier >= 3` placed in a deep/central midfield row while a midfielder `roleTier === 2`
+ * is placed in an attacking row, or a defender `roleTier === 1` in a midfield row),
+ * while respecting deliberate tactical selections where no conflicting role is in the target line.
  */
-const reconcileMidfieldAndAttackerSwap = (grid) => {
+const reconcileLineRoleSwaps = (grid) => {
   if (!Array.isArray(grid) || grid.length < 3) return;
   const lastRowIdx = grid.length - 1;
-  if (lastRowIdx < 2) return;
+  const attRowIdx = grid.length >= 5 ? grid.length - 2 : lastRowIdx;
 
-  for (let rAhead = lastRowIdx; rAhead >= 3; rAhead--) {
-    const aheadRow = grid[rAhead];
-    if (!Array.isArray(aheadRow)) continue;
-    const midAheadIdx = aheadRow.findIndex(item => item && item.role && item.role.roleTier === 2);
-    if (midAheadIdx === -1) continue;
-
-    for (let rBack = 2; rBack < rAhead; rBack++) {
-      const backRow = grid[rBack];
-      if (!Array.isArray(backRow)) continue;
-      const attBackIdx = backRow.findIndex(item => item && item.role && (item.role.roleTier === 3 || item.role.roleTier === 4));
-      if (attBackIdx !== -1) {
-        const tmp = backRow[attBackIdx];
-        backRow[attBackIdx] = aheadRow[midAheadIdx];
-        aheadRow[midAheadIdx] = tmp;
-        return;
+  // 1. Reconcile defender vs. midfielder swap between row 1 and row 2
+  const defRow = grid[1];
+  const midRow = grid[2];
+  if (Array.isArray(defRow) && Array.isArray(midRow)) {
+    const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
+    if (midIdx !== -1) {
+      let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
+      if (defIdx === -1 && defRow.length >= 2) defIdx = 1;
+      if (defIdx !== -1) {
+        const tmp = defRow[defIdx];
+        defRow[defIdx] = midRow[midIdx];
+        midRow[midIdx] = tmp;
       }
     }
   }
 
-  // If a pure striker/forward (`roleTier === 4`) is in `row 2` while a non-forward (`roleTier < 4`) is on the front line
-  const midRow = grid[2];
-  const frontRow = grid[lastRowIdx];
-  if (Array.isArray(midRow) && Array.isArray(frontRow) && lastRowIdx > 2) {
-    const fwdInMidIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 4);
-    const nonFwdInFrontIdx = frontRow.findIndex(item => item && item.role && item.role.roleTier !== 4);
-    if (fwdInMidIdx !== -1 && nonFwdInFrontIdx !== -1) {
-      const tmp = midRow[fwdInMidIdx];
-      midRow[fwdInMidIdx] = frontRow[nonFwdInFrontIdx];
-      frontRow[nonFwdInFrontIdx] = tmp;
+  // 2. Reconcile attacker (`roleTier >= 3`) vs. midfielder (`roleTier === 2`) swaps
+  // across attacking/forward rows and midfield rows.
+  const candidateAttRows = attRowIdx === lastRowIdx ? [lastRowIdx] : [attRowIdx, lastRowIdx];
+  for (let r = 1; r < grid.length; r++) {
+    const isAttLine = candidateAttRows.includes(r);
+    const isMidLine = !isAttLine && r >= 2;
+    if (!isAttLine && !isMidLine) continue;
+
+    for (let c = 0; c < grid[r].length; c++) {
+      const item = grid[r][c];
+      if (!item || !item.role) continue;
+      const tier = item.role.roleTier;
+
+      // Attacker (winger/forward, tier 3 or 4) placed in a non-attacking midfield line (tier 2)
+      if (isMidLine && tier >= 3) {
+        // Look for a midfielder (tier 2) sitting in an attacking/forward row
+        let swapTarget = null;
+        for (const targetR of candidateAttRows) {
+          const tIdx = grid[targetR].findIndex(cand => cand && cand.role && cand.role.roleTier === 2);
+          if (tIdx !== -1) {
+            swapTarget = { r: targetR, c: tIdx };
+            break;
+          }
+        }
+        if (swapTarget) {
+          const tmp = grid[r][c];
+          grid[r][c] = grid[swapTarget.r][swapTarget.c];
+          grid[swapTarget.r][swapTarget.c] = tmp;
+        }
+      }
+
+      // Midfielder (tier 2) placed in an attacking/forward row while an attacker (tier >= 3) sits deeper
+      if (isAttLine && tier === 2) {
+        let swapTarget = null;
+        for (let deeperR = 2; deeperR < grid.length; deeperR++) {
+          if (candidateAttRows.includes(deeperR)) continue;
+          const dIdx = grid[deeperR].findIndex(cand => cand && cand.role && cand.role.roleTier >= 3);
+          if (dIdx !== -1) {
+            swapTarget = { r: deeperR, c: dIdx };
+            break;
+          }
+        }
+        if (swapTarget) {
+          const tmp = grid[r][c];
+          grid[r][c] = grid[swapTarget.r][swapTarget.c];
+          grid[swapTarget.r][swapTarget.c] = tmp;
+        }
+      }
     }
-  }
-};
-
-const reconcileDefenderMidfieldSwap = (grid) => {
-  if (!Array.isArray(grid) || grid.length < 3) return;
-  const defRow = grid[1];
-  const midRow = grid[2];
-  if (!Array.isArray(defRow) || !Array.isArray(midRow)) return;
-
-  const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
-  if (midIdx === -1) return;
-
-  let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
-  if (defIdx === -1 && defRow.length >= 2) {
-    defIdx = 1;
-  }
-
-  if (defIdx !== -1 && midIdx !== -1) {
-    const tmp = defRow[defIdx];
-    defRow[defIdx] = midRow[midIdx];
-    midRow[midIdx] = tmp;
   }
 };
 
@@ -2756,8 +2763,7 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
-    reconcileDefenderMidfieldSwap(grid);
-    reconcileMidfieldAndAttackerSwap(grid);
+    reconcileLineRoleSwaps(grid);
 
     if (used.size === starters.length) {
       return sortRowsLeftToRight(grid);
@@ -2827,8 +2833,7 @@ const buildFormationGrid = (starters, formationRows) => {
     }
   }
 
-  reconcileDefenderMidfieldSwap(grid);
-  reconcileMidfieldAndAttackerSwap(grid);
+  reconcileLineRoleSwaps(grid);
   return sortRowsLeftToRight(grid);
 };
 
@@ -2883,10 +2888,6 @@ const extractTeamFormation = (summary, teamRoster, isHome, comp = null) => {
   return inferFormationFromStarters(starters);
 };
 
-/**
- * Computes pitch coordinates with clear vertical depth separation and orientation-aware
- * horizontal ordering so home and away halves match ESPN's pitch layout cleanly.
- */
 const useFootballFormations = (summary, width, height, isHome, comp = null) =>
   useMemo(() => {
     if (!summary?.rosters) return [];
