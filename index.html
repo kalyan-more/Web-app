@@ -2404,6 +2404,22 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
     roleTier = 2;
   }
 
+  // Guard against ESPN formationPlace / position tag drift when subPosition or position clearly indicates a deeper/higher line
+  const subAbbr = String(player?.subPosition?.abbreviation || "").toUpperCase().trim();
+  const posAbbr = String(player?.position?.abbreviation || "").toUpperCase().trim();
+  if (formationPlace === 11 && ["LM", "LCM", "CM", "LDM", "CDM", "DM", "RM", "RCM", "RDM"].includes(subAbbr || posAbbr)) {
+    roleTier = 2;
+  }
+  if (formationPlace === 7 && ["RM", "RCM", "CM", "RDM", "CDM", "DM", "LM", "LCM", "LDM"].includes(subAbbr || posAbbr)) {
+    roleTier = 2;
+  }
+  if (formationPlace === 10 && ["CM", "LCM", "RCM", "CDM", "DM", "LDM", "RDM"].includes(subAbbr || posAbbr)) {
+    roleTier = 2;
+  }
+  if ([6, 8].includes(formationPlace) && ["LW", "RW", "LF", "RF", "ST", "CF", "LS", "RS"].includes(subAbbr || posAbbr)) {
+    roleTier = 3;
+  }
+
   return {
     roleTier,
     hRank: getHorizontalRank(player, fallbackIdx)
