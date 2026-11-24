@@ -387,9 +387,9 @@ const { useState, useEffect, useCallback, useMemo, useRef, useTransition, memo }
 const API_SOCCER_SCORE_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
 const API_SOCCER_STANDINGS_BASE = "https://site.api.espn.com/apis/v2/sports/soccer";
 const API_CRICKET_BASE = "https://cricket-api-1-1yo0.onrender.com/api";
-const CRICKET_SCHEDULE_URL = `${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`;
-const CRICKET_SCHEDULE_EXT_URL = `${API_CRICKET_BASE}/schedule?days_past=7&days_ahead=7`;
-const API_ESPN_CRICKET_HEADER = "https://site.web.api.espn.com/apis/v2/scoreboard/header?sport=cricket";
+const CRICKET_TODAY_URL = `${API_CRICKET_BASE}/schedule?days_past=1&days_ahead=1`;
+const CRICKET_SCHEDULE_URL = `${API_CRICKET_BASE}/schedule?days_past=5&days_ahead=5`;
+const CRICKET_SCHEDULE_EXT_URL = `${API_CRICKET_BASE}/schedule?days_past=10&days_ahead=10`;
 const CRICINFO_RSS_JSON = "https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.espncricinfo.com%2Frss%2Fcontent%2Fstory%2Ffeeds%2F0.xml";
 
 // 🎨 UNIFIED OBSIDIAN THEME
@@ -993,7 +993,8 @@ const FOOTBALL_STADIUM_DB = {
 // ⚡ HIGH-PERFORMANCE SWR CACHE & PRE-WARMING ENGINE
 // ==========================================
 
-const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v17';
+const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v21';
+const cricketSessionPool = new Map();
 const cache = new Map();
 const inflight = new Map();
 const standingsParsedCache = new Map();
@@ -1027,7 +1028,7 @@ const scheduleCachePersist = () => {
         for (const [k, v] of entries) {
           if (count >= 25) break;
           const serialized = JSON.stringify(v);
-          if (serialized.length < 120000) {
+          if (serialized.length < 350000) {
             obj[k] = v;
             count++;
           }
@@ -1041,6 +1042,11 @@ const scheduleCachePersist = () => {
 const getCachedSync = (url) => {
   if (cache.has(url)) return cache.get(url).data;
   return null;
+};
+
+const getCacheAgeMs = (url) => {
+  if (!cache.has(url)) return Infinity;
+  return Date.now() - (cache.get(url).timestamp || 0);
 };
 
 const fetchWithCache = async (url, forceRefresh = false, timeoutMs = 8000) => {
@@ -1097,8 +1103,9 @@ const prewarmSportsAPIs = () => {
       ['eng.1', 'uefa.champions', 'esp.1'].forEach(id => {
         fetchWithCache(`${API_SOCCER_SCORE_BASE}/${id}/scoreboard?dates=${todayDs}`).catch(() => {});
       });
-      fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
+      fetchWithCache(CRICKET_TODAY_URL, false, 25000).catch(() => {});
       fetchWithCache(`${API_CRICKET_BASE}/live`, false, 25000).catch(() => {});
+      fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
     }, 250);
   }, 1450);
 
@@ -1499,7 +1506,7 @@ const getSafeFootballLogo = (team) => {
   return resolved;
 };
 
-// --- CRICKET API MERGER & DATE NORMALIZATION ---
+// --- CRICKET API MERGER & DATE NORMALIZATION (100% RENDER API) ---
 const extractCricketArray = (res) => {
   if (!res) return [];
   if (Array.isArray(res)) return res;
@@ -1507,16 +1514,26 @@ const extractCricketArray = (res) => {
   if (Array.isArray(res.data)) return res.data;
   if (Array.isArray(res.events)) return res.events;
   if (Array.isArray(res.schedule)) return res.schedule;
+  if (Array.isArray(res.results)) return res.results;
   if (Array.isArray(res.live)) return res.live;
   return [];
 };
 
 const parseSafeCricketDate = (raw) => {
-  if (!raw) return null;
+  if (raw === null || raw === undefined || raw === '') return null;
   if (raw instanceof Date) return isNaN(raw.getTime()) ? null : raw;
+  if (typeof raw === 'number') {
+    const ms = raw < 1e12 ? raw * 1000 : raw;
+    const d = new Date(ms);
+    return isNaN(d.getTime()) ? null : d;
+  }
   const s = String(raw).trim();
   if (!s) return null;
-  // Normalize space-separated SQL timestamps for iOS Safari
+  if (/^\d{10,13}$/.test(s)) {
+    const num = Number(s);
+    const d = new Date(num < 1e12 ? num * 1000 : num);
+    return isNaN(d.getTime()) ? null : d;
+  }
   const normalized = /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) ? s.replace(/\s+/, 'T') : s;
   const d = new Date(normalized);
   return isNaN(d.getTime()) ? null : d;
@@ -1528,149 +1545,118 @@ const extractRawIsoDay = (raw) => {
   return m ? m[1] : '';
 };
 
-const normalizeEspnCricketHeader = (payload) => {
-  const results = [];
-  const sports = payload?.sports || [];
-  sports.forEach(sp => {
-    (sp?.leagues || []).forEach(lg => {
-      const leagueName = lg?.name || lg?.shortName || lg?.abbreviation || 'Cricket';
-      const seriesId = String(lg?.id || '');
-      (lg?.events || []).forEach(ev => {
-        const comps = ev?.competitors || [];
-        if (comps.length < 2) return;
-        const mappedTeams = comps.slice(0, 2).map(c => ({
-          id: String(c.id || ''),
-          team_id: String(c.id || ''),
-          name: c.displayName || c.name || c.shortDisplayName || c.abbreviation || 'Team',
-          short_name: c.abbreviation || c.shortDisplayName || c.name || 'TBD',
-          score: c.score || '',
-          logo: c.logo || ''
-        }));
+const normalizeRenderCricketTeams = (raw) => {
+  if (Array.isArray(raw?.teams) && raw.teams.length >= 2) return raw.teams;
+  const t1 = raw?.team1 || raw?.home_team || raw?.home || null;
+  const t2 = raw?.team2 || raw?.away_team || raw?.away || null;
+  if (t1 && t2) {
+    const toObj = (t) => typeof t === 'string' ? { name: t, short_name: t, score: '' } : t;
+    return [toObj(t1), toObj(t2)];
+  }
+  return null;
+};
 
-        const rawState = String(ev.fullStatus?.type?.state || ev.status || '').toLowerCase();
-        let status = 'PRE';
-        if (rawState === 'in' || rawState === 'live') status = 'IN';
-        else if (rawState === 'post' || rawState === 'final' || ev.fullStatus?.type?.completed) status = 'POST';
-
-        const statusText = ev.fullStatus?.type?.shortDetail || ev.fullStatus?.type?.detail || ev.summary || (status === 'IN' ? 'LIVE' : status === 'POST' ? 'FT' : 'SCHEDULED');
-        const matchUpdate = ev.summary || ev.fullStatus?.type?.detail || statusText;
-
-        results.push({
-          match_id: String(ev.id || ''),
-          title: ev.name || ev.shortName || leagueName,
-          league: leagueName,
-          series: leagueName,
-          format: ev.note || '',
-          status,
-          status_text: statusText,
-          match_update: matchUpdate,
-          start_time: ev.date || '',
-          end_date: ev.endDate || '',
-          venue: ev.location || '',
-          teams: mappedTeams,
-          _espnSeriesId: seriesId,
-          _fromEspnHeader: true,
-          _fromLive: status === 'IN'
-        });
-      });
-    });
-  });
-  return results;
+const isCricketMatchFinished = (m) => {
+  if (!m) return false;
+  const st = String(m.status || '').toUpperCase().trim();
+  const stTxt = String(m.status_text || m.match_update || '').toUpperCase();
+  if (st === 'POST' || st === 'FINAL' || st === 'COMPLETED' || st === 'FINISHED' || st === 'RESULT' || st === 'ABANDONED' || st === 'CANCELLED') {
+    return true;
+  }
+  if (/(WON BY|MATCH TIED|MATCH DRAWN|ABANDONED|NO RESULT|CANCELLED|FINAL|MATCH OVER|MATCH ENDED)/i.test(stTxt) && !/NEED|TRAIL BY|LEAD BY|LIVE/i.test(stTxt)) {
+    return true;
+  }
+  return false;
 };
 
 const buildCricketTeamPairKey = (m) => {
-  if (!m?.teams || m.teams.length < 2) return '';
+  const teams = normalizeRenderCricketTeams(m);
+  if (!teams || teams.length < 2) return '';
   const cleanTeamKey = (t) => String(t?.name || t?.short_name || '')
     .toLowerCase()
     .replace(/\b(men|mens|national cricket team|cricket team)\b/g, '')
     .replace(/[^a-z0-9]/g, '');
-  const n1 = cleanTeamKey(m.teams[0]);
-  const n2 = cleanTeamKey(m.teams[1]);
+  const n1 = cleanTeamKey(teams[0]);
+  const n2 = cleanTeamKey(teams[1]);
   if (!n1 || !n2) return '';
   const pair = [n1, n2].sort().join('_vs_');
-  const rawStart = m.start_time || m.startTime || m.date || '';
+  const rawStart = m.start_time || m.startTime || m.date || m.start_date || m.match_date || '';
   const parsed = parseSafeCricketDate(rawStart);
   const day = parsed ? toLocalIsoDate(parsed) : extractRawIsoDay(rawStart);
   return `${pair}|${day}`;
 };
 
-const mergeCricketSources = (schedData, liveData, extraData, isViewingToday) => {
+/**
+ * Merges Render API batches strictly from oldest -> freshest so newer scores/statuses
+ * ALWAYS win while preserving metadata (start_time, league, venue) from earlier payloads.
+ */
+const mergeCricketSources = (orderedBatches = [], liveData = [], isViewingToday = false) => {
   const byId = new Map();
-  const seenPairs = new Map();
 
-  const upsert = (raw, isFromLive = false, isSupplemental = false) => {
-    if (!raw || !Array.isArray(raw.teams) || raw.teams.length < 2) return;
+  const upsert = (raw, fromLiveFeed = false) => {
+    const teams = normalizeRenderCricketTeams(raw);
+    if (!raw || !teams) return;
     const rawId = raw.match_id ?? raw.id;
-    const startVal = raw.start_time || raw.startTime || raw.date || raw.start_date || raw.match_date || '';
-    const pairKey = buildCricketTeamPairKey(raw);
+    const startVal = raw.start_time || raw.startTime || raw.date || raw.start_date || raw.match_date || raw.scheduled_time || raw.datetime || raw.timestamp || '';
+    const pairKey = buildCricketTeamPairKey({ ...raw, teams });
     const idKey = rawId !== undefined && rawId !== null && String(rawId).trim() !== ''
       ? String(rawId).trim()
       : `${pairKey}_${startVal}`;
 
-    // If supplemental feed matches an existing Render API match by team pair + date, enrich it without duplicating
-    if (isSupplemental && !byId.has(idKey) && pairKey && seenPairs.has(pairKey)) {
-      const existingKey = seenPairs.get(pairKey);
-      const prev = byId.get(existingKey);
-      if (prev) {
-        const mergedTeams = prev.teams.map((pt, idx) => ({
-          ...pt,
-          score: pt.score || raw.teams?.[idx]?.score || '',
-          logo: pt.logo || raw.teams?.[idx]?.logo || ''
-        }));
-        byId.set(existingKey, {
-          ...prev,
-          start_time: prev.start_time || startVal,
-          end_date: prev.end_date || raw.end_date || raw.end_time,
-          venue: prev.venue || raw.venue,
-          teams: mergedTeams,
-          _fromLive: Boolean(prev._fromLive || raw._fromLive),
-          _espnSeriesId: prev._espnSeriesId || raw._espnSeriesId
-        });
-      }
-      return;
-    }
-
     const prev = byId.get(idKey);
+    const finishedNow = isCricketMatchFinished(raw);
+
     if (!prev) {
       const item = {
         ...raw,
         match_id: String(rawId ?? idKey),
         start_time: startVal,
-        _fromLive: Boolean(isFromLive || raw._fromLive)
+        teams,
+        _inLiveFeed: Boolean(fromLiveFeed || raw._inLiveFeed),
+        _fromLive: Boolean((fromLiveFeed || raw._fromLive) && !finishedNow)
       };
       byId.set(idKey, item);
-      if (pairKey) seenPairs.set(pairKey, idKey);
     } else {
-      const mergedTeams = (raw.teams && raw.teams.length >= 2)
-        ? raw.teams.map((t, idx) => ({
-            ...(prev.teams?.[idx] || {}),
-            ...t,
-            score: t.score || prev.teams?.[idx]?.score || '',
-            logo: t.logo || prev.teams?.[idx]?.logo || ''
-          }))
-        : prev.teams;
-      byId.set(idKey, {
+      const mergedTeams = teams.map((t, idx) => ({
+        ...(prev.teams?.[idx] || {}),
+        ...t,
+        score: (t.score !== undefined && t.score !== null && String(t.score).trim() !== '') ? t.score : (prev.teams?.[idx]?.score || ''),
+        logo: t.logo || prev.teams?.[idx]?.logo || ''
+      }));
+      const merged = {
         ...prev,
         ...raw,
         match_id: prev.match_id || String(rawId ?? idKey),
-        start_time: raw.start_time || prev.start_time || startVal,
-        end_date: raw.end_date || raw.end_time || prev.end_date || prev.end_time,
-        league: raw.league || prev.league,
-        series: raw.series || prev.series,
-        title: raw.title || prev.title,
-        venue: raw.venue || prev.venue,
+        start_time: startVal || prev.start_time || '',
+        end_date: raw.end_date || raw.end_time || prev.end_date || prev.end_time || '',
+        league: raw.league || prev.league || '',
+        series: raw.series || prev.series || '',
+        title: raw.title || prev.title || '',
+        venue: raw.venue || prev.venue || '',
+        status: raw.status || prev.status || '',
+        status_text: raw.status_text || prev.status_text || '',
+        match_update: raw.match_update || prev.match_update || '',
         teams: mergedTeams,
-        _fromLive: Boolean(prev._fromLive || isFromLive || raw._fromLive),
-        _espnSeriesId: prev._espnSeriesId || raw._espnSeriesId
-      });
+        _inLiveFeed: Boolean(prev._inLiveFeed || fromLiveFeed || raw._inLiveFeed)
+      };
+      merged._fromLive = Boolean((fromLiveFeed || prev._fromLive) && !isCricketMatchFinished(merged));
+      byId.set(idKey, merged);
     }
   };
 
-  extractCricketArray(schedData).forEach(m => upsert(m, false, false));
+  (Array.isArray(orderedBatches) ? orderedBatches : []).forEach(batch => {
+    extractCricketArray(batch).forEach(m => upsert(m, false));
+  });
+
   if (isViewingToday) {
-    extractCricketArray(liveData).forEach(m => upsert(m, true, false));
+    extractCricketArray(liveData).forEach(m => upsert(m, true));
   }
-  (Array.isArray(extraData) ? extraData : []).forEach(m => upsert(m, Boolean(m._fromLive), true));
+
+  // Persist merged matches into in-memory session pool so recently-finished matches
+  // never vanish between /live dropping them and /schedule refreshing
+  byId.forEach((val, key) => {
+    cricketSessionPool.set(key, val);
+  });
 
   return Array.from(byId.values());
 };
@@ -1682,28 +1668,32 @@ const filterAndSortCricketForDate = (mergedList, targetDate) => {
 
   const filtered = (mergedList || []).filter(m => {
     const combinedTitle = String([m.title, m.match_title, m.league, m.series, m.format, m.teams?.[0]?.name, m.teams?.[1]?.name].filter(Boolean).join(' ')).toLowerCase();
-    if (!CRICKET_ALWAYS_ALLOW_REGEX.test(combinedTitle) && CRICKET_DOMESTIC_LEAGUE_REGEX.test(combinedTitle)) {
-      return false;
-    }
-
     const statUpper = String(m.status || m.status_text || '').toUpperCase();
-    const isMatchActive = Boolean(m._fromLive) || statUpper === 'LIVE' || statUpper === 'IN' ||
+    const finished = isCricketMatchFinished(m);
+    const isMatchActive = !finished && (
+      Boolean(m._fromLive) || statUpper === 'LIVE' || statUpper === 'IN' ||
       statUpper.includes('DAY ') || statUpper.includes('STUMPS') || statUpper.includes('RAIN') ||
-      statUpper.includes('TEA') || statUpper.includes('LUNCH') || statUpper.includes('BREAK');
+      statUpper.includes('TEA') || statUpper.includes('LUNCH') || statUpper.includes('BREAK')
+    );
 
-    const rawStart = m.start_time || m.startTime || m.date || m.start_date || m.match_date || '';
+    // Every match returned by Render /live (live OR just-finished) belongs on Today
+    if (isViewingToday && Boolean(m._inLiveFeed)) return true;
+
+    const rawStart = m.start_time || m.startTime || m.date || m.start_date || m.match_date || m.scheduled_time || m.datetime || m.timestamp || '';
     const parsedStart = parseSafeCricketDate(rawStart);
     const localStartStr = parsedStart ? toLocalIsoDate(parsedStart) : '';
     const utcStartStr = parsedStart ? parsedStart.toISOString().split('T')[0] : '';
     const rawStartDay = extractRawIsoDay(rawStart);
 
-    // Live matches must always appear on Today even if start_time is absent or began on an earlier day
-    if (isViewingToday && Boolean(m._fromLive)) return true;
+    if (!rawStart && !parsedStart) {
+      return isViewingToday && isMatchActive;
+    }
 
-    if (!rawStart && !parsedStart) return false;
-    if (localStartStr === selectedDateStr || utcStartStr === selectedDateStr || rawStartDay === selectedDateStr) return true;
+    if (localStartStr === selectedDateStr || utcStartStr === selectedDateStr || rawStartDay === selectedDateStr) {
+      return true;
+    }
 
-    const baseStartStr = localStartStr || rawStartDay;
+    const baseStartStr = localStartStr || utcStartStr || rawStartDay;
     if (!baseStartStr) return false;
     const [sy, sm, sd] = baseStartStr.split('-').map(Number);
     const startDayObj = new Date(sy, sm - 1, sd);
@@ -1715,9 +1705,9 @@ const filterAndSortCricketForDate = (mergedList, targetDate) => {
     if (endIso) {
       const [ey, em, ed] = endIso.split('-').map(Number);
       endDayObj = new Date(ey, em - 1, ed);
-    } else if (combinedTitle.includes('test')) {
+    } else if (/\btest\b|test match|test series|wtc/i.test(combinedTitle)) {
       endDayObj.setDate(startDayObj.getDate() + 4);
-    } else if (combinedTitle.includes('first class') || combinedTitle.includes('4-day') || combinedTitle.includes('four-day') || combinedTitle.includes('fc')) {
+    } else if (/(first class|first-class|4-day|four-day|\bfc\b|ranji trophy|sheffield shield|plunket shield|county championship|duleep trophy)/i.test(combinedTitle)) {
       endDayObj.setDate(startDayObj.getDate() + 3);
     }
 
@@ -1729,6 +1719,7 @@ const filterAndSortCricketForDate = (mergedList, targetDate) => {
   // Sort cleanly: Live first -> Upcoming chronological -> Completed most recent
   return filtered.sort((a, b) => {
     const rankOf = (m) => {
+      if (isCricketMatchFinished(m)) return 2;
       const st = String(m.status || '').toUpperCase();
       if (isViewingToday && (m._fromLive || st === 'IN' || st === 'LIVE')) return 0;
       if (st === 'PRE' || st === 'SCHEDULED') return 1;
@@ -1818,7 +1809,8 @@ const getCricketMatchStatus = (match, selectedDate) => {
   let color = THEME.accent;
   const isViewingToday = !selectedDate || isSameDay(selectedDate, new Date());
 
-  if ((match.status === 'IN' || statUpper.includes('LIVE')) && isViewingToday) {
+  const isFinished = isCricketMatchFinished(match);
+  if (!isFinished && (match.status === 'IN' || statUpper.includes('LIVE')) && isViewingToday) {
     isLive = true;
     isActionLive = true;
     const checkText = statUpper === 'LIVE' && primaryUpdate ? primaryUpdate : statUpper;
@@ -1829,7 +1821,7 @@ const getCricketMatchStatus = (match, selectedDate) => {
     else if (checkText.includes('INNINGS BREAK')) { isActionLive = false; displayLabel = "INNINGS BREAK"; color = THEME.warning; }
     else if (checkText.includes('TOSS')) { isActionLive = false; displayLabel = "TOSS"; }
     else { displayLabel = "LIVE"; color = THEME.success; }
-  } else if (match.status === 'POST' || statUpper.includes('FINAL') || statUpper.includes('WON') || statUpper.includes('RESULT') || statUpper.includes('OVER')) {
+  } else if (isFinished || statUpper.includes('FINAL') || statUpper.includes('WON') || statUpper.includes('RESULT') || statUpper.includes('OVER') || statUpper.includes('DRAWN') || statUpper.includes('TIED')) {
     displayLabel = match.status_text || 'FT';
     color = THEME.muted;
   } else if (statUpper.includes('ABANDON') || statUpper.includes('CANCEL') || statUpper.includes('NO RESULT')) {
@@ -3738,7 +3730,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
 
   const { isLive, isActionLive, displayLabel, color, detailedStatus } = getCricketMatchStatus(match, selectedDate);
   const parsedStartCard = parseSafeCricketDate(match.start_time);
-  const isPre = !isLive && match.status !== 'POST' && (match.status === 'SCHEDULED' || match.status === 'PRE' || (parsedStartCard && parsedStartCard > new Date()));
+  const isPre = !isLive && !isCricketMatchFinished(match) && (match.status === 'SCHEDULED' || match.status === 'PRE' || (parsedStartCard && parsedStartCard > new Date()));
   const shortLeague = getShortLeagueName(match.league || match.series || match.title);
   const leagueLogo = getCricketLeagueLogo(match.league || match.series || match.title, match.league_logo);
 
@@ -4289,7 +4281,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   const [data, setData] = useState(() => {
     const cachedStd = getCachedSync(stdUrl);
-    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHEDULE_URL) || [];
+    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHEDULE_URL) || getCachedSync(CRICKET_TODAY_URL) || [];
     return buildCurrentLeagues(cachedStd, cachedSched);
   });
   const [selectedLeague, setSelectedLeague] = useState(() => data[0] || null);
@@ -4298,7 +4290,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   useEffect(() => {
     let active = true;
-    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHEDULE_URL) || [];
+    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHEDULE_URL) || getCachedSync(CRICKET_TODAY_URL) || [];
 
     Promise.all([
       fetchWithCache(stdUrl, false, 6000).catch(() => null),
@@ -4778,33 +4770,15 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     if (!id) return;
     if (!isSilent && !matchDetails) setDetailsLoading(true);
 
-    fetchWithCache(`${API_CRICKET_BASE}/match/${id}`, isSilent, 15000).then(detailsRes => {
-      if (detailsRes && (detailsRes.innings?.length > 0 || detailsRes.toss || detailsRes.venue)) {
+    fetchWithCache(`${API_CRICKET_BASE}/match/${id}`, isSilent, 20000).then(detailsRes => {
+      if (detailsRes) {
         setMatchDetails(detailsRes);
         if (autoSelectInningsRef.current && detailsRes.innings && detailsRes.innings.length > 0) {
           setActiveInnings(detailsRes.innings.length - 1);
           autoSelectInningsRef.current = false;
         }
-        setDetailsLoading(false);
-        return;
       }
-      if (match?._espnSeriesId) {
-        fetchWithCache(`https://site.api.espn.com/apis/site/v2/sports/cricket/${match._espnSeriesId}/summary?event=${id}`, isSilent, 8000)
-          .then(espnSum => {
-            if (espnSum) {
-              const comp = espnSum?.header?.competitions?.[0];
-              setMatchDetails(prev => prev || {
-                toss: comp?.status?.type?.detail || '',
-                venue: { name: espnSum?.gameInfo?.venue?.fullName || match?.venue || '', city: espnSum?.gameInfo?.venue?.address?.city || '' },
-                status_text: comp?.status?.type?.description || match?.status_text || '',
-                innings: []
-              });
-            }
-          }).catch(() => {}).finally(() => setDetailsLoading(false));
-      } else {
-        if (detailsRes) setMatchDetails(detailsRes);
-        setDetailsLoading(false);
-      }
+      setDetailsLoading(false);
     }).catch(() => setDetailsLoading(false));
 
     Promise.all([
@@ -6531,30 +6505,36 @@ function App() {
     return hitCount > 0 ? events : null;
   }, []);
 
-  const getAllCachedCricketSchedules = useCallback(() => {
-    return [
-      ...extractCricketArray(getCachedSync(CRICKET_SCHEDULE_URL)),
-      ...extractCricketArray(getCachedSync(CRICKET_SCHEDULE_EXT_URL)),
-      ...extractCricketArray(getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=30&days_ahead=30`)),
-      ...extractCricketArray(getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=45&days_ahead=30`))
+  const activeContextRef = useRef({ sport: activeSport, dateKey: toLocalIsoDate(date) });
+  activeContextRef.current = { sport: activeSport, dateKey: toLocalIsoDate(date) };
+
+  const getAllCachedCricketBatches = useCallback(() => {
+    const batches = [];
+    if (cricketSessionPool.size > 0) {
+      batches.push(Array.from(cricketSessionPool.values()));
+    }
+    const urls = [
+      `${API_CRICKET_BASE}/schedule?days_past=45&days_ahead=30`,
+      `${API_CRICKET_BASE}/schedule?days_past=30&days_ahead=30`,
+      CRICKET_SCHEDULE_EXT_URL,
+      CRICKET_SCHEDULE_URL,
+      CRICKET_TODAY_URL
     ];
+    urls.forEach(u => {
+      const data = getCachedSync(u);
+      if (data) batches.push(data);
+    });
+    return batches;
   }, []);
 
   const getCachedCricketForDate = useCallback((targetDate) => {
     const isViewingToday = isSameDay(targetDate, new Date());
-    const ds = toLocalIsoDate(targetDate).replace(/-/g, '');
-    const cachedLive = getCachedSync(`${API_CRICKET_BASE}/live`);
-    const combinedSched = getAllCachedCricketSchedules();
-    const cachedEspnDay = getCachedSync(`${API_ESPN_CRICKET_HEADER}&dates=${ds}`);
-    const cachedEspnNow = isViewingToday ? getCachedSync(API_ESPN_CRICKET_HEADER) : null;
-    if (!cachedLive && combinedSched.length === 0 && !cachedEspnDay && !cachedEspnNow) return null;
-    const extra = [
-      ...normalizeEspnCricketHeader(cachedEspnDay),
-      ...normalizeEspnCricketHeader(cachedEspnNow)
-    ];
-    const merged = mergeCricketSources(combinedSched, cachedLive, extra, isViewingToday);
+    const cachedLive = isViewingToday ? getCachedSync(`${API_CRICKET_BASE}/live`) : null;
+    const batches = getAllCachedCricketBatches();
+    if (batches.length === 0 && !cachedLive) return null;
+    const merged = mergeCricketSources(batches, cachedLive, isViewingToday);
     return filterAndSortCricketForDate(merged, targetDate);
-  }, [getAllCachedCricketSchedules]);
+  }, [getAllCachedCricketBatches]);
 
   const fetchFootballMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
     const reqId = ++fetchSeqRef.current;
@@ -6589,101 +6569,141 @@ function App() {
   }, [date, getCachedFootballForDateKey]);
 
   const fetchCricketMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
-    const reqId = ++fetchSeqRef.current;
     const dateKey = toLocalIsoDate(date);
-    const ds = dateKey.replace(/-/g, '');
     const now = new Date();
     const isViewingToday = isSameDay(date, now);
     const dayDiff = Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
-    const needExtendedRender = dayDiff < -3 || dayDiff > 4;
+    const needExtendedRender = dayDiff < -5 || dayDiff > 5;
+
+    const isStillActive = () =>
+      activeContextRef.current.sport === 'cricket' && activeContextRef.current.dateKey === dateKey;
+
+    const hasCachedSchedule = Boolean(
+      getCachedSync(CRICKET_TODAY_URL) ||
+      getCachedSync(CRICKET_SCHEDULE_URL) ||
+      getCachedSync(CRICKET_SCHEDULE_EXT_URL)
+    );
     const cachedItems = !forceRefresh ? getCachedCricketForDate(date) : null;
 
-    if (cachedItems !== null) {
+    if (cachedItems !== null && (hasCachedSchedule || cachedItems.length > 0)) {
       setCricketState({ dateKey, items: cachedItems });
-      setLoading(false);
+      if (hasCachedSchedule) setLoading(false);
     } else if (!isSilent) {
       setLoading(true);
     }
 
-    const fetchRenderWithRetry = async (url) => {
+    const fetchRenderWithRetry = async (url, shouldForce) => {
       try {
-        return await fetchWithCache(url, isSilent || forceRefresh, 25000);
+        return await fetchWithCache(url, shouldForce, 25000);
       } catch {
-        // Automatic retry once Render container finishes waking up
+        await new Promise(r => setTimeout(r, 1200));
         return await fetchWithCache(url, true, 25000).catch(() => []);
       }
     };
 
-    try {
-      // Primary Render API calls (/schedule includes finished + upcoming matches for today)
-      const [schedRes, liveRes, schedExtRes] = await Promise.all([
-        fetchRenderWithRetry(CRICKET_SCHEDULE_URL),
-        isViewingToday ? fetchRenderWithRetry(`${API_CRICKET_BASE}/live`) : Promise.resolve([]),
-        needExtendedRender ? fetchRenderWithRetry(CRICKET_SCHEDULE_EXT_URL) : Promise.resolve([])
-      ]);
-      if (reqId !== fetchSeqRef.current) return;
+    // During 15s background polling, ALWAYS refresh /live, but only refresh /schedule if >60s old
+    // so we never hammer Render or drop in-flight schedule responses
+    const shouldRefreshTodaySched = forceRefresh || !getCachedSync(CRICKET_TODAY_URL) || (isSilent && getCacheAgeMs(CRICKET_TODAY_URL) > 60000);
+    const shouldRefreshWeekSched = forceRefresh || !getCachedSync(CRICKET_SCHEDULE_URL);
+    const shouldRefreshExtSched = needExtendedRender && (forceRefresh || !getCachedSync(CRICKET_SCHEDULE_EXT_URL));
 
-      const primarySched = [
-        ...extractCricketArray(schedRes),
-        ...extractCricketArray(schedExtRes),
-        ...getAllCachedCricketSchedules()
-      ];
+    let freshLive = isViewingToday ? getCachedSync(`${API_CRICKET_BASE}/live`) : [];
+    let freshToday = getCachedSync(CRICKET_TODAY_URL);
+    let freshWeek = getCachedSync(CRICKET_SCHEDULE_URL);
+    let freshExt = needExtendedRender ? getCachedSync(CRICKET_SCHEDULE_EXT_URL) : [];
 
-      // Render immediately with full Render API results (finished + live + upcoming)
-      const primaryMerged = mergeCricketSources(primarySched, liveRes, [], isViewingToday);
-      const primaryFiltered = filterAndSortCricketForDate(primaryMerged, date);
+    const commitMerged = (doneLoading = false) => {
+      if (!isStillActive()) return;
+      // Strict oldest -> freshest merge order so fresh Render payloads ALWAYS override cached ones
+      const orderedBatches = [
+        ...getAllCachedCricketBatches(),
+        freshExt,
+        freshWeek,
+        freshToday
+      ].filter(Boolean);
+      const merged = mergeCricketSources(orderedBatches, freshLive, isViewingToday);
+      const filtered = filterAndSortCricketForDate(merged, date);
       startTransition(() => {
-        setCricketState({ dateKey, items: primaryFiltered });
-        if (!isSilent) setLoading(false);
+        setCricketState({ dateKey, items: filtered });
+        if (doneLoading && !isSilent) setLoading(false);
       });
+    };
 
-      // Non-blocking supplemental ESPN header enrichment only for fixtures missing from Render
-      Promise.all([
-        fetchWithCache(`${API_ESPN_CRICKET_HEADER}&dates=${ds}`, isSilent || forceRefresh, 6000).catch(() => null),
-        isViewingToday ? fetchWithCache(API_ESPN_CRICKET_HEADER, isSilent || forceRefresh, 6000).catch(() => null) : Promise.resolve(null)
-      ]).then(([espnDayRes, espnNowRes]) => {
-        if (reqId !== fetchSeqRef.current) return;
-        const espnMatches = [
-          ...normalizeEspnCricketHeader(espnDayRes),
-          ...normalizeEspnCricketHeader(espnNowRes)
-        ];
-        if (espnMatches.length > 0) {
-          const enrichedMerged = mergeCricketSources(primarySched, liveRes, espnMatches, isViewingToday);
-          const enrichedFiltered = filterAndSortCricketForDate(enrichedMerged, date);
-          startTransition(() => {
-            setCricketState({ dateKey, items: enrichedFiltered });
-          });
-        }
-      }).catch(() => {});
+    try {
+      const tasks = [];
+
+      if (isViewingToday) {
+        tasks.push(
+          fetchRenderWithRetry(`${API_CRICKET_BASE}/live`, isSilent || forceRefresh).then(res => {
+            if (extractCricketArray(res).length > 0 || !freshLive) freshLive = res;
+            if (freshToday || freshWeek) commitMerged(false);
+          })
+        );
+      }
+
+      if (Math.abs(dayDiff) <= 1 || shouldRefreshTodaySched) {
+        tasks.push(
+          fetchRenderWithRetry(CRICKET_TODAY_URL, shouldRefreshTodaySched).then(res => {
+            if (extractCricketArray(res).length > 0) freshToday = res;
+            commitMerged(true);
+          })
+        );
+      }
+
+      if (!isSilent || shouldRefreshWeekSched) {
+        tasks.push(
+          fetchRenderWithRetry(CRICKET_SCHEDULE_URL, forceRefresh).then(res => {
+            if (extractCricketArray(res).length > 0) freshWeek = res;
+            commitMerged(true);
+          })
+        );
+      }
+
+      if (needExtendedRender && (!isSilent || shouldRefreshExtSched)) {
+        tasks.push(
+          fetchRenderWithRetry(CRICKET_SCHEDULE_EXT_URL, forceRefresh).then(res => {
+            if (extractCricketArray(res).length > 0) freshExt = res;
+            commitMerged(true);
+          })
+        );
+      }
+
+      await Promise.all(tasks);
+      commitMerged(true);
     } catch {
-      if (reqId !== fetchSeqRef.current) return;
-      if (!isSilent && cachedItems === null) {
+      if (isStillActive() && !isSilent && cachedItems === null) {
         setCricketState({ dateKey, items: [] });
       }
     } finally {
-      if (reqId === fetchSeqRef.current && !isSilent) setLoading(false);
+      if (isStillActive() && !isSilent) setLoading(false);
     }
-  }, [date, getCachedCricketForDate, getAllCachedCricketSchedules, startTransition]);
+  }, [date, getCachedCricketForDate, getAllCachedCricketBatches, startTransition]);
 
-  // Silently warm adjacent dates (yesterday & tomorrow) on idle for BOTH Football and Cricket
+  // Silently warm adjacent dates on idle (Football via ESPN soccer; Cricket 100% via Render)
   useEffect(() => {
     if (view !== 'scores') return;
     const timer = setTimeout(() => {
       runWhenIdle(() => {
-        [-1, 1].forEach(offset => {
-          const adj = new Date(date);
-          adj.setDate(adj.getDate() + offset);
-          const adjDs = toLocalIsoDate(adj).replace(/-/g, '');
-          if (activeSport === 'soccer') {
+        if (activeSport === 'soccer') {
+          [-1, 1].forEach(offset => {
+            const adj = new Date(date);
+            adj.setDate(adj.getDate() + offset);
+            const adjDs = toLocalIsoDate(adj).replace(/-/g, '');
             FOOTBALL_LEAGUES.forEach(l => {
               const url = `${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${adjDs}`;
               if (!getCachedSync(url)) fetchWithCache(url, false, 6500).catch(() => {});
             });
-          } else {
-            const url = `${API_ESPN_CRICKET_HEADER}&dates=${adjDs}`;
-            if (!getCachedSync(url)) fetchWithCache(url, false, 6500).catch(() => {});
+          });
+        } else {
+          if (!getCachedSync(CRICKET_SCHEDULE_URL)) {
+            fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
           }
-        });
+          const now = new Date();
+          const diff = Math.abs(Math.round((date - now) / 86400000));
+          if (diff >= 3 && !getCachedSync(CRICKET_SCHEDULE_EXT_URL)) {
+            fetchWithCache(CRICKET_SCHEDULE_EXT_URL, false, 25000).catch(() => {});
+          }
+        }
       }, 300);
     }, 350);
     return () => clearTimeout(timer);
@@ -6721,10 +6741,10 @@ function App() {
             )
           : Promise.resolve([]),
         cricketFavs.length > 0
-          ? fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=1&days_ahead=30`, forceRefresh).catch(() => [])
+          ? fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=1&days_ahead=30`, forceRefresh, 25000).catch(() => [])
           : Promise.resolve([]),
         cricketFavs.length > 0
-          ? fetchWithCache(`${API_CRICKET_BASE}/live`, forceRefresh).catch(() => [])
+          ? fetchWithCache(`${API_CRICKET_BASE}/live`, forceRefresh, 25000).catch(() => [])
           : Promise.resolve([])
       ]);
 
