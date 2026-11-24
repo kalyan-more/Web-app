@@ -2406,8 +2406,6 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   };
 };
 
-// Swaps `4` and `5` column slots in back lines so LCB (`4`) sits left of RCB (`5`)
-// while keeping all other lines and slots unchanged.
 const ESPN_FORMATION_PLACE_TABLES = {
   "4-2-3-1": {
     1: { row: 0, col: 0 },
@@ -2627,45 +2625,36 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
-    // Swap #4 and #27 when one is a defender (`roleTier === 1`) and the other is a midfielder
-    // (`roleTier === 2` or `3`) and they sit in different rows, without moving any other players.
-    const p4 = grid.flat().find(x => String(x?.player?.jersey) === '4');
-    const p27 = grid.flat().find(x => String(x?.player?.jersey) === '27');
-    if (p4 && p27) {
-      let loc4 = null, loc27 = null;
+    // Across all matches, when a defender (`roleTier === 1`) and a midfielder (`roleTier === 2` or `3`)
+    // are placed on opposite rows (`locA.r !== locB.r`), swap them in-place so the center-back
+    // sits on the back line and the pivot midfielder sits on the midfield line without moving any other slots.
+    const flatItems = grid.flat();
+    for (let i = 0; i < flatItems.length; i++) {
+      const a = flatItems[i];
+      if (!a || a.role?.roleTier !== 1) continue;
+      let locA = null;
       for (let r = 0; r < grid.length; r++) {
-        for (let c = 0; c < grid[r].length; c++) {
-          if (grid[r][c] === p4) loc4 = { r, c };
-          if (grid[r][c] === p27) loc27 = { r, c };
-        }
+        const c = grid[r].indexOf(a);
+        if (c !== -1) { locA = { r, c }; break; }
       }
-      const isDefMidPair =
-        (p4.role?.roleTier === 1 && (p27.role?.roleTier === 2 || p27.role?.roleTier === 3)) ||
-        (p27.role?.roleTier === 1 && (p4.role?.roleTier === 2 || p4.role?.roleTier === 3));
-      if (loc4 && loc27 && isDefMidPair && loc4.r !== loc27.r) {
-        const tmp = grid[loc4.r][loc4.c];
-        grid[loc4.r][loc4.c] = grid[loc27.r][loc27.c];
-        grid[loc27.r][loc27.c] = tmp;
-      }
-    }
+      if (!locA) continue;
 
-    // If `4` (LCB/CB) and `37` (pivot/midfielder) landed on opposite lines or swapped order,
-    // swap them within the grid while preserving all other players in place.
-    const j4 = String(starters.find(s => String(s?.jersey) === '4')?.athlete?.id || '');
-    const j37 = String(starters.find(s => String(s?.jersey) === '37')?.athlete?.id || '');
-    if (j4 && j37) {
-      let loc4 = null, loc37 = null;
-      for (let r = 0; r < grid.length; r++) {
-        for (let c = 0; c < grid[r].length; c++) {
-          const pid = String(grid[r][c]?.player?.athlete?.id || '');
-          if (pid === j4) loc4 = { r, c };
-          if (pid === j37) loc37 = { r, c };
+      for (let j = 0; j < flatItems.length; j++) {
+        if (i === j) continue;
+        const b = flatItems[j];
+        if (!b || (b.role?.roleTier !== 2 && b.role?.roleTier !== 3)) continue;
+        let locB = null;
+        for (let r = 0; r < grid.length; r++) {
+          const c = grid[r].indexOf(b);
+          if (c !== -1) { locB = { r, c }; break; }
         }
-      }
-      if (loc4 && loc37 && (loc4.r !== loc37.r || loc4.c !== loc37.c)) {
-        const tmp = grid[loc4.r][loc4.c];
-        grid[loc4.r][loc4.c] = grid[loc37.r][loc37.c];
-        grid[loc37.r][loc37.c] = tmp;
+        if (locB && locA.r !== locB.r) {
+          grid[locA.r][locA.c] = b;
+          grid[locB.r][locB.c] = a;
+          flatItems[i] = b;
+          flatItems[j] = a;
+          break;
+        }
       }
     }
 
