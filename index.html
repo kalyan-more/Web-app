@@ -2410,8 +2410,17 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   };
 };
 
-// Swaps `4` and `5` column slots in back lines so LCB (`4`) sits left of RCB (`5`)
-// while keeping all other lines and slots unchanged.
+/**
+ * What fixed `4-2-3-1` was mapping ESPN's Opta/ESPN `formationPlace` (`1`..`11`)
+ * to its true tactical line (`row`) and left-to-right column (`col`) rather than
+ * slicing `1..11` sequentially or inverting `4` and `5`.
+ *
+ * Applying that exact `formationPlace` -> `(row, col)` contract across EVERY
+ * formation (`4-3-3`, `4-1-4-1`, `4-4-2`, `4-4-1-1`, `4-2-2-2`, `4-3-1-2`,
+ * `4-1-2-1-2`, `3-4-2-1`, `3-4-3`, `3-4-1-2`, `3-5-2`, `3-5-1-1`, `5-3-2`, `5-4-1`)
+ * and normalizing dynamic/unlisted formations (`buildDynamicFormationFromPlace`)
+ * guarantees every formation uses the same `4-2-3-1` fix.
+ */
 const ESPN_FORMATION_PLACE_TABLES = {
   "4-2-3-1": {
     1: { row: 0, col: 0 },
@@ -2423,7 +2432,7 @@ const ESPN_FORMATION_PLACE_TABLES = {
   "4-3-3": {
     1: { row: 0, col: 0 },
     3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    10: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
+    6: { row: 2, col: 0 }, 10: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
     11: { row: 3, col: 0 }, 9: { row: 3, col: 1 }, 7: { row: 3, col: 2 }
   },
   "4-1-4-1": {
@@ -2456,9 +2465,9 @@ const ESPN_FORMATION_PLACE_TABLES = {
   "4-3-1-2": {
     1: { row: 0, col: 0 },
     3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
+    6: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
     10: { row: 3, col: 0 },
-    7: { row: 4, col: 1 }, 9: { row: 4, col: 0 }
+    9: { row: 4, col: 0 }, 7: { row: 4, col: 1 }
   },
   "4-1-2-1-2": {
     1: { row: 0, col: 0 },
@@ -2466,13 +2475,13 @@ const ESPN_FORMATION_PLACE_TABLES = {
     6: { row: 2, col: 0 },
     11: { row: 3, col: 0 }, 8: { row: 3, col: 1 },
     10: { row: 4, col: 0 },
-    7: { row: 5, col: 1 }, 9: { row: 5, col: 0 }
+    9: { row: 5, col: 0 }, 7: { row: 5, col: 1 }
   },
   "3-4-2-1": {
     1: { row: 0, col: 0 },
     4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
-    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 7: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
-    11: { row: 3, col: 0 }, 10: { row: 3, col: 1 },
+    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
+    11: { row: 3, col: 0 }, 7: { row: 3, col: 1 },
     9: { row: 4, col: 0 }
   },
   "3-4-3": {
@@ -2491,8 +2500,8 @@ const ESPN_FORMATION_PLACE_TABLES = {
   "3-5-2": {
     1: { row: 0, col: 0 },
     4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
-    3: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 }, 2: { row: 2, col: 4 },
-    10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
+    3: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 10: { row: 2, col: 3 }, 2: { row: 2, col: 4 },
+    7: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
   },
   "3-5-1-1": {
     1: { row: 0, col: 0 },
@@ -2504,8 +2513,8 @@ const ESPN_FORMATION_PLACE_TABLES = {
   "5-3-2": {
     1: { row: 0, col: 0 },
     3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 6: { row: 1, col: 3 }, 2: { row: 1, col: 4 },
-    11: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 7: { row: 2, col: 2 },
-    10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
+    11: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 },
+    7: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
   },
   "5-4-1": {
     1: { row: 0, col: 0 },
@@ -2513,6 +2522,52 @@ const ESPN_FORMATION_PLACE_TABLES = {
     11: { row: 2, col: 0 }, 10: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
     9: { row: 3, col: 0 }
   }
+};
+
+/**
+ * Dynamically maps ESPN `formationPlace` (`1`..`11`) onto arbitrary `formationRows`
+ * (e.g. `4-3-2-1`, `3-1-4-2`, `4-5-1`) so any formation not explicitly listed in
+ * `ESPN_FORMATION_PLACE_TABLES` still uses the same role-and-flank `formationPlace`
+ * mapping rather than falling back to a naive flat sort.
+ */
+const buildDynamicPlaceTable = (formationRows) => {
+  const numOutfieldLines = Math.max(1, formationRows.length - 1);
+  const lastRow = numOutfieldLines;
+  const attRow = numOutfieldLines >= 4 ? numOutfieldLines - 1 : lastRow;
+  const midRow = numOutfieldLines >= 3 ? 2 : 1;
+
+  // Base semantic row assignments for Opta/ESPN `formationPlace` 1..11
+  const baseMap = {
+    1: { row: 0, lat: -999 },
+    3: { row: 1, lat: -100 },
+    4: { row: 1, lat: -30 },
+    5: { row: 1, lat: 30 },
+    2: { row: 1, lat: 100 },
+    6: { row: midRow, lat: -60 },
+    11: { row: numOutfieldLines >= 4 ? attRow : midRow, lat: -90 },
+    8: { row: midRow, lat: 0 },
+    10: { row: numOutfieldLines >= 3 ? attRow : midRow, lat: -15 },
+    7: { row: numOutfieldLines >= 3 ? attRow : lastRow, lat: 90 },
+    9: { row: lastRow, lat: 15 }
+  };
+
+  // Clamp row indices into valid `0..numOutfieldLines` bounds
+  const rowBuckets = Array.from({ length: formationRows.length }, () => []);
+  for (let fp = 1; fp <= 11; fp++) {
+    const info = baseMap[fp] || { row: midRow, lat: 0 };
+    const clampedRow = Math.max(0, Math.min(lastRow, info.row));
+    rowBuckets[clampedRow].push({ fp, lat: info.lat });
+  }
+
+  const table = {};
+  rowBuckets.forEach((bucket, rIdx) => {
+    bucket.sort((a, b) => a.lat - b.lat);
+    bucket.forEach((entry, cIdx) => {
+      table[entry.fp] = { row: rIdx, col: cIdx };
+    });
+  });
+
+  return table;
 };
 
 const inferFormationFromStarters = (starters) => {
@@ -2580,25 +2635,16 @@ const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
   return [1];
 };
 
-/**
- * Ensures defenders (`roleTier === 1`) sit on the defensive row (`row 1`) and
- * midfielders (`roleTier === 2`) sit on the midfield row (`row 2`), swapping a
- * single misplaced defender and midfielder when ESPN assigns `formationPlace`
- * across adjacent lines (such as #4 and #27 in Brentford vs. Everton).
- */
 const reconcileDefenderMidfieldSwap = (grid) => {
   if (!Array.isArray(grid) || grid.length < 3) return;
   const defRow = grid[1];
   const midRow = grid[2];
   if (!Array.isArray(defRow) || !Array.isArray(midRow)) return;
 
-  // Find a player in the midfield row whose true roleTier is defender (`1`)
   const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
   if (midIdx === -1) return;
 
-  // Find a player in the defensive row whose true roleTier is midfielder (`2`)
   let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
-  // If no explicit midfielder roleTier is in defRow, swap with the 2nd defender from left (index 1 if available)
   if (defIdx === -1 && defRow.length >= 2) {
     defIdx = 1;
   }
@@ -2610,11 +2656,33 @@ const reconcileDefenderMidfieldSwap = (grid) => {
   }
 };
 
+/**
+ * Ensures every row in `grid` is sorted left-to-right by true lateral position
+ * (explicit flank tag -> Opta/ESPN `formationPlace` lateral order -> slot column)
+ * so wingers, full-backs, and central players never invert left/right flanks in
+ * non-4-2-3-1 formations like `4-3-3`, `4-4-2`, `3-5-2`, or `5-3-2`.
+ */
+const sortRowsLeftToRight = (grid) => {
+  return grid.map((rowItems, rIdx) => {
+    if (rIdx === 0) return rowItems.map(x => x.player);
+    const sorted = [...rowItems].sort((a, b) => {
+      const latA = getOptaLateralOrder(a);
+      const latB = getOptaLateralOrder(b);
+      if (Math.abs(latA - latB) > 2) return latA - latB;
+      const colA = a.slot ? a.slot.col : 0;
+      const colB = b.slot ? b.slot.col : 0;
+      if (colA !== colB) return colA - colB;
+      return a.idx - b.idx;
+    });
+    return sorted.map(x => x.player);
+  });
+};
+
 const buildFormationGrid = (starters, formationRows) => {
   const grid = formationRows.map(() => []);
   const used = new Set();
   const formKey = formationRows.slice(1).join("-");
-  const placeTable = ESPN_FORMATION_PLACE_TABLES[formKey] || null;
+  const placeTable = ESPN_FORMATION_PLACE_TABLES[formKey] || buildDynamicPlaceTable(formationRows);
   const numOutfieldLines = formationRows.length - 1;
 
   const enriched = starters.map((player, idx) => {
@@ -2664,10 +2732,7 @@ const buildFormationGrid = (starters, formationRows) => {
     reconcileDefenderMidfieldSwap(grid);
 
     if (used.size === starters.length) {
-      return grid.map((rowItems, rIdx) => {
-        if (rIdx === 0) return rowItems.map(x => x.player);
-        return rowItems.map(x => x.player);
-      });
+      return sortRowsLeftToRight(grid);
     }
   }
 
@@ -2676,7 +2741,7 @@ const buildFormationGrid = (starters, formationRows) => {
 
   const gk = enriched.find(it => it.role.roleTier === 0 || it.meta.formationPlace === 1) || enriched[0];
   if (gk && grid[0].length < formationRows[0]) {
-    grid[0].push(gk.player);
+    grid[0].push(gk);
     used.add(gk.idx);
   }
 
@@ -2688,7 +2753,7 @@ const buildFormationGrid = (starters, formationRows) => {
       .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
       .forEach(it => {
         if (grid[1].length < formationRows[1]) {
-          grid[1].push(it.player);
+          grid[1].push(it);
           used.add(it.idx);
         }
       });
@@ -2701,7 +2766,7 @@ const buildFormationGrid = (starters, formationRows) => {
       .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
       .forEach(it => {
         if (grid[lastRowIdx].length < formationRows[lastRowIdx]) {
-          grid[lastRowIdx].push(it.player);
+          grid[lastRowIdx].push(it);
           used.add(it.idx);
         }
       });
@@ -2714,7 +2779,7 @@ const buildFormationGrid = (starters, formationRows) => {
       .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
       .forEach(it => {
         if (grid[attRowIdx].length < formationRows[attRowIdx]) {
-          grid[attRowIdx].push(it.player);
+          grid[attRowIdx].push(it);
           used.add(it.idx);
         }
       });
@@ -2728,18 +2793,14 @@ const buildFormationGrid = (starters, formationRows) => {
     while (grid[r].length < formationRows[r] && remaining.length > 0) {
       const next = remaining.shift();
       if (next && !used.has(next.idx)) {
-        grid[r].push(next.player);
+        grid[r].push(next);
         used.add(next.idx);
       }
     }
   }
 
-  const lateralLookup = new Map(enriched.map(it => [it.player, getOptaLateralOrder(it)]));
-  for (let r = 1; r < grid.length; r++) {
-    grid[r].sort((pA, pB) => (lateralLookup.get(pA) ?? 0) - (lateralLookup.get(pB) ?? 0));
-  }
-
-  return grid;
+  reconcileDefenderMidfieldSwap(grid);
+  return sortRowsLeftToRight(grid);
 };
 
 const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
