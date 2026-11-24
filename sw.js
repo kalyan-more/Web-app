@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.hostname.includes('espn.com') || url.hostname.includes('onrender.com') || url.hostname.includes('rss2json.com')) {
+  if (url.hostname.includes('espn.com') || url.hostname.includes('espncricinfo.com') || url.hostname.includes('onrender.com') || url.hostname.includes('rss2json.com')) {
     event.respondWith(
       fetch(req).catch(() => caches.match(req))
     );
