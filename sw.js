@@ -1,5 +1,5 @@
 const CACHE_NAME = 'sideline-pwa-v75';
-const LOGO_CACHE_NAME = 'sideline-logos-swr-v1';
+const LOGO_CACHE_NAME = 'sideline-logos-swr-v2';
 const ASSETS = [
   './',
   './index.html',
