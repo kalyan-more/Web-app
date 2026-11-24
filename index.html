@@ -2361,6 +2361,10 @@ const getStartingEleven = (teamRoster) => {
   return [...explicitStarters, ...nonStarters].slice(0, 11);
 };
 
+/**
+ * Classifies player role tier strictly from ESPN position metadata:
+ * 0 = GK, 1 = DEF, 2 = DEF/CENTRAL MID, 3 = ATT MID / WINGER, 4 = STRIKER / CF
+ */
 const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   const { abbr, pname, ptype, combined, formationPlace } = getPlayerRoleMeta(player);
   const tag = `${abbr} ${pname} ${ptype}`.toUpperCase();
@@ -2407,7 +2411,7 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
 };
 
 // Swaps `4` and `5` column slots in back lines so LCB (`4`) sits left of RCB (`5`)
-// for both home and away teams across all formations while keeping all other slots intact.
+// while keeping all other lines and slots unchanged.
 const ESPN_FORMATION_PLACE_TABLES = {
   "4-2-3-1": {
     1: { row: 0, col: 0 },
@@ -2576,6 +2580,36 @@ const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
   return [1];
 };
 
+/**
+ * Ensures defenders (`roleTier === 1`) sit on the defensive row (`row 1`) and
+ * midfielders (`roleTier === 2`) sit on the midfield row (`row 2`), swapping a
+ * single misplaced defender and midfielder when ESPN assigns `formationPlace`
+ * across adjacent lines (such as #4 and #27 in Brentford vs. Everton).
+ */
+const reconcileDefenderMidfieldSwap = (grid) => {
+  if (!Array.isArray(grid) || grid.length < 3) return;
+  const defRow = grid[1];
+  const midRow = grid[2];
+  if (!Array.isArray(defRow) || !Array.isArray(midRow)) return;
+
+  // Find a player in the midfield row whose true roleTier is defender (`1`)
+  const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
+  if (midIdx === -1) return;
+
+  // Find a player in the defensive row whose true roleTier is midfielder (`2`)
+  let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
+  // If no explicit midfielder roleTier is in defRow, swap with the 2nd defender from left (index 1 if available)
+  if (defIdx === -1 && defRow.length >= 2) {
+    defIdx = 1;
+  }
+
+  if (defIdx !== -1 && midIdx !== -1) {
+    const tmp = defRow[defIdx];
+    defRow[defIdx] = midRow[midIdx];
+    midRow[midIdx] = tmp;
+  }
+};
+
 const buildFormationGrid = (starters, formationRows) => {
   const grid = formationRows.map(() => []);
   const used = new Set();
@@ -2627,31 +2661,7 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
-    // Swap slot-4 defender and slot-8 (or pivot) midfielder across lines for BOTH home & away
-    // teams across ALL matches without moving any other position.
-    const flatItems = grid.flat();
-    const defSlot4 = flatItems.find(
-      x => x?.meta?.formationPlace === 4 && x?.role?.roleTier === 1
-    );
-    const midSlot8 = flatItems.find(
-      x => x !== defSlot4 &&
-        (x?.role?.roleTier === 2 || x?.role?.roleTier === 3) &&
-        (x?.meta?.formationPlace === 8 || x?.meta?.formationPlace === 6 || x?.meta?.formationPlace === 5 || String(x?.player?.jersey) === '27' || String(x?.player?.jersey) === '37')
-    );
-    if (defSlot4 && midSlot8) {
-      let locA = null, locB = null;
-      for (let r = 0; r < grid.length; r++) {
-        for (let c = 0; c < grid[r].length; c++) {
-          if (grid[r][c] === defSlot4) locA = { r, c };
-          if (grid[r][c] === midSlot8) locB = { r, c };
-        }
-      }
-      if (locA && locB && (locA.r !== locB.r || locA.c !== locB.c)) {
-        const tmp = grid[locA.r][locA.c];
-        grid[locA.r][locA.c] = grid[locB.r][locB.c];
-        grid[locB.r][locB.c] = tmp;
-      }
-    }
+    reconcileDefenderMidfieldSwap(grid);
 
     if (used.size === starters.length) {
       return grid.map((rowItems, rIdx) => {
