@@ -68,13 +68,11 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.45);
     }
 
-    /* Sleek, refined Liquid Glass surfaces */
+    /* Sleek, refined Obsidian Glass surfaces (GPU-friendly for 60/120fps scrolling lists) */
     .liquid-glass {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(15, 15, 19, 0.82) 100%);
-      -webkit-backdrop-filter: blur(18px) saturate(165%);
-      backdrop-filter: blur(18px) saturate(165%);
+      background: linear-gradient(180deg, rgba(30, 30, 36, 0.90) 0%, rgba(15, 15, 19, 0.96) 100%);
       border: 1px solid rgba(255, 255, 255, 0.095);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 22px rgba(0, 0, 0, 0.34);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 8px 20px rgba(0, 0, 0, 0.32);
     }
 
     .liquid-glass-header {
@@ -99,15 +97,26 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Distinct, silky Apple-like transitions for different sections & UI elements */
+    /* Distinct, silky Apple UIKit GPU-only transitions (pure translate3d + opacity for 60/120fps WebKit) */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.35;
-        transform: translate3d(0, 48px, 0) scale3d(0.98, 0.98, 1);
+        opacity: 0.5;
+        transform: translate3d(0, 44px, 0);
       }
       100% {
         opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes iosSheetSlideDown {
+      0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(0, 48px, 0);
       }
     }
 
@@ -116,24 +125,34 @@
       100% { opacity: 1; }
     }
 
+    @keyframes iosBackdropFadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes iosTabFadeIn {
+      0% { opacity: 0; transform: translate3d(0, 5px, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
     /* Section-specific transitions */
     @keyframes sectionHomeEnter {
-      0% { opacity: 0; transform: translate3d(0, 14px, 0) scale3d(0.988, 0.988, 1); }
-      100% { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+      0% { opacity: 0; transform: translate3d(0, 8px, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes sectionScoresEnter {
-      0% { opacity: 0; transform: translate3d(12px, 0, 0); }
+      0% { opacity: 0; transform: translate3d(8px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes sectionStandingsEnter {
-      0% { opacity: 0; transform: translate3d(0, 12px, 0); }
+      0% { opacity: 0; transform: translate3d(0, 8px, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes sectionIntelEnter {
-      0% { opacity: 0; transform: translate3d(-10px, 6px, 0); }
+      0% { opacity: 0; transform: translate3d(-8px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
@@ -151,25 +170,29 @@
     @keyframes iosOpeningIcon {
       0% {
         opacity: 0;
-        transform: scale3d(0.82, 0.82, 1);
+        transform: scale3d(0.86, 0.86, 1);
       }
-      45% {
+      22% {
+        opacity: 0;
+        transform: scale3d(0.88, 0.88, 1);
+      }
+      55% {
         opacity: 1;
-        transform: scale3d(1.015, 1.015, 1);
+        transform: scale3d(1.01, 1.01, 1);
       }
-      75% {
+      80% {
         opacity: 1;
         transform: scale3d(1, 1, 1);
       }
       100% {
         opacity: 0;
-        transform: scale3d(1.04, 1.04, 1);
+        transform: scale3d(1.025, 1.025, 1);
       }
     }
 
     @keyframes iosOpeningOverlayFade {
       0% { opacity: 1; }
-      68% { opacity: 1; }
+      74% { opacity: 1; }
       100% { opacity: 0; }
     }
 
@@ -205,46 +228,33 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosSheetSlideUp 0.30s cubic-bezier(0.32, 0.72, 0, 1) both;
       will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+
+    .ios-sheet-down {
+      animation: iosSheetSlideDown 0.19s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.34s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-      will-change: opacity;
+      animation: iosBackdropFadeIn 0.22s ease-out both;
     }
 
-    .section-enter-home {
-      animation: sectionHomeEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      will-change: transform, opacity;
+    .ios-backdrop-out {
+      animation: iosBackdropFadeOut 0.18s ease-out forwards;
+    }
+
+    .ios-tab-fade {
+      animation: iosTabFadeIn 0.18s cubic-bezier(0.32, 0.72, 0, 1) both;
     }
 
     @keyframes scheduleLoadNext {
       0% {
         opacity: 0;
-        transform: translate3d(18px, 6px, 0) scale3d(0.992, 0.992, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-      }
-    }
-
-    @keyframes scheduleLoadPrev {
-      0% {
-        opacity: 0;
-        transform: translate3d(-18px, 6px, 0) scale3d(0.992, 0.992, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-      }
-    }
-
-    @keyframes scheduleCardGlide {
-      0% {
-        opacity: 0;
-        transform: translate3d(0, 10px, 0);
+        transform: translate3d(26px, 0, 0);
       }
       100% {
         opacity: 1;
@@ -252,60 +262,63 @@
       }
     }
 
-    .schedule-load-next {
-      opacity: 0;
-      animation: scheduleLoadNext 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.16s forwards;
-      will-change: transform, opacity;
+    @keyframes scheduleLoadPrev {
+      0% {
+        opacity: 0;
+        transform: translate3d(-26px, 0, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
     }
 
-    .schedule-load-prev {
-      opacity: 0;
-      animation: scheduleLoadPrev 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.16s forwards;
-      will-change: transform, opacity;
-    }
-
-    .schedule-card-item {
-      opacity: 0;
-      animation: scheduleCardGlide 0.56s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      will-change: transform, opacity;
+    .section-enter-home {
+      animation: sectionHomeEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
     }
 
     .section-enter-scores {
-      animation: sectionScoresEnter 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      will-change: transform, opacity;
+      animation: sectionScoresEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
     }
 
     .section-enter-standings {
-      animation: sectionStandingsEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      will-change: transform, opacity;
+      animation: sectionStandingsEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
     }
 
     .section-enter-intel {
-      animation: sectionIntelEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: sectionIntelEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
+    }
+
+    .schedule-load-next {
+      animation: scheduleLoadNext 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
       will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+
+    .schedule-load-prev {
+      animation: scheduleLoadPrev 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
     }
 
     .ios-expand-in {
-      animation: iosExpandIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      will-change: transform, opacity;
+      animation: iosExpandIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.20s ease, border-color 0.20s ease, opacity 0.20s ease;
-      will-change: transform;
+      transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease;
     }
     .ios-card-press:active {
-      transform: scale3d(0.974, 0.974, 1);
+      transform: scale3d(0.978, 0.978, 1);
     }
 
     button {
       touch-action: manipulation;
-      transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.24s ease, color 0.24s ease, opacity 0.24s ease;
-      will-change: transform;
+      transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
     }
     button:active {
-      transform: scale3d(0.958, 0.958, 1);
+      transform: scale3d(0.964, 0.964, 1);
     }
   </style>
 </head>
@@ -374,6 +387,8 @@ const { useState, useEffect, useCallback, useMemo, useRef, useTransition, memo }
 const API_SOCCER_SCORE_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
 const API_SOCCER_STANDINGS_BASE = "https://site.api.espn.com/apis/v2/sports/soccer";
 const API_CRICKET_BASE = "https://cricket-api-1-1yo0.onrender.com/api";
+const CRICKET_SCHEDULE_URL = `${API_CRICKET_BASE}/schedule?days_past=5&days_ahead=5`;
+const CRICKET_SCHEDULE_EXT_URL = `${API_CRICKET_BASE}/schedule?days_past=10&days_ahead=10`;
 const CRICINFO_RSS_JSON = "https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.espncricinfo.com%2Frss%2Fcontent%2Fstory%2Ffeeds%2F0.xml";
 
 // 🎨 UNIFIED OBSIDIAN THEME
@@ -433,13 +448,13 @@ const CRICKET_COUNTRY_ALIASES = [
   { code: 'gb-sct', keys: ['scotland', 'sco', 'scot', 'scotland w'] },
   { code: 'np', keys: ['nepal', 'nep', 'nepal w'] },
   { code: 'us', keys: ['united states', 'usa', 'us', 'united states of america', 'usa w'] },
-  { code: 'om', keys: ['oman', 'oma'] },
+  { code: 'om', keys: ['oman', 'oma', 'oman a', 'oman w'] },
   { code: 'ca', keys: ['canada', 'can', 'canada w'] },
   { code: 'na', keys: ['namibia', 'nam', 'namibia w'] },
   { code: 'ug', keys: ['uganda', 'uga', 'uganda w'] },
   { code: 'pg', keys: ['papua new guinea', 'png', 'png w'] },
-  { code: 'ae', keys: ['united arab emirates', 'uae', 'emirates', 'uae w'] },
-  { code: 'hk', keys: ['hong kong', 'hk', 'hkg', 'hong kong w'] },
+  { code: 'ae', keys: ['united arab emirates', 'uae', 'emirates', 'uae a', 'united arab emirates a', 'uae w', 'uae u19'] },
+  { code: 'hk', keys: ['hong kong', 'hk', 'hkg', 'hong kong a', 'hong kong w'] },
   { code: 'ke', keys: ['kenya', 'ken', 'kenya w'] },
   { code: 'bm', keys: ['bermuda', 'ber'] },
   { code: 'it', keys: ['italy', 'ita', 'italy w'] },
@@ -676,22 +691,27 @@ const getWbblCrestUri = (name) => {
   return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(WBBL_OFFICIAL_CRESTS[key])))}`;
 };
 
-const CRICKET_DOMESTIC_LEAGUE_REGEX = /(county championship|vitality blast|one-day cup|t20 blast|bob willis|royal london|sheffield shield|marsh one-day|plunket shield|ford trophy|super smash \(domestic\)|ranji trophy|vijay hazare|duleep trophy|syed mushtaq ali)/i;
+const CRICKET_DOMESTIC_LEAGUE_REGEX = /(county championship|vitality blast|t20 blast|bob willis|royal london|sheffield shield|marsh one-day|plunket shield|ford trophy|super smash \(domestic\)|ranji trophy|vijay hazare|duleep trophy|syed mushtaq ali)/i;
+const CRICKET_ALWAYS_ALLOW_REGEX = /(india a|uae a|pakistan a|bangladesh a|sri lanka a|australia a|england lions|new zealand a|south africa a|afghanistan a|ireland wolves|oman a|hong kong a|rising stars|emerging|asia cup|world cup|champions trophy|icc|acc|international|t20i|odi|test|ipl|wpl|bbl|wbbl|psl|sa20|cpl|hundred|mlc|ilt20|bpl|lpl)/i;
 
 const FOOTBALL_STADIUM_DB = {
+  // Premier League
   "Arsenal": { name: "Emirates Stadium", city: "London", cap: 60704 },
   "Aston Villa": { name: "Villa Park", city: "Birmingham", cap: 42918 },
   "Bournemouth": { name: "Vitality Stadium", city: "Bournemouth", cap: 11307 },
   "AFC Bournemouth": { name: "Vitality Stadium", city: "Bournemouth", cap: 11307 },
   "Brentford": { name: "Gtech Community Stadium", city: "London", cap: 17250 },
-  "Brighton": { name: "Amex Stadium", city: "Falmer", cap: 31876 },
-  "Brighton & Hove Albion": { name: "Amex Stadium", city: "Falmer", cap: 31876 },
+  "Brighton": { name: "Amex Stadium", city: "Brighton", cap: 31876 },
+  "Brighton & Hove Albion": { name: "Amex Stadium", city: "Brighton", cap: 31876 },
+  "Burnley": { name: "Turf Moor", city: "Burnley", cap: 21944 },
   "Chelsea": { name: "Stamford Bridge", city: "London", cap: 40343 },
   "Crystal Palace": { name: "Selhurst Park", city: "London", cap: 25486 },
-  "Everton": { name: "Goodison Park", city: "Liverpool", cap: 39414 },
+  "Everton": { name: "Hill Dickinson Stadium", city: "Liverpool", cap: 52888 },
   "Fulham": { name: "Craven Cottage", city: "London", cap: 24500 },
-  "Ipswich Town": { name: "Portman Road", city: "Ipswich", cap: 29673 },
-  "Ipswich": { name: "Portman Road", city: "Ipswich", cap: 29673 },
+  "Ipswich Town": { name: "Portman Road", city: "Ipswich", cap: 30056 },
+  "Ipswich": { name: "Portman Road", city: "Ipswich", cap: 30056 },
+  "Leeds United": { name: "Elland Road", city: "Leeds", cap: 37608 },
+  "Leeds": { name: "Elland Road", city: "Leeds", cap: 37608 },
   "Leicester City": { name: "King Power Stadium", city: "Leicester", cap: 32262 },
   "Leicester": { name: "King Power Stadium", city: "Leicester", cap: 32262 },
   "Liverpool": { name: "Anfield", city: "Liverpool", cap: 61276 },
@@ -704,6 +724,7 @@ const FOOTBALL_STADIUM_DB = {
   "Nottm Forest": { name: "The City Ground", city: "Nottingham", cap: 30404 },
   "Nottingham Forest": { name: "The City Ground", city: "Nottingham", cap: 30404 },
   "Southampton": { name: "St. Mary's Stadium", city: "Southampton", cap: 32384 },
+  "Sunderland": { name: "Stadium of Light", city: "Sunderland", cap: 49000 },
   "Tottenham": { name: "Tottenham Hotspur Stadium", city: "London", cap: 62850 },
   "Tottenham Hotspur": { name: "Tottenham Hotspur Stadium", city: "London", cap: 62850 },
   "Spurs": { name: "Tottenham Hotspur Stadium", city: "London", cap: 62850 },
@@ -711,59 +732,268 @@ const FOOTBALL_STADIUM_DB = {
   "West Ham United": { name: "London Stadium", city: "London", cap: 62500 },
   "Wolves": { name: "Molineux Stadium", city: "Wolverhampton", cap: 31750 },
   "Wolverhampton Wanderers": { name: "Molineux Stadium", city: "Wolverhampton", cap: 31750 },
-  "Leeds": { name: "Elland Road", city: "Leeds", cap: 37608 },
-  "Leeds United": { name: "Elland Road", city: "Leeds", cap: 37608 },
-  "Burnley": { name: "Turf Moor", city: "Burnley", cap: 21944 },
-  "Sheffield Utd": { name: "Bramall Lane", city: "Sheffield", cap: 32050 },
+
+  // EFL Championship & League One
   "Sheffield United": { name: "Bramall Lane", city: "Sheffield", cap: 32050 },
-  "Sunderland": { name: "Stadium of Light", city: "Sunderland", cap: 49000 },
+  "Sheffield Utd": { name: "Bramall Lane", city: "Sheffield", cap: 32050 },
+  "Sheffield Wednesday": { name: "Hillsborough Stadium", city: "Sheffield", cap: 39732 },
   "Middlesbrough": { name: "Riverside Stadium", city: "Middlesbrough", cap: 34742 },
+  "West Bromwich Albion": { name: "The Hawthorns", city: "West Bromwich", cap: 26688 },
   "West Brom": { name: "The Hawthorns", city: "West Bromwich", cap: 26688 },
+  "Norwich City": { name: "Carrow Road", city: "Norwich", cap: 27359 },
   "Norwich": { name: "Carrow Road", city: "Norwich", cap: 27359 },
+  "Coventry City": { name: "Coventry Building Society Arena", city: "Coventry", cap: 32609 },
   "Coventry": { name: "Coventry Building Society Arena", city: "Coventry", cap: 32609 },
   "Bristol City": { name: "Ashton Gate", city: "Bristol", cap: 27000 },
+  "Bristol Rovers": { name: "Memorial Stadium", city: "Bristol", cap: 12534 },
+  "Blackburn Rovers": { name: "Ewood Park", city: "Blackburn", cap: 31367 },
+  "Blackburn": { name: "Ewood Park", city: "Blackburn", cap: 31367 },
+  "Cardiff City": { name: "Cardiff City Stadium", city: "Cardiff", cap: 33280 },
+  "Derby County": { name: "Pride Park Stadium", city: "Derby", cap: 32956 },
+  "Hull City": { name: "MKM Stadium", city: "Hull", cap: 25586 },
+  "Luton Town": { name: "Kenilworth Road", city: "Luton", cap: 12056 },
+  "Millwall": { name: "The Den", city: "London", cap: 20146 },
+  "Oxford United": { name: "Kassam Stadium", city: "Oxford", cap: 12500 },
+  "Plymouth Argyle": { name: "Home Park", city: "Plymouth", cap: 17900 },
+  "Portsmouth": { name: "Fratton Park", city: "Portsmouth", cap: 20899 },
+  "Preston North End": { name: "Deepdale", city: "Preston", cap: 23404 },
+  "Queens Park Rangers": { name: "Loftus Road", city: "London", cap: 18439 },
+  "QPR": { name: "Loftus Road", city: "London", cap: 18439 },
+  "Stoke City": { name: "bet365 Stadium", city: "Stoke-on-Trent", cap: 30089 },
+  "Swansea City": { name: "Swansea.com Stadium", city: "Swansea", cap: 21088 },
+  "Watford": { name: "Vicarage Road", city: "Watford", cap: 22200 },
+  "Birmingham City": { name: "St Andrew's @ Knighthead Park", city: "Birmingham", cap: 29409 },
+  "Wrexham": { name: "SToK Cae Ras", city: "Wrexham", cap: 13341 },
+  "Charlton Athletic": { name: "The Valley", city: "London", cap: 27111 },
+  "Bolton Wanderers": { name: "Toughsheet Community Stadium", city: "Bolton", cap: 28723 },
+  "Huddersfield Town": { name: "John Smith's Stadium", city: "Huddersfield", cap: 24121 },
+  "Reading": { name: "Select Car Leasing Stadium", city: "Reading", cap: 24161 },
+  "Rotherham United": { name: "New York Stadium", city: "Rotherham", cap: 12021 },
+  "Wigan Athletic": { name: "Brick Community Stadium", city: "Wigan", cap: 25138 },
+  "Barnsley": { name: "Oakwell", city: "Barnsley", cap: 23287 },
+  "Blackpool": { name: "Bloomfield Road", city: "Blackpool", cap: 16616 },
+  "Peterborough United": { name: "Weston Homes Stadium", city: "Peterborough", cap: 15314 },
+  "Lincoln City": { name: "LNER Stadium", city: "Lincoln", cap: 10669 },
+  "Wycombe Wanderers": { name: "Adams Park", city: "High Wycombe", cap: 10137 },
+  "Stockport County": { name: "Edgeley Park", city: "Stockport", cap: 10852 },
+  "Leyton Orient": { name: "Gaughan Group Stadium", city: "London", cap: 9271 },
+  "Exeter City": { name: "St James Park", city: "Exeter", cap: 8720 },
+  "Mansfield Town": { name: "One Call Stadium", city: "Mansfield", cap: 9186 },
+  "Northampton Town": { name: "Sixfields Stadium", city: "Northampton", cap: 7798 },
+  "Burton Albion": { name: "Pirelli Stadium", city: "Burton upon Trent", cap: 6912 },
+  "Stevenage": { name: "Lamex Stadium", city: "Stevenage", cap: 7800 },
+  "Shrewsbury Town": { name: "Croud Meadow", city: "Shrewsbury", cap: 9875 },
+  "Cambridge United": { name: "Cledara Abbey Stadium", city: "Cambridge", cap: 8127 },
+  "Crawley Town": { name: "Broadfield Stadium", city: "Crawley", cap: 5996 },
+  "Bradford City": { name: "University of Bradford Stadium", city: "Bradford", cap: 25136 },
+  "Doncaster Rovers": { name: "Eco-Power Stadium", city: "Doncaster", cap: 15231 },
+  "Port Vale": { name: "Vale Park", city: "Stoke-on-Trent", cap: 15695 },
+  "AFC Wimbledon": { name: "Cherry Red Records Stadium", city: "London", cap: 9215 },
+
+  // La Liga
   "Real Madrid": { name: "Santiago Bernabéu", city: "Madrid", cap: 83186 },
-  "Barcelona": { name: "Estadi Olímpic Lluís Companys", city: "Barcelona", cap: 55926 },
+  "Barcelona": { name: "Spotify Camp Nou", city: "Barcelona", cap: 60000 },
   "Atletico Madrid": { name: "Riyadh Air Metropolitano", city: "Madrid", cap: 70460 },
-  "Atlético Madrid": { name: "Riyadh Air Metropolitano", city: "Madrid", cap: 70460 },
   "Athletic Club": { name: "San Mamés", city: "Bilbao", cap: 53289 },
   "Real Sociedad": { name: "Reale Arena", city: "San Sebastián", cap: 39313 },
-  "Real Betis": { name: "Benito Villamarín", city: "Seville", cap: 60721 },
+  "Real Betis": { name: "Estadio Benito Villamarín", city: "Seville", cap: 60721 },
   "Villarreal": { name: "Estadio de la Cerámica", city: "Villarreal", cap: 23008 },
   "Valencia": { name: "Mestalla", city: "Valencia", cap: 49430 },
   "Sevilla": { name: "Ramón Sánchez-Pizjuán", city: "Seville", cap: 43883 },
   "Girona": { name: "Estadi Montilivi", city: "Girona", cap: 14624 },
+  "Celta Vigo": { name: "Estadio Abanca-Balaídos", city: "Vigo", cap: 24791 },
+  "Osasuna": { name: "Estadio El Sadar", city: "Pamplona", cap: 23576 },
+  "Mallorca": { name: "Estadi Mallorca Son Moix", city: "Palma", cap: 26020 },
+  "Rayo Vallecano": { name: "Estadio de Vallecas", city: "Madrid", cap: 14708 },
+  "Getafe": { name: "Estadio Coliseum", city: "Getafe", cap: 16500 },
+  "Alaves": { name: "Estadio de Mendizorroza", city: "Vitoria-Gasteiz", cap: 19840 },
+  "Deportivo Alaves": { name: "Estadio de Mendizorroza", city: "Vitoria-Gasteiz", cap: 19840 },
+  "Espanyol": { name: "RCDE Stadium", city: "Cornellà de Llobregat", cap: 40000 },
+  "Las Palmas": { name: "Estadio Gran Canaria", city: "Las Palmas", cap: 32392 },
+  "Leganes": { name: "Estadio Municipal de Butarque", city: "Leganés", cap: 12454 },
+  "Real Valladolid": { name: "Estadio José Zorrilla", city: "Valladolid", cap: 27618 },
+  "Levante": { name: "Estadi Ciutat de València", city: "Valencia", cap: 26354 },
+  "Elche": { name: "Estadio Manuel Martínez Valero", city: "Elche", cap: 31388 },
+  "Real Oviedo": { name: "Estadio Carlos Tartiere", city: "Oviedo", cap: 30500 },
+
+  // Serie A
   "Inter Milan": { name: "San Siro", city: "Milan", cap: 75817 },
   "Internazionale": { name: "San Siro", city: "Milan", cap: 75817 },
-  "Inter": { name: "San Siro", city: "Milan", cap: 75817 },
   "AC Milan": { name: "San Siro", city: "Milan", cap: 75817 },
-  "Milan": { name: "San Siro", city: "Milan", cap: 75817 },
   "Juventus": { name: "Allianz Stadium", city: "Turin", cap: 41507 },
   "Napoli": { name: "Stadio Diego Armando Maradona", city: "Naples", cap: 54726 },
   "AS Roma": { name: "Stadio Olimpico", city: "Rome", cap: 70634 },
-  "Roma": { name: "Stadio Olimpico", city: "Rome", cap: 70634 },
   "Lazio": { name: "Stadio Olimpico", city: "Rome", cap: 70634 },
   "Atalanta": { name: "Gewiss Stadium", city: "Bergamo", cap: 24950 },
   "Fiorentina": { name: "Stadio Artemio Franchi", city: "Florence", cap: 43147 },
   "Bologna": { name: "Stadio Renato Dall'Ara", city: "Bologna", cap: 36462 },
+  "Torino": { name: "Stadio Olimpico Grande Torino", city: "Turin", cap: 28177 },
+  "Udinese": { name: "Bluenergy Stadium", city: "Udine", cap: 25132 },
+  "Genoa": { name: "Stadio Luigi Ferraris", city: "Genoa", cap: 33205 },
+  "Cagliari": { name: "Unipol Domus", city: "Cagliari", cap: 16416 },
+  "Hellas Verona": { name: "Stadio Marcantonio Bentegodi", city: "Verona", cap: 31045 },
+  "Verona": { name: "Stadio Marcantonio Bentegodi", city: "Verona", cap: 31045 },
+  "Lecce": { name: "Stadio Via del Mare", city: "Lecce", cap: 31461 },
+  "Empoli": { name: "Stadio Carlo Castellani", city: "Empoli", cap: 16284 },
+  "Parma": { name: "Stadio Ennio Tardini", city: "Parma", cap: 22352 },
+  "Como": { name: "Stadio Giuseppe Sinigaglia", city: "Como", cap: 13602 },
+  "Monza": { name: "U-Power Stadium", city: "Monza", cap: 17102 },
+  "Venezia": { name: "Stadio Pier Luigi Penzo", city: "Venice", cap: 12048 },
+  "Sassuolo": { name: "Mapei Stadium", city: "Reggio Emilia", cap: 21525 },
+  "Pisa": { name: "Arena Garibaldi", city: "Pisa", cap: 14000 },
+  "Cremonese": { name: "Stadio Giovanni Zini", city: "Cremona", cap: 15191 },
+
+  // Bundesliga
   "Bayern Munich": { name: "Allianz Arena", city: "Munich", cap: 75024 },
   "Borussia Dortmund": { name: "Signal Iduna Park", city: "Dortmund", cap: 81365 },
   "Dortmund": { name: "Signal Iduna Park", city: "Dortmund", cap: 81365 },
   "Bayer Leverkusen": { name: "BayArena", city: "Leverkusen", cap: 30210 },
   "RB Leipzig": { name: "Red Bull Arena", city: "Leipzig", cap: 47069 },
+  "Eintracht Frankfurt": { name: "Deutsche Bank Park", city: "Frankfurt", cap: 58000 },
+  "VfB Stuttgart": { name: "MHPArena", city: "Stuttgart", cap: 60058 },
+  "Stuttgart": { name: "MHPArena", city: "Stuttgart", cap: 60058 },
+  "SC Freiburg": { name: "Europa-Park Stadion", city: "Freiburg", cap: 34700 },
+  "Freiburg": { name: "Europa-Park Stadion", city: "Freiburg", cap: 34700 },
+  "Borussia Monchengladbach": { name: "Borussia-Park", city: "Mönchengladbach", cap: 54042 },
+  "Monchengladbach": { name: "Borussia-Park", city: "Mönchengladbach", cap: 54042 },
+  "VfL Wolfsburg": { name: "Volkswagen Arena", city: "Wolfsburg", cap: 28917 },
+  "Wolfsburg": { name: "Volkswagen Arena", city: "Wolfsburg", cap: 28917 },
+  "Werder Bremen": { name: "Weserstadion", city: "Bremen", cap: 42100 },
+  "Mainz": { name: "Mewa Arena", city: "Mainz", cap: 33305 },
+  "Mainz 05": { name: "Mewa Arena", city: "Mainz", cap: 33305 },
+  "FC Augsburg": { name: "WWK Arena", city: "Augsburg", cap: 30660 },
+  "Augsburg": { name: "WWK Arena", city: "Augsburg", cap: 30660 },
+  "Union Berlin": { name: "Stadion An der Alten Försterei", city: "Berlin", cap: 22012 },
+  "TSG Hoffenheim": { name: "PreZero Arena", city: "Sinsheim", cap: 30150 },
+  "Hoffenheim": { name: "PreZero Arena", city: "Sinsheim", cap: 30150 },
+  "FC Heidenheim": { name: "Voith-Arena", city: "Heidenheim", cap: 15000 },
+  "Heidenheim": { name: "Voith-Arena", city: "Heidenheim", cap: 15000 },
+  "FC St. Pauli": { name: "Millerntor-Stadion", city: "Hamburg", cap: 29546 },
+  "St. Pauli": { name: "Millerntor-Stadion", city: "Hamburg", cap: 29546 },
+  "VfL Bochum": { name: "Vonovia Ruhrstadion", city: "Bochum", cap: 26000 },
+  "Bochum": { name: "Vonovia Ruhrstadion", city: "Bochum", cap: 26000 },
+  "Holstein Kiel": { name: "Holstein-Stadion", city: "Kiel", cap: 15034 },
+  "Hamburger SV": { name: "Volksparkstadion", city: "Hamburg", cap: 57000 },
+  "FC Koln": { name: "RheinEnergieStadion", city: "Cologne", cap: 50000 },
+  "Cologne": { name: "RheinEnergieStadion", city: "Cologne", cap: 50000 },
+
+  // Ligue 1
   "Paris Saint-Germain": { name: "Parc des Princes", city: "Paris", cap: 47929 },
   "PSG": { name: "Parc des Princes", city: "Paris", cap: 47929 },
+  "Marseille": { name: "Stade Vélodrome", city: "Marseille", cap: 67394 },
+  "Olympique de Marseille": { name: "Stade Vélodrome", city: "Marseille", cap: 67394 },
+  "AS Monaco": { name: "Stade Louis II", city: "Monaco", cap: 18523 },
+  "Monaco": { name: "Stade Louis II", city: "Monaco", cap: 18523 },
+  "Lille": { name: "Stade Pierre-Mauroy", city: "Villeneuve-d'Ascq", cap: 50186 },
+  "LOSC Lille": { name: "Stade Pierre-Mauroy", city: "Villeneuve-d'Ascq", cap: 50186 },
+  "Lyon": { name: "Groupama Stadium", city: "Décines-Charpieu", cap: 59186 },
+  "Olympique Lyonnais": { name: "Groupama Stadium", city: "Décines-Charpieu", cap: 59186 },
+  "OGC Nice": { name: "Allianz Riviera", city: "Nice", cap: 36178 },
+  "RC Lens": { name: "Stade Bollaert-Delelis", city: "Lens", cap: 38223 },
+  "Stade Rennais": { name: "Roazhon Park", city: "Rennes", cap: 29778 },
+  "Rennes": { name: "Roazhon Park", city: "Rennes", cap: 29778 },
+  "Stade Brestois": { name: "Stade Francis-Le Blé", city: "Brest", cap: 15220 },
+  "Brest": { name: "Stade Francis-Le Blé", city: "Brest", cap: 15220 },
+  "Strasbourg": { name: "Stade de la Meinau", city: "Strasbourg", cap: 26109 },
+  "Toulouse": { name: "Stadium de Toulouse", city: "Toulouse", cap: 33150 },
+  "Nantes": { name: "Stade de la Beaujoire", city: "Nantes", cap: 35322 },
+  "Reims": { name: "Stade Auguste-Delaune", city: "Reims", cap: 21029 },
+  "Stade de Reims": { name: "Stade Auguste-Delaune", city: "Reims", cap: 21029 },
+  "Auxerre": { name: "Stade de l'Abbé-Deschamps", city: "Auxerre", cap: 18541 },
+  "Angers": { name: "Stade Raymond Kopa", city: "Angers", cap: 19350 },
+  "Le Havre": { name: "Stade Océane", city: "Le Havre", cap: 25178 },
+  "Saint-Etienne": { name: "Stade Geoffroy-Guichard", city: "Saint-Étienne", cap: 41965 },
+  "Montpellier": { name: "Stade de la Mosson", city: "Montpellier", cap: 22000 },
+  "Lorient": { name: "Stade du Moustoir", city: "Lorient", cap: 18890 },
+  "Paris FC": { name: "Stade Jean-Bouin", city: "Paris", cap: 20000 },
+  "Metz": { name: "Stade Saint-Symphorien", city: "Metz", cap: 28786 },
+
+  // Major UCL / UEL / European Clubs
+  "Ajax": { name: "Johan Cruijff ArenA", city: "Amsterdam", cap: 55865 },
+  "PSV Eindhoven": { name: "Philips Stadion", city: "Eindhoven", cap: 35000 },
+  "PSV": { name: "Philips Stadion", city: "Eindhoven", cap: 35000 },
+  "Feyenoord": { name: "De Kuip", city: "Rotterdam", cap: 47500 },
+  "AZ Alkmaar": { name: "AFAS Stadion", city: "Alkmaar", cap: 19478 },
+  "FC Twente": { name: "De Grolsch Veste", city: "Enschede", cap: 30205 },
+  "Benfica": { name: "Estádio da Luz", city: "Lisbon", cap: 64642 },
+  "SL Benfica": { name: "Estádio da Luz", city: "Lisbon", cap: 64642 },
+  "FC Porto": { name: "Estádio do Dragão", city: "Porto", cap: 50033 },
+  "Sporting CP": { name: "Estádio José Alvalade", city: "Lisbon", cap: 50095 },
+  "SC Braga": { name: "Estádio Municipal de Braga", city: "Braga", cap: 30286 },
+  "Celtic": { name: "Celtic Park", city: "Glasgow", cap: 60411 },
+  "Rangers": { name: "Ibrox Stadium", city: "Glasgow", cap: 50987 },
+  "Club Brugge": { name: "Jan Breydel Stadium", city: "Bruges", cap: 29042 },
+  "Anderlecht": { name: "Lotto Park", city: "Brussels", cap: 22500 },
+  "Union Saint-Gilloise": { name: "Stade Joseph Marien", city: "Brussels", cap: 9400 },
+  "Galatasaray": { name: "RAMS Park", city: "Istanbul", cap: 52600 },
+  "Fenerbahce": { name: "Ülker Stadium", city: "Istanbul", cap: 47834 },
+  "Besiktas": { name: "Tüpraş Stadyumu", city: "Istanbul", cap: 42590 },
+  "Olympiacos": { name: "Karaiskakis Stadium", city: "Piraeus", cap: 33334 },
+  "PAOK": { name: "Toumba Stadium", city: "Thessaloniki", cap: 28703 },
+  "Panathinaikos": { name: "Olympic Stadium", city: "Athens", cap: 69618 },
+  "Red Bull Salzburg": { name: "Red Bull Arena", city: "Salzburg", cap: 30188 },
+  "RB Salzburg": { name: "Red Bull Arena", city: "Salzburg", cap: 30188 },
+  "Sturm Graz": { name: "Merkur Arena", city: "Graz", cap: 16364 },
+  "Shakhtar Donetsk": { name: "Arena Lviv", city: "Lviv", cap: 34915 },
+  "Dynamo Kyiv": { name: "Valeriy Lobanovskyi Stadium", city: "Kyiv", cap: 16873 },
+  "Sparta Prague": { name: "epet ARENA", city: "Prague", cap: 18349 },
+  "Slavia Prague": { name: "Fortuna Arena", city: "Prague", cap: 19370 },
+  "Viktoria Plzen": { name: "Doosan Arena", city: "Plzeň", cap: 11700 },
+  "Dinamo Zagreb": { name: "Stadion Maksimir", city: "Zagreb", cap: 24851 },
+  "Red Star Belgrade": { name: "Rajko Mitić Stadium", city: "Belgrade", cap: 51755 },
+  "Crvena Zvezda": { name: "Rajko Mitić Stadium", city: "Belgrade", cap: 51755 },
+  "Young Boys": { name: "Stadion Wankdorf", city: "Bern", cap: 32000 },
+  "FC Basel": { name: "St. Jakob-Park", city: "Basel", cap: 38512 },
+  "FC Copenhagen": { name: "Parken Stadium", city: "Copenhagen", cap: 38065 },
+  "Midtjylland": { name: "MCH Arena", city: "Herning", cap: 12000 },
+  "Bodo/Glimt": { name: "Aspmyra Stadion", city: "Bodø", cap: 8270 },
+  "Ferencvaros": { name: "Groupama Arena", city: "Budapest", cap: 22000 },
+  "Qarabag": { name: "Tofiq Bahramov Republican Stadium", city: "Baku", cap: 31200 },
+  "Slovan Bratislava": { name: "Tehelné pole", city: "Bratislava", cap: 22500 },
+  "Malmo FF": { name: "Eleda Stadion", city: "Malmö", cap: 22500 },
+
+  // MLS (All 30 Clubs)
+  "Atlanta United": { name: "Mercedes-Benz Stadium", city: "Atlanta", cap: 42500 },
+  "Austin FC": { name: "Q2 Stadium", city: "Austin", cap: 20738 },
+  "CF Montreal": { name: "Stade Saputo", city: "Montreal", cap: 19619 },
+  "Charlotte FC": { name: "Bank of America Stadium", city: "Charlotte", cap: 38000 },
+  "Chicago Fire": { name: "Soldier Field", city: "Chicago", cap: 24955 },
+  "Colorado Rapids": { name: "Dick's Sporting Goods Park", city: "Commerce City", cap: 18061 },
+  "Columbus Crew": { name: "Lower.com Field", city: "Columbus", cap: 20371 },
+  "D.C. United": { name: "Audi Field", city: "Washington, D.C.", cap: 20000 },
+  "DC United": { name: "Audi Field", city: "Washington, D.C.", cap: 20000 },
+  "FC Cincinnati": { name: "TQL Stadium", city: "Cincinnati", cap: 26000 },
+  "FC Dallas": { name: "Toyota Stadium", city: "Frisco", cap: 19096 },
+  "Houston Dynamo": { name: "Shell Energy Stadium", city: "Houston", cap: 20656 },
   "Inter Miami": { name: "Chase Stadium", city: "Fort Lauderdale", cap: 21550 },
-  "Inter Miami CF": { name: "Chase Stadium", city: "Fort Lauderdale", cap: 21550 },
   "LA Galaxy": { name: "Dignity Health Sports Park", city: "Carson", cap: 27000 },
-  "LAFC": { name: "BMO Stadium", city: "Los Angeles", cap: 22000 }
+  "LAFC": { name: "BMO Stadium", city: "Los Angeles", cap: 22000 },
+  "Los Angeles FC": { name: "BMO Stadium", city: "Los Angeles", cap: 22000 },
+  "Minnesota United": { name: "Allianz Field", city: "Saint Paul", cap: 19400 },
+  "Nashville SC": { name: "GEODIS Park", city: "Nashville", cap: 30109 },
+  "New England Revolution": { name: "Gillette Stadium", city: "Foxborough", cap: 20000 },
+  "New York City FC": { name: "Yankee Stadium", city: "New York", cap: 28743 },
+  "NYCFC": { name: "Yankee Stadium", city: "New York", cap: 28743 },
+  "New York Red Bulls": { name: "Sports Illustrated Stadium", city: "Harrison", cap: 25000 },
+  "Orlando City": { name: "Inter&Co Stadium", city: "Orlando", cap: 25500 },
+  "Philadelphia Union": { name: "Subaru Park", city: "Chester", cap: 18500 },
+  "Portland Timbers": { name: "Providence Park", city: "Portland", cap: 25218 },
+  "Real Salt Lake": { name: "America First Field", city: "Sandy", cap: 20213 },
+  "San Diego FC": { name: "Snapdragon Stadium", city: "San Diego", cap: 35000 },
+  "San Jose Earthquakes": { name: "PayPal Park", city: "San Jose", cap: 18000 },
+  "Seattle Sounders": { name: "Lumen Field", city: "Seattle", cap: 37722 },
+  "Sporting Kansas City": { name: "Children's Mercy Park", city: "Kansas City", cap: 18467 },
+  "St. Louis City": { name: "Energizer Park", city: "St. Louis", cap: 22423 },
+  "Toronto FC": { name: "BMO Field", city: "Toronto", cap: 28351 },
+  "Vancouver Whitecaps": { name: "BC Place", city: "Vancouver", cap: 22120 }
 };
 
 // ==========================================
 // ⚡ HIGH-PERFORMANCE SWR CACHE & PRE-WARMING ENGINE
 // ==========================================
 
-const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v17';
+const STORAGE_CACHE_KEY = 'sidelines_fast_cache_v21';
+const TODAY_CRICKET_ARCHIVE_KEY = 'sideline_cricket_today_v21';
 const cache = new Map();
 const inflight = new Map();
 const standingsParsedCache = new Map();
@@ -789,18 +1019,23 @@ const scheduleCachePersist = () => {
   if (persistTimer) return;
   persistTimer = setTimeout(() => {
     persistTimer = null;
-    try {
-      const obj = {};
-      let count = 0;
-      const entries = Array.from(cache.entries()).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
-      for (const [k, v] of entries) {
-        if (count >= 55) break;
-        obj[k] = v;
-        count++;
-      }
-      localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify(obj));
-    } catch {}
-  }, 900);
+    runWhenIdle(() => {
+      try {
+        const obj = {};
+        let count = 0;
+        const entries = Array.from(cache.entries()).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+        for (const [k, v] of entries) {
+          if (count >= 25) break;
+          const serialized = JSON.stringify(v);
+          if (serialized.length < 400000) {
+            obj[k] = v;
+            count++;
+          }
+        }
+        localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify(obj));
+      } catch {}
+    }, 300);
+  }, 1200);
 };
 
 const getCachedSync = (url) => {
@@ -825,9 +1060,13 @@ const fetchWithCache = async (url, forceRefresh = false, timeoutMs = 8000) => {
       return res.json();
     })
     .then(json => {
-      cache.set(url, { data: json, timestamp: Date.now() });
+      const isEmptyArray = Array.isArray(json) && json.length === 0;
+      const isErrorPayload = json && typeof json === 'object' && !Array.isArray(json) && (json.error || json.detail === 'Not Found');
+      if (!isEmptyArray && !isErrorPayload) {
+        cache.set(url, { data: json, timestamp: Date.now() });
+        scheduleCachePersist();
+      }
       inflight.delete(url);
-      scheduleCachePersist();
       return json;
     })
     .catch(err => {
@@ -849,21 +1088,27 @@ const runWhenIdle = (fn, fallbackDelay = 100) => {
   }
 };
 
-// Pre-warm ALL soccer standings, today's scoreboards, cricket live/schedule/standings & news in background
+// Stagger background pre-warming after initial launch animation so startup stays 60fps
 const prewarmSportsAPIs = () => {
-  const todayDs = new Date().toISOString().split('T')[0].replace(/-/g, '');
-  runWhenIdle(() => {
-    fetchWithCache(`${API_CRICKET_BASE}/live`).catch(() => {});
-    fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`).catch(() => {});
-    fetchWithCache(`${API_CRICKET_BASE}/standings`).catch(() => {});
-    fetchWithCache(API_CRICKET_NEWS_ESPN).catch(() => {});
-    fetchWithCache(CRICINFO_RSS_JSON).catch(() => {});
-    FOOTBALL_LEAGUES.forEach(l => {
-      fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${todayDs}`).catch(() => {});
-      fetchWithCache(`${API_SOCCER_STANDINGS_BASE}/${l.id}/standings`).catch(() => {});
-    });
-    fetchWithCache(`${API_SOCCER_SCORE_BASE}/eng.1/news`).catch(() => {});
-  }, 50);
+  const now = new Date();
+  const todayDs = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+  setTimeout(() => {
+    runWhenIdle(() => {
+      ['eng.1', 'uefa.champions', 'esp.1'].forEach(id => {
+        fetchWithCache(`${API_SOCCER_SCORE_BASE}/${id}/scoreboard?dates=${todayDs}`).catch(() => {});
+      });
+      fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
+      fetchWithCache(`${API_CRICKET_BASE}/live`, false, 25000).catch(() => {});
+    }, 250);
+  }, 1450);
+
+  setTimeout(() => {
+    runWhenIdle(() => {
+      fetchWithCache(`${API_SOCCER_STANDINGS_BASE}/eng.1/standings`).catch(() => {});
+      fetchWithCache(`${API_CRICKET_BASE}/standings`).catch(() => {});
+      fetchWithCache(`${API_SOCCER_SCORE_BASE}/eng.1/news`).catch(() => {});
+    }, 400);
+  }, 3600);
 };
 prewarmSportsAPIs();
 
@@ -972,9 +1217,62 @@ const isSameDay = (d1, d2) => {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 };
 
+const toLocalIsoDate = (d) => {
+  const dt = d instanceof Date ? d : new Date(d);
+  if (isNaN(dt)) return '';
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, '0');
+  const day = String(dt.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 const decodeEntities = (str) => {
   if (!str) return '';
-  return String(str).replace(/&dagger;/ig, '†').replace(/&amp;/ig, '&').replace(/&nbsp;/g, ' ').replace(/&copy;/ig, '©').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&ast;/ig, '*').replace(/\+/g, '');
+  return String(str)
+    .replace(/&(dagger|Dagger);|&#8224;|&#8225;|&#x2020;|&#x2021;/ig, '')
+    .replace(/[†‡✝✚➕+]/g, '')
+    .replace(/&amp;/ig, '&')
+    .replace(/&nbsp;/ig, ' ')
+    .replace(/&copy;/ig, '©')
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&ast;/ig, '*')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const cleanPlayerName = (str) => {
+  if (!str) return '';
+  return decodeEntities(str).replace(/\s*[+†‡✝✚➕]+\s*/g, ' ').replace(/\s+/g, ' ').trim();
+};
+
+const getCompactCricketAbbr = (opp) => {
+  const clean = String(opp || '').replace(/\s+/g, ' ').trim();
+  if (!clean) return '';
+  if (clean.length <= 5) return clean.toUpperCase();
+  const low = clean.toLowerCase();
+  const knownMap = {
+    'india': 'IND', 'india a': 'IND-A', 'india women': 'IND-W',
+    'australia': 'AUS', 'australia a': 'AUS-A', 'australia women': 'AUS-W',
+    'england': 'ENG', 'england women': 'ENG-W', 'england lions': 'ENG-A',
+    'south africa': 'SA', 'south africa a': 'SA-A', 'south africa women': 'SA-W',
+    'new zealand': 'NZ', 'new zealand a': 'NZ-A', 'new zealand women': 'NZ-W',
+    'pakistan': 'PAK', 'pakistan a': 'PAK-A', 'pakistan shaheens': 'PAK-A', 'pakistan women': 'PAK-W',
+    'sri lanka': 'SL', 'sri lanka a': 'SL-A', 'sri lanka women': 'SL-W',
+    'west indies': 'WI', 'west indies women': 'WI-W',
+    'bangladesh': 'BAN', 'bangladesh a': 'BAN-A', 'bangladesh women': 'BAN-W',
+    'afghanistan': 'AFG', 'afghanistan a': 'AFG-A',
+    'zimbabwe': 'ZIM', 'ireland': 'IRE', 'netherlands': 'NED', 'scotland': 'SCO',
+    'united arab emirates': 'UAE', 'uae a': 'UAE-A', 'united states': 'USA',
+    'nepal': 'NEP', 'oman': 'OMA', 'canada': 'CAN', 'namibia': 'NAM', 'hong kong': 'HK'
+  };
+  if (knownMap[low]) return knownMap[low];
+  const words = clean.split(' ').filter(Boolean);
+  if (words.length >= 2) {
+    const initials = words.map(w => w[0]).join('').toUpperCase();
+    return initials.slice(0, 5);
+  }
+  return clean.slice(0, 4).toUpperCase();
 };
 
 const stripHtml = (html) => html ? decodeEntities(String(html).replace(/<[^>]+>/g, '')).trim() : '';
@@ -1078,8 +1376,8 @@ const handleImageError = (e, fallbackName) => {
 
 const normalizeCricketTeamName = (name) => {
   if (!name) return '';
-  let clean = String(name).replace(/\([^)]+\)/g, ' ');
-  clean = clean.replace(/\b(W|Women|Women's|Men|Men's|A|B|U19|U19s|Under-19|Under-19s|Under 19|Under 19s|1st XI|2nd XI|XI|Academy|Emerging|Lions|Development)\b/ig, '');
+  let clean = String(name).replace(/\([^)]+\)/g, ' ').replace(/[-–]\s*(A|W|U19)\b/ig, ' ');
+  clean = clean.replace(/\b(W|Women|Women's|Men|Men's|A|B|U19|U19s|Under-19|Under-19s|Under 19|Under 19s|1st XI|2nd XI|XI|Academy|Emerging|Rising Stars|Shaheens|Lions|Wolves|Development)\b/ig, '');
   return clean.replace(/\s+/g, ' ').trim();
 };
 
@@ -1201,6 +1499,235 @@ const getSafeFootballLogo = (team) => {
   return resolved;
 };
 
+// --- CRICKET API MERGER, TODAY ARCHIVE & DATE NORMALIZATION (100% RENDER API) ---
+const extractCricketArray = (res) => {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res.matches)) return res.matches;
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.events)) return res.events;
+  if (Array.isArray(res.schedule)) return res.schedule;
+  if (Array.isArray(res.live)) return res.live;
+  if (Array.isArray(res.results)) return res.results;
+  return [];
+};
+
+const parseSafeCricketDate = (raw) => {
+  if (raw === null || raw === undefined || raw === '') return null;
+  if (raw instanceof Date) return isNaN(raw.getTime()) ? null : raw;
+  if (typeof raw === 'number') {
+    const ms = raw < 1e12 ? raw * 1000 : raw;
+    const d = new Date(ms);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const s = String(raw).trim();
+  if (!s) return null;
+  if (/^\d{10,13}$/.test(s)) {
+    const num = Number(s);
+    const d = new Date(num < 1e12 ? num * 1000 : num);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  // Normalize space-separated SQL timestamps for iOS Safari
+  const normalized = /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) ? s.replace(/\s+/, 'T') : s;
+  const d = new Date(normalized);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const extractRawIsoDay = (raw) => {
+  if (!raw) return '';
+  const m = String(raw).match(/(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : '';
+};
+
+const isCricketMatchFinished = (m) => {
+  if (!m) return false;
+  const st = String(m.status || '').toUpperCase().trim();
+  const stTxt = String(m.status_text || '').toUpperCase();
+  const upd = String(m.match_update || '').toUpperCase();
+  const combined = `${st} ${stTxt} ${upd}`;
+  if (st === 'POST' || st === 'FINAL' || st === 'COMPLETED' || st === 'FINISHED' || st === 'ENDED' || st === 'RESULT') return true;
+  if (/\b(WON BY|MATCH TIED|MATCH DRAWN|NO RESULT|ABANDONED|CANCELLED|CANCELED|SUPER OVER|FINAL|RESULT|MATCH OVER|MATCH ENDED)\b/i.test(combined)) {
+    return true;
+  }
+  return false;
+};
+
+const isCricketMatchUpcoming = (m) => {
+  if (!m || isCricketMatchFinished(m)) return false;
+  const st = String(m.status || '').toUpperCase().trim();
+  if (st === 'PRE' || st === 'SCHEDULED' || st === 'UPCOMING' || st === 'NOT STARTED') return true;
+  if (st === 'IN' || st === 'LIVE' || m._fromLive) return false;
+  const parsed = parseSafeCricketDate(m.start_time || m.startTime || m.date);
+  return Boolean(parsed && parsed.getTime() > Date.now());
+};
+
+// Same-day archive so finished matches seen earlier today NEVER vanish if /live drops them before /schedule refreshes
+const loadTodayCricketArchive = () => {
+  try {
+    const todayKey = toLocalIsoDate(new Date());
+    const raw = JSON.parse(localStorage.getItem(TODAY_CRICKET_ARCHIVE_KEY) || 'null');
+    if (raw && raw.dateKey === todayKey && Array.isArray(raw.items)) {
+      return raw.items;
+    }
+  } catch {}
+  return [];
+};
+
+const saveTodayCricketArchive = (matches) => {
+  try {
+    const todayKey = toLocalIsoDate(new Date());
+    const clean = (Array.isArray(matches) ? matches : [])
+      .filter(m => m && m.match_id && Array.isArray(m.teams) && m.teams.length >= 2)
+      .slice(0, 80);
+    localStorage.setItem(TODAY_CRICKET_ARCHIVE_KEY, JSON.stringify({ dateKey: todayKey, items: clean }));
+  } catch {}
+};
+
+const mergeCricketSources = (schedData, liveData, archiveData, isViewingToday) => {
+  const byId = new Map();
+
+  const upsert = (raw, sourceType = 'sched') => {
+    if (!raw || !Array.isArray(raw.teams) || raw.teams.length < 2) return;
+    const rawId = raw.match_id ?? raw.id;
+    const startVal = raw.start_time || raw.startTime || raw.date || raw.start_date || raw.match_date || '';
+    const idKey = rawId !== undefined && rawId !== null && String(rawId).trim() !== ''
+      ? String(rawId).trim()
+      : `${String(raw.teams[0]?.name || '')}_${String(raw.teams[1]?.name || '')}_${startVal}`;
+
+    const rawFinished = isCricketMatchFinished(raw);
+    const isActuallyLive = sourceType === 'live' && !rawFinished;
+    const prev = byId.get(idKey);
+
+    if (!prev) {
+      byId.set(idKey, {
+        ...raw,
+        match_id: String(rawId ?? idKey),
+        start_time: startVal,
+        _fromLive: isActuallyLive
+      });
+      return;
+    }
+
+    const prevFinished = isCricketMatchFinished(prev);
+    // If an earlier fresh source already knows the match is finished and an older/archive source doesn't, keep the finished state
+    if (sourceType === 'archive' && (prevFinished || prev._fromLive)) return;
+
+    const mergedTeams = raw.teams.map((t, idx) => ({
+      ...(prev.teams?.[idx] || {}),
+      ...t,
+      score: t.score || prev.teams?.[idx]?.score || '',
+      logo: t.logo || prev.teams?.[idx]?.logo || ''
+    }));
+
+    byId.set(idKey, {
+      ...prev,
+      ...raw,
+      match_id: prev.match_id || String(rawId ?? idKey),
+      start_time: raw.start_time || prev.start_time || startVal,
+      end_date: raw.end_date || raw.end_time || prev.end_date || prev.end_time,
+      league: raw.league || prev.league,
+      series: raw.series || prev.series,
+      title: raw.title || prev.title,
+      venue: raw.venue || prev.venue,
+      status: rawFinished ? (raw.status || 'POST') : (prevFinished && sourceType !== 'live' ? prev.status : (raw.status || prev.status)),
+      status_text: raw.status_text || prev.status_text,
+      match_update: raw.match_update || prev.match_update,
+      teams: mergedTeams,
+      _fromLive: rawFinished ? false : Boolean(isActuallyLive || (sourceType !== 'sched' && prev._fromLive))
+    });
+  };
+
+  // Priority order (lowest -> highest):
+  // 1. Same-day archive (keeps finished matches visible even if /live dropped them)
+  if (isViewingToday) {
+    extractCricketArray(archiveData).forEach(m => upsert(m, 'archive'));
+  }
+  // 2. Schedule data (fresh Render /schedule overwrites stale archive/cache)
+  extractCricketArray(schedData).forEach(m => upsert(m, 'sched'));
+  // 3. Live data (highest priority for active live scores on Today, preserving /schedule metadata)
+  if (isViewingToday) {
+    extractCricketArray(liveData).forEach(m => upsert(m, 'live'));
+  }
+
+  return Array.from(byId.values());
+};
+
+const filterAndSortCricketForDate = (mergedList, targetDate) => {
+  const selectedDateStr = toLocalIsoDate(targetDate);
+  const selectedDayStart = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+  const isViewingToday = isSameDay(targetDate, new Date());
+
+  const filtered = (mergedList || []).filter(m => {
+    const combinedTitle = String([m.title, m.match_title, m.league, m.series, m.format, m.teams?.[0]?.name, m.teams?.[1]?.name].filter(Boolean).join(' ')).toLowerCase();
+    if (!CRICKET_ALWAYS_ALLOW_REGEX.test(combinedTitle) && CRICKET_DOMESTIC_LEAGUE_REGEX.test(combinedTitle)) {
+      return false;
+    }
+
+    const finished = isCricketMatchFinished(m);
+    const statUpper = String(m.status || m.status_text || '').toUpperCase();
+    const isMatchActive = !finished && (Boolean(m._fromLive) || statUpper === 'LIVE' || statUpper === 'IN' ||
+      statUpper.includes('DAY ') || statUpper.includes('STUMPS') || statUpper.includes('RAIN') ||
+      statUpper.includes('TEA') || statUpper.includes('LUNCH') || statUpper.includes('BREAK'));
+
+    const rawStart = m.start_time || m.startTime || m.date || m.start_date || m.match_date || '';
+    const parsedStart = parseSafeCricketDate(rawStart);
+    const localStartStr = parsedStart ? toLocalIsoDate(parsedStart) : '';
+    const utcStartStr = parsedStart ? parsedStart.toISOString().split('T')[0] : '';
+    const rawStartDay = extractRawIsoDay(rawStart);
+
+    // Live matches from /live must always appear on Today even if start_time is absent or began on an earlier day
+    if (isViewingToday && Boolean(m._fromLive)) return true;
+
+    // Check explicit completion/end date too so matches that started late yesterday and finished today stay visible on Today
+    const rawEnd = m.end_date || m.end_time || m.completed_at || '';
+    const parsedEnd = parseSafeCricketDate(rawEnd);
+    const localEndStr = parsedEnd ? toLocalIsoDate(parsedEnd) : '';
+    const utcEndStr = parsedEnd ? parsedEnd.toISOString().split('T')[0] : '';
+    const rawEndDay = extractRawIsoDay(rawEnd);
+    if (localEndStr === selectedDateStr || utcEndStr === selectedDateStr || rawEndDay === selectedDateStr) return true;
+
+    if (!rawStart && !parsedStart) return false;
+    if (localStartStr === selectedDateStr || utcStartStr === selectedDateStr || rawStartDay === selectedDateStr) return true;
+
+    const baseStartStr = localStartStr || rawStartDay;
+    if (!baseStartStr) return false;
+    const [sy, sm, sd] = baseStartStr.split('-').map(Number);
+    const startDayObj = new Date(sy, sm - 1, sd);
+
+    let endDayObj = new Date(startDayObj);
+    const endIso = localEndStr || rawEndDay;
+    if (endIso) {
+      const [ey, em, ed] = endIso.split('-').map(Number);
+      endDayObj = new Date(ey, em - 1, ed);
+    } else if (combinedTitle.includes('test')) {
+      endDayObj.setDate(startDayObj.getDate() + 4);
+    } else if (combinedTitle.includes('first class') || combinedTitle.includes('4-day') || combinedTitle.includes('four-day') || combinedTitle.includes('fc')) {
+      endDayObj.setDate(startDayObj.getDate() + 3);
+    }
+
+    if (selectedDayStart >= startDayObj && selectedDayStart <= endDayObj) return true;
+    if (isViewingToday && isMatchActive && startDayObj <= selectedDayStart) return true;
+    return false;
+  });
+
+  // Sort cleanly: Live first -> Upcoming chronological -> Finished/Completed most recent
+  return filtered.sort((a, b) => {
+    const rankOf = (m) => {
+      if (isCricketMatchFinished(m)) return 2;
+      const st = String(m.status || '').toUpperCase();
+      if (isViewingToday && (m._fromLive || st === 'IN' || st === 'LIVE')) return 0;
+      if (isCricketMatchUpcoming(m)) return 1;
+      return 2;
+    };
+    const ra = rankOf(a);
+    const rb = rankOf(b);
+    if (ra !== rb) return ra - rb;
+    const ta = parseSafeCricketDate(a.start_time)?.getTime() || 0;
+    const tb = parseSafeCricketDate(b.start_time)?.getTime() || 0;
+    return ra === 2 ? (tb - ta) : (ta - tb);
+  });
+};
+
 // --- CRICKET STATUS, SCORE & FORM HELPERS ---
 const formatCricketScore = (str) => {
   if (!str || str === "1" || str === "0") return { runs: "", overs: "", inn: "" };
@@ -1276,7 +1803,8 @@ const getCricketMatchStatus = (match, selectedDate) => {
   let color = THEME.accent;
   const isViewingToday = !selectedDate || isSameDay(selectedDate, new Date());
 
-  if ((match.status === 'IN' || statUpper.includes('LIVE')) && isViewingToday) {
+  const isFinished = isCricketMatchFinished(match);
+  if (!isFinished && (match.status === 'IN' || statUpper.includes('LIVE')) && isViewingToday) {
     isLive = true;
     isActionLive = true;
     const checkText = statUpper === 'LIVE' && primaryUpdate ? primaryUpdate : statUpper;
@@ -1287,12 +1815,12 @@ const getCricketMatchStatus = (match, selectedDate) => {
     else if (checkText.includes('INNINGS BREAK')) { isActionLive = false; displayLabel = "INNINGS BREAK"; color = THEME.warning; }
     else if (checkText.includes('TOSS')) { isActionLive = false; displayLabel = "TOSS"; }
     else { displayLabel = "LIVE"; color = THEME.success; }
-  } else if (match.status === 'POST' || statUpper.includes('FINAL') || statUpper.includes('WON') || statUpper.includes('RESULT') || statUpper.includes('OVER')) {
-    displayLabel = match.status_text || 'FT';
-    color = THEME.muted;
   } else if (statUpper.includes('ABANDON') || statUpper.includes('CANCEL') || statUpper.includes('NO RESULT')) {
     displayLabel = 'ABANDONED';
     color = THEME.danger;
+  } else if (isFinished || match.status === 'POST' || statUpper.includes('FINAL') || statUpper.includes('WON') || statUpper.includes('RESULT') || statUpper.includes('TIED') || statUpper.includes('DRAWN') || statUpper.includes('OVER')) {
+    displayLabel = match.status_text || 'FT';
+    color = THEME.muted;
   } else {
     displayLabel = match.status_text && !statUpper.includes('LIVE') ? match.status_text : 'UPCOMING';
     color = THEME.muted;
@@ -1457,9 +1985,10 @@ const getFootballMatchLeagueName = (m) => {
 };
 
 const formatFootballShortName = (fullName) => {
-  if (!fullName) return "Player";
-  const parts = fullName.trim().split(/\s+/);
-  return parts.length <= 1 ? fullName : `${parts[0].charAt(0)}. ${parts[parts.length - 1]}`;
+  const cleaned = cleanPlayerName(fullName);
+  if (!cleaned) return "Player";
+  const parts = cleaned.split(/\s+/);
+  return parts.length <= 1 ? cleaned : `${parts[0].charAt(0)}. ${parts[parts.length - 1]}`;
 };
 
 const formatMatchMinuteApostrophe = (rawVal) => {
@@ -1549,8 +2078,12 @@ const extractDetailedFootballEvents = (summary, homeComp, awayComp) => {
 
   const parseMinuteNum = (clockStr) => {
     if (!clockStr) return 0;
-    const m = String(clockStr).match(/(\d+)/);
-    return m ? parseInt(m[1], 10) : 0;
+    const cleaned = String(clockStr).replace(/[’′]/g, "'");
+    const m = cleaned.match(/(\d+)(?:\s*\+\s*(\d+))?/);
+    if (!m) return 0;
+    const base = parseInt(m[1], 10) || 0;
+    const added = m[2] ? (parseInt(m[2], 10) || 0) : 0;
+    return base * 100 + added;
   };
 
   const rawEvents = [
@@ -1670,26 +2203,83 @@ const extractDetailedFootballEvents = (summary, homeComp, awayComp) => {
   return { goals, cards, subs };
 };
 
-const lookupFootballStadium = (namesToTry = [], apiVenue = null) => {
-  if (apiVenue?.fullName || apiVenue?.name) {
-    return {
-      stadium: apiVenue.fullName || apiVenue.name,
-      city: apiVenue.address?.city || apiVenue.city || 'N/A',
-      capacity: apiVenue.capacity || null,
-      stadiumImage: apiVenue.images?.[0]?.href || null
-    };
+const normalizeClubKey = (s) =>
+  String(s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9\s.&'-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+
+const findStadiumInDb = (namesToTry = []) => {
+  const normalizedNames = namesToTry.map(normalizeClubKey).filter(Boolean);
+  if (normalizedNames.length === 0) return null;
+
+  const entries = Object.entries(FOOTBALL_STADIUM_DB);
+  // 1. Exact normalized match
+  for (const clean of normalizedNames) {
+    for (const [key, val] of entries) {
+      if (normalizeClubKey(key) === clean) return val;
+    }
   }
-  for (const raw of namesToTry) {
-    if (!raw) continue;
-    const clean = String(raw).trim().toLowerCase();
-    for (const [key, val] of Object.entries(FOOTBALL_STADIUM_DB)) {
-      const kLower = key.toLowerCase();
-      if (kLower === clean || clean.includes(kLower) || kLower.includes(clean)) {
-        return { stadium: val.name, city: val.city, capacity: val.cap, stadiumImage: null };
+  // 2. Safe substring match (keys >= 5 chars or word boundary)
+  for (const clean of normalizedNames) {
+    for (const [key, val] of entries) {
+      const kNorm = normalizeClubKey(key);
+      if (kNorm.length >= 5 && (clean.includes(kNorm) || (clean.length >= 5 && kNorm.includes(clean)))) {
+        return val;
       }
     }
   }
-  return { stadium: 'Home Stadium', city: 'Europe / Domestic', capacity: null, stadiumImage: null };
+  return null;
+};
+
+const extractHomeVenueFromSchedule = (events = [], teamId = null, teamNames = []) => {
+  if (!Array.isArray(events) || events.length === 0) return null;
+  const tidStr = teamId ? String(teamId) : '';
+  const nameSet = new Set(teamNames.map(normalizeClubKey).filter(Boolean));
+  let best = null;
+
+  for (const ev of events) {
+    const comp = ev?.competitions?.[0];
+    const venue = comp?.venue || ev?.venue;
+    if (!venue || (!venue.fullName && !venue.name)) continue;
+    const homeComp = comp?.competitors?.find(c => c.homeAway === 'home');
+    if (!homeComp) continue;
+
+    const isSameTeam =
+      (tidStr && String(homeComp.team?.id || '') === tidStr) ||
+      nameSet.has(normalizeClubKey(homeComp.team?.displayName)) ||
+      nameSet.has(normalizeClubKey(homeComp.team?.shortDisplayName)) ||
+      nameSet.has(normalizeClubKey(homeComp.team?.name));
+
+    if (!isSameTeam) continue;
+    if (!best) best = venue;
+    if (venue.fullName && (venue.address?.city || venue.city) && venue.capacity) {
+      return venue;
+    }
+  }
+  return best;
+};
+
+const lookupFootballStadium = (namesToTry = [], apiVenue = null, scheduleVenue = null) => {
+  const dbMatch = findStadiumInDb(namesToTry);
+  const v = (apiVenue?.fullName || apiVenue?.name) ? apiVenue : (scheduleVenue?.fullName || scheduleVenue?.name) ? scheduleVenue : null;
+
+  if (v) {
+    const cityStr = v.address?.city || v.city || dbMatch?.city || v.address?.country || 'Home Ground';
+    return {
+      stadium: v.fullName || v.name || dbMatch?.name || 'Home Stadium',
+      city: cityStr,
+      capacity: v.capacity || dbMatch?.cap || null,
+      stadiumImage: v.images?.[0]?.href || apiVenue?.images?.[0]?.href || scheduleVenue?.images?.[0]?.href || null
+    };
+  }
+  if (dbMatch) {
+    return { stadium: dbMatch.name, city: dbMatch.city, capacity: dbMatch.cap, stadiumImage: null };
+  }
+  return { stadium: 'Home Stadium', city: 'Venue TBD', capacity: null, stadiumImage: null };
 };
 
 const extractFootballStandingEntry = (stdRes, teamId, teamName) => {
@@ -2105,7 +2695,7 @@ const extractCricketKnockouts = (selectedLeague) => {
       .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
     const cappedTies = st.id === 'FINAL' && liveTies.length > 1 ? liveTies.slice(-1) : liveTies;
     const filledTies = (!isFinalCompleted && cappedTies.length < st.slots)
-      ? [...cappedTies, ...buildTbdKnockouts(st, cappedTies.length, false)]
+      ? [...cappedTies, ...buildTbdKnockouts(st, cappedTies.length)]
       : cappedTies;
     return {
       id: st.id,
@@ -2123,6 +2713,20 @@ const extractCricketKnockouts = (selectedLeague) => {
 // ==========================================
 // ⚡ CORE UI PRIMITIVES
 // ==========================================
+
+const useSmoothDismiss = (onClose) => {
+  const [closing, setClosing] = useState(false);
+  const timerRef = useRef(null);
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+  const handleClose = useCallback(() => {
+    if (closing) return;
+    setClosing(true);
+    timerRef.current = setTimeout(() => {
+      onClose();
+    }, 185);
+  }, [closing, onClose]);
+  return { closing, handleClose };
+};
 
 const WhitePillLoader = memo(({ className = "py-12" }) => (
   <div className={`w-full flex items-center justify-center ${className}`}>
@@ -2278,67 +2882,42 @@ const getPlayerRoleMeta = (player) => {
   const athPos = player?.athlete?.position || {};
   const defPos = player?.athlete?.defaultPosition || {};
 
-  const abbr = String(
-    subObj.abbreviation ||
-    posObj.abbreviation ||
-    athPos.abbreviation ||
-    defPos.abbreviation ||
-    ""
-  ).toUpperCase().trim();
+  const pickValid = (...vals) => {
+    for (const v of vals) {
+      const s = String(v || "").toUpperCase().trim();
+      if (s && s !== "SUB" && s !== "SUBSTITUTE") return s;
+    }
+    return "";
+  };
 
-  const pname = String(
-    subObj.name ||
-    posObj.name ||
-    posObj.displayName ||
-    athPos.name ||
-    defPos.name ||
-    ""
-  ).toUpperCase().trim();
+  // Prioritize match-day position metadata over career defaultPosition
+  const abbr = pickValid(
+    subObj.abbreviation,
+    posObj.abbreviation,
+    athPos.abbreviation,
+    defPos.abbreviation
+  );
 
-  const ptype = String(
-    posObj.type ||
-    athPos.type ||
-    defPos.type ||
-    ""
-  ).toLowerCase().trim();
+  const pname = pickValid(
+    subObj.name,
+    posObj.name,
+    posObj.displayName,
+    athPos.name,
+    defPos.name
+  );
 
+  const ptype = String(posObj.type || athPos.type || defPos.type || "").toLowerCase().trim();
   const jerseyNum = parseInt(String(player?.jersey ?? "").replace(/[^\d]/g, ""), 10);
   const fp = parseInt(String(player?.formationPlace ?? "").replace(/[^\d]/g, ""), 10);
-  const combined = `${abbr} ${pname}`;
+
   return {
     abbr,
     pname,
     ptype,
-    combined,
+    combined: `${abbr} ${pname}`.trim(),
     jerseyNum: isNaN(jerseyNum) ? null : jerseyNum,
     formationPlace: !isNaN(fp) && fp >= 1 && fp <= 11 ? fp : null
   };
-};
-
-const getHorizontalRank = (player, fallbackIdx = 0) => {
-  const { abbr, pname, formationPlace, jerseyNum } = getPlayerRoleMeta(player);
-  const tag = `${abbr} ${pname}`;
-
-  if (abbr === "LB" || abbr === "LWB" || abbr === "L" || tag.includes("LEFT BACK") || tag.includes("LEFT WINGBACK") || tag.includes("LEFT WING BACK")) return -100;
-  if (abbr === "LW" || abbr === "LF" || tag.includes("LEFT WING") || tag.includes("LEFT FORWARD")) return -92;
-  if (abbr === "LM" || tag.includes("LEFT MID")) return -82;
-  if (abbr === "LAM" || tag.includes("LEFT ATTACKING MID")) return -62;
-  if (abbr === "LCB" || abbr === "LD" || tag.includes("LEFT CENTER BACK") || tag.includes("LEFT CENTRE BACK")) return -32;
-  if (abbr === "LDM" || abbr === "LCM" || tag.includes("LEFT DEFENSIVE MID") || tag.includes("LEFT CENTRAL MID")) return -26;
-  if (abbr === "LS" || tag.includes("LEFT STRIKER")) return -22;
-
-  if (abbr === "RS" || tag.includes("RIGHT STRIKER")) return 22;
-  if (abbr === "RDM" || abbr === "RCM" || tag.includes("RIGHT DEFENSIVE MID") || tag.includes("RIGHT CENTRAL MID")) return 26;
-  if (abbr === "RCB" || abbr === "RD" || tag.includes("RIGHT CENTER BACK") || tag.includes("RIGHT CENTRE BACK")) return 32;
-  if (abbr === "RAM" || tag.includes("RIGHT ATTACKING MID")) return 62;
-  if (abbr === "RM" || tag.includes("RIGHT MID")) return 82;
-  if (abbr === "RW" || abbr === "RF" || tag.includes("RIGHT WING") || tag.includes("RIGHT FORWARD")) return 92;
-  if (abbr === "RB" || abbr === "RWB" || abbr === "R" || tag.includes("RIGHT BACK") || tag.includes("RIGHT WINGBACK") || tag.includes("RIGHT WING BACK")) return 100;
-
-  if (formationPlace !== null) return formationPlace;
-  if (jerseyNum === 3 || jerseyNum === 11) return -45;
-  if (jerseyNum === 2 || jerseyNum === 7) return 45;
-  return (fallbackIdx - 5) * 0.1;
 };
 
 const getStartingEleven = (teamRoster) => {
@@ -2354,248 +2933,153 @@ const getStartingEleven = (teamRoster) => {
   });
 
   const explicitStarters = deduped.filter(p => p?.starter === true);
+  const hasAnyExplicitStarterFlag = deduped.some(p => typeof p?.starter === "boolean");
   if (explicitStarters.length >= 11) {
     return explicitStarters.slice(0, 11);
   }
-  const nonStarters = deduped.filter(p => p?.starter !== true);
-  return [...explicitStarters, ...nonStarters].slice(0, 11);
+  if (explicitStarters.length >= 7 || (hasAnyExplicitStarterFlag && explicitStarters.length > 0)) {
+    return explicitStarters;
+  }
+  const withFormationPlace = deduped.filter(p => {
+    const fp = parseInt(String(p?.formationPlace ?? "").replace(/[^\d]/g, ""), 10);
+    return !isNaN(fp) && fp >= 1 && fp <= 11;
+  });
+  if (withFormationPlace.length >= 7) {
+    return withFormationPlace.slice(0, 11);
+  }
+  return deduped.slice(0, 11);
 };
 
 /**
- * Classifies player role tier strictly from ESPN position metadata:
- * 0 = GK, 1 = DEF, 2 = DEF/CENTRAL MID, 3 = ATT MID / WINGER, 4 = STRIKER / CF
+ * Computes continuous tactical depth (0 = GK -> 100 = Striker) and
+ * team-perspective lateral coordinate (-100 = team's left -> +100 = team's right).
+ * Recognizes ESPN hyphenated codes (CD-L, CD-R, DM-L, DM-R, CM-L, CM-R, AM-L, AM-R, CF-L, CF-R).
  */
-const getDetailedPositionScore = (player, fallbackIdx = 0) => {
-  const { abbr, pname, ptype, combined, formationPlace } = getPlayerRoleMeta(player);
+const getTacticalProfile = (player, formationRows = null) => {
+  const meta = getPlayerRoleMeta(player);
+  const { abbr, pname, ptype, formationPlace, jerseyNum } = meta;
   const tag = `${abbr} ${pname} ${ptype}`.toUpperCase();
 
-  let roleTier = 2;
-  if (abbr === "GK" || abbr === "G" || tag.includes("GOALKEEPER") || formationPlace === 1) {
-    roleTier = 0;
+  const isBackThreeWithDm =
+    Array.isArray(formationRows) &&
+    formationRows.length >= 4 &&
+    formationRows[1] === 3 &&
+    formationRows[2] <= 2 &&
+    formationRows[3] >= 4;
+
+  let depth = 54;
+  let specific = true;
+  let roleBand = "MID";
+
+  if (abbr === "GK" || abbr === "G" || tag.includes("GOALKEEPER")) {
+    depth = 0; roleBand = "GK";
   } else if (
-    ["CB", "LCB", "RCB", "LB", "RB", "LWB", "RWB", "SW", "D", "DEF"].includes(abbr) ||
-    tag.includes("BACK") || tag.includes("DEFEND") || tag.includes("SWEEPER")
+    ["CD", "CD-L", "CD-R", "CB", "LCB", "RCB", "SW"].includes(abbr) ||
+    tag.includes("CENTER BACK") || tag.includes("CENTRE BACK") ||
+    tag.includes("CENTER DEF") || tag.includes("CENTRE DEF") || tag.includes("SWEEPER")
   ) {
-    roleTier = 1;
+    depth = 18; roleBand = "DEF";
   } else if (
-    ["ST", "CF", "LS", "RS"].includes(abbr) ||
-    tag.includes("STRIKER") || tag.includes("CENTRE FORWARD") || tag.includes("CENTER FORWARD")
+    ["LB", "RB", "LD", "RD"].includes(abbr) ||
+    tag.includes("LEFT BACK") || tag.includes("RIGHT BACK") || tag.includes("FULLBACK") || tag.includes("FULL BACK")
   ) {
-    roleTier = 4;
+    depth = 22; roleBand = "DEF";
   } else if (
-    ["LW", "RW", "LF", "RF"].includes(abbr) ||
-    tag.includes("WING")
+    ["LWB", "RWB"].includes(abbr) || tag.includes("WINGBACK") || tag.includes("WING BACK")
   ) {
-    roleTier = 3;
+    depth = isBackThreeWithDm ? 46 : 30; roleBand = "WB";
   } else if (
-    ["F", "FWD"].includes(abbr) ||
-    combined.includes("FORWARD") || tag.includes("ATT")
+    ["DM", "DM-L", "DM-R", "CDM", "LDM", "RDM"].includes(abbr) ||
+    tag.includes("DEFENSIVE MID") || tag.includes("HOLDING MID")
   ) {
-    roleTier = 4;
+    depth = 38; roleBand = "DM";
   } else if (
-    ["CAM", "AM", "LAM", "RAM", "LM", "RM"].includes(abbr) ||
-    tag.includes("ATTACKING MID") || tag.includes("LEFT MID") || tag.includes("RIGHT MID")
+    ["CM", "CM-L", "CM-R", "LCM", "RCM"].includes(abbr) ||
+    tag.includes("CENTRAL MID") || tag.includes("CENTER MID") || tag.includes("CENTRE MID")
   ) {
-    roleTier = 3;
+    depth = 52; roleBand = "CM";
   } else if (
-    ["CDM", "DM", "LDM", "RDM", "CM", "LCM", "RCM", "M", "MID"].includes(abbr) ||
-    tag.includes("MIDFIELD")
+    ["LM", "RM"].includes(abbr) || tag.includes("LEFT MID") || tag.includes("RIGHT MID")
   ) {
-    roleTier = 2;
+    depth = 56; roleBand = "WM";
+  } else if (
+    ["AM", "CAM"].includes(abbr) ||
+    (tag.includes("ATTACKING MID") && !tag.includes("LEFT") && !tag.includes("RIGHT"))
+  ) {
+    depth = 72; roleBand = "AM";
+  } else if (
+    ["AM-L", "AM-R", "LAM", "RAM"].includes(abbr) || tag.includes("ATTACKING MID")
+  ) {
+    depth = 74; roleBand = "AM";
+  } else if (
+    ["LW", "RW", "LF", "RF", "W"].includes(abbr) ||
+    tag.includes("WING") || tag.includes("LEFT FORWARD") || tag.includes("RIGHT FORWARD")
+  ) {
+    depth = 80; roleBand = "W";
+  } else if (abbr === "SS" || tag.includes("SECOND STRIKER")) {
+    depth = 86; roleBand = "FWD";
+  } else if (
+    ["CF", "CF-L", "CF-R", "ST", "LS", "RS"].includes(abbr) ||
+    tag.includes("STRIKER") || tag.includes("CENTER FORWARD") || tag.includes("CENTRE FORWARD")
+  ) {
+    depth = 92; roleBand = "FWD";
+  } else if (["D", "DEF"].includes(abbr) || tag.includes("DEFEND")) {
+    depth = 20; specific = false; roleBand = "DEF";
+  } else if (["F", "FWD"].includes(abbr) || tag.includes("FORWARD")) {
+    depth = 90; specific = false; roleBand = "FWD";
+  } else if (["M", "MID"].includes(abbr) || tag.includes("MIDFIELD")) {
+    depth = 54; specific = false; roleBand = "MID";
+  } else {
+    depth = 54; specific = false; roleBand = "MID";
   }
 
-  // Guard against formationPlace vs. position/subPosition drift across midfield and attacking lines
-  const subAbbr = String(player?.subPosition?.abbreviation || "").toUpperCase().trim();
-  const posAbbr = String(player?.position?.abbreviation || "").toUpperCase().trim();
-  const effectiveAbbr = subAbbr || posAbbr;
-  if (formationPlace === 11 && ["LM", "LCM", "CM", "LDM", "CDM", "DM", "RM", "RCM", "RDM"].includes(effectiveAbbr)) {
-    roleTier = 2;
-  }
-  if (formationPlace === 7 && ["RM", "RCM", "CM", "RDM", "CDM", "DM", "LM", "LCM", "LDM"].includes(effectiveAbbr)) {
-    roleTier = 2;
-  }
-  if (formationPlace === 10 && ["CM", "LCM", "RCM", "CDM", "DM", "LDM", "RDM"].includes(effectiveAbbr)) {
-    roleTier = 2;
-  }
-  if ([6, 8].includes(formationPlace) && ["LW", "RW", "LF", "RF", "ST", "CF", "LS", "RS", "CAM", "AM", "LAM", "RAM"].includes(effectiveAbbr)) {
-    roleTier = 3;
-  }
+  let lat = null;
+  if (["LB", "LWB", "LD"].includes(abbr) || tag.includes("LEFT BACK") || tag.includes("LEFT WINGBACK") || tag.includes("LEFT WING BACK")) lat = -100;
+  else if (["LW", "LF"].includes(abbr) || tag.includes("LEFT WING") || tag.includes("LEFT FORWARD")) lat = -90;
+  else if (abbr === "LM" || tag.includes("LEFT MID")) lat = -80;
+  else if (["AM-L", "LAM"].includes(abbr) || tag.includes("LEFT ATTACKING MID")) lat = -65;
+  else if (["CD-L", "LCB"].includes(abbr) || tag.includes("LEFT CENTER BACK") || tag.includes("LEFT CENTRE BACK") || tag.includes("LEFT CENTER DEF")) lat = -40;
+  else if (["DM-L", "LDM"].includes(abbr) || tag.includes("LEFT DEFENSIVE MID")) lat = -32;
+  else if (["CM-L", "LCM"].includes(abbr) || tag.includes("LEFT CENTRAL MID") || tag.includes("LEFT CENTER MID")) lat = -28;
+  else if (["CF-L", "LS"].includes(abbr) || tag.includes("LEFT STRIKER") || tag.includes("LEFT CENTER FORWARD")) lat = -22;
+  else if (["CF-R", "RS"].includes(abbr) || tag.includes("RIGHT STRIKER") || tag.includes("RIGHT CENTER FORWARD")) lat = 22;
+  else if (["CM-R", "RCM"].includes(abbr) || tag.includes("RIGHT CENTRAL MID") || tag.includes("RIGHT CENTER MID")) lat = 28;
+  else if (["DM-R", "RDM"].includes(abbr) || tag.includes("RIGHT DEFENSIVE MID")) lat = 32;
+  else if (["CD-R", "RCB"].includes(abbr) || tag.includes("RIGHT CENTER BACK") || tag.includes("RIGHT CENTRE BACK") || tag.includes("RIGHT CENTER DEF")) lat = 40;
+  else if (["AM-R", "RAM"].includes(abbr) || tag.includes("RIGHT ATTACKING MID")) lat = 65;
+  else if (abbr === "RM" || tag.includes("RIGHT MID")) lat = 80;
+  else if (["RW", "RF"].includes(abbr) || tag.includes("RIGHT WING") || tag.includes("RIGHT FORWARD")) lat = 90;
+  else if (["RB", "RWB", "RD"].includes(abbr) || tag.includes("RIGHT BACK") || tag.includes("RIGHT WINGBACK") || tag.includes("RIGHT WING BACK")) lat = 100;
+  else if (["CD", "CB", "SW", "DM", "CDM", "CM", "AM", "CAM", "CF", "ST", "SS", "G", "GK"].includes(abbr)) lat = 0;
 
-  return {
-    roleTier,
-    hRank: getHorizontalRank(player, fallbackIdx)
-  };
-};
-
-const ESPN_FORMATION_PLACE_TABLES = {
-  "4-2-3-1": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    6: { row: 2, col: 0 }, 8: { row: 2, col: 1 },
-    11: { row: 3, col: 0 }, 10: { row: 3, col: 1 }, 7: { row: 3, col: 2 },
-    9: { row: 4, col: 0 }
-  },
-  "4-3-3": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    6: { row: 2, col: 0 }, 10: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
-    11: { row: 3, col: 0 }, 9: { row: 3, col: 1 }, 7: { row: 3, col: 2 }
-  },
-  "4-1-4-1": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    6: { row: 2, col: 0 },
-    11: { row: 3, col: 0 }, 10: { row: 3, col: 1 }, 8: { row: 3, col: 2 }, 7: { row: 3, col: 3 },
-    9: { row: 4, col: 0 }
-  },
-  "4-4-2": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
-    10: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
-  },
-  "4-4-1-1": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
-    10: { row: 3, col: 0 },
-    9: { row: 4, col: 0 }
-  },
-  "4-2-2-2": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    6: { row: 2, col: 0 }, 8: { row: 2, col: 1 },
-    11: { row: 3, col: 0 }, 7: { row: 3, col: 1 },
-    10: { row: 4, col: 0 }, 9: { row: 4, col: 1 }
-  },
-  "4-3-1-2": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    6: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 },
-    10: { row: 3, col: 0 },
-    9: { row: 4, col: 0 }, 7: { row: 4, col: 1 }
-  },
-  "4-1-2-1-2": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
-    6: { row: 2, col: 0 },
-    11: { row: 3, col: 0 }, 8: { row: 3, col: 1 },
-    10: { row: 4, col: 0 },
-    9: { row: 5, col: 0 }, 7: { row: 5, col: 1 }
-  },
-  "3-4-2-1": {
-    1: { row: 0, col: 0 },
-    4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
-    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
-    11: { row: 3, col: 0 }, 7: { row: 3, col: 1 },
-    9: { row: 4, col: 0 }
-  },
-  "3-4-3": {
-    1: { row: 0, col: 0 },
-    4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
-    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
-    11: { row: 3, col: 0 }, 9: { row: 3, col: 1 }, 7: { row: 3, col: 2 }
-  },
-  "3-4-1-2": {
-    1: { row: 0, col: 0 },
-    4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
-    3: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 7: { row: 2, col: 2 }, 2: { row: 2, col: 3 },
-    10: { row: 3, col: 0 },
-    11: { row: 4, col: 0 }, 9: { row: 4, col: 1 }
-  },
-  "3-5-2": {
-    1: { row: 0, col: 0 },
-    4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
-    3: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 10: { row: 2, col: 3 }, 2: { row: 2, col: 4 },
-    7: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
-  },
-  "3-5-1-1": {
-    1: { row: 0, col: 0 },
-    4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
-    3: { row: 2, col: 0 }, 11: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 }, 2: { row: 2, col: 4 },
-    10: { row: 3, col: 0 },
-    9: { row: 4, col: 0 }
-  },
-  "5-3-2": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 6: { row: 1, col: 3 }, 2: { row: 1, col: 4 },
-    11: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 },
-    7: { row: 3, col: 0 }, 9: { row: 3, col: 1 }
-  },
-  "5-4-1": {
-    1: { row: 0, col: 0 },
-    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 6: { row: 1, col: 3 }, 2: { row: 1, col: 4 },
-    11: { row: 2, col: 0 }, 10: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
-    9: { row: 3, col: 0 }
-  }
-};
-
-const buildDynamicPlaceTable = (formationRows) => {
-  const numOutfieldLines = Math.max(1, formationRows.length - 1);
-  const lastRow = numOutfieldLines;
-  const attRow = numOutfieldLines >= 4 ? numOutfieldLines - 1 : lastRow;
-  const midRow = numOutfieldLines >= 3 ? 2 : 1;
-
-  const baseMap = {
-    1: { row: 0, lat: -999 },
-    3: { row: 1, lat: -100 },
-    4: { row: 1, lat: -30 },
-    5: { row: 1, lat: 30 },
-    2: { row: 1, lat: 100 },
-    6: { row: midRow, lat: -60 },
-    11: { row: numOutfieldLines >= 4 ? attRow : midRow, lat: -90 },
-    8: { row: midRow, lat: 0 },
-    10: { row: numOutfieldLines >= 3 ? attRow : midRow, lat: -15 },
-    7: { row: numOutfieldLines >= 3 ? attRow : lastRow, lat: 90 },
-    9: { row: lastRow, lat: 15 }
-  };
-
-  const rowBuckets = Array.from({ length: formationRows.length }, () => []);
-  for (let fp = 1; fp <= 11; fp++) {
-    const info = baseMap[fp] || { row: midRow, lat: 0 };
-    const clampedRow = Math.max(0, Math.min(lastRow, info.row));
-    rowBuckets[clampedRow].push({ fp, lat: info.lat });
-  }
-
-  const table = {};
-  rowBuckets.forEach((bucket, rIdx) => {
-    bucket.sort((a, b) => a.lat - b.lat);
-    bucket.forEach((entry, cIdx) => {
-      table[entry.fp] = { row: rIdx, col: cIdx };
-    });
-  });
-
-  return table;
+  return { meta, depth, specific, roleBand, lat, formationPlace, jerseyNum };
 };
 
 const inferFormationFromStarters = (starters) => {
-  const outfield = starters.filter((p, idx) => getDetailedPositionScore(p, idx).roleTier !== 0).slice(0, 10);
+  const profiles = starters.map(p => getTacticalProfile(p));
+  const outfield = profiles.filter(p => p.roleBand !== "GK").slice(0, 10);
   if (outfield.length < 10) return "4-3-3";
 
-  let defs = 0;
-  let deepMids = 0;
-  let attMids = 0;
-  let fwds = 0;
+  const defs = outfield.filter(p => p.roleBand === "DEF").length;
+  const wbs = outfield.filter(p => p.roleBand === "WB").length;
+  const dms = outfield.filter(p => p.roleBand === "DM").length;
+  const cms = outfield.filter(p => p.roleBand === "CM" || p.roleBand === "MID").length;
+  const wms = outfield.filter(p => p.roleBand === "WM").length;
+  const ams = outfield.filter(p => p.roleBand === "AM").length;
+  const wingers = outfield.filter(p => p.roleBand === "W").length;
+  const fwds = outfield.filter(p => p.roleBand === "FWD").length;
 
-  outfield.forEach((p, idx) => {
-    const { roleTier } = getDetailedPositionScore(p, idx);
-    if (roleTier === 1) defs++;
-    else if (roleTier === 2) deepMids++;
-    else if (roleTier === 3) attMids++;
-    else if (roleTier === 4) fwds++;
-  });
-
-  if (defs === 4 && deepMids === 2 && attMids === 3 && fwds === 1) return "4-2-3-1";
-  if (defs === 3 && deepMids === 4 && attMids === 2 && fwds === 1) return "3-4-2-1";
-  if (defs === 4 && deepMids + attMids === 3 && fwds === 3) return "4-3-3";
-  if (defs === 4 && deepMids + attMids === 4 && fwds === 2) return "4-4-2";
-  if (defs === 3 && deepMids + attMids === 5 && fwds === 2) return "3-5-2";
-  if (defs === 3 && deepMids + attMids === 4 && fwds === 3) return "3-4-3";
-  if (defs === 5 && deepMids + attMids === 3 && fwds === 2) return "5-3-2";
-  if (defs === 5 && deepMids + attMids === 4 && fwds === 1) return "5-4-1";
+  if (defs === 4 && dms + cms === 2 && ams + wingers + wms === 3 && fwds === 1) return "4-2-3-1";
+  if (defs === 3 && wbs + dms + cms + wms === 4 && ams === 2 && fwds === 1) return "3-4-2-1";
+  if (defs === 4 && dms + cms + wms + ams === 3 && wingers + fwds === 3) return "4-3-3";
+  if (defs === 4 && dms + cms + wms === 4 && fwds + wingers === 2) return "4-4-2";
+  if (defs === 3 && wbs + dms + cms + wms + ams === 5 && fwds === 2) return "3-5-2";
+  if (defs === 3 && wbs + dms + cms + wms === 4 && wingers + ams + fwds === 3) return "3-4-3";
+  if (defs + wbs === 5 && dms + cms + ams === 3 && fwds === 2) return "5-3-2";
+  if (defs + wbs === 5 && dms + cms + wms + ams === 4 && fwds === 1) return "5-4-1";
 
   const clampedDefs = Math.max(3, Math.min(5, defs || 4));
-  const clampedFwds = Math.max(1, Math.min(3, fwds || (attMids >= 2 ? 1 : 2)));
+  const clampedFwds = Math.max(1, Math.min(3, fwds + wingers || 1));
   const remainingMid = 10 - clampedDefs - clampedFwds;
 
   if (remainingMid === 5 && clampedFwds === 1) return `${clampedDefs}-2-3-1`;
@@ -2603,283 +3087,70 @@ const inferFormationFromStarters = (starters) => {
   return "4-3-3";
 };
 
-const getOptaLateralOrder = (item) => {
-  const { abbr, pname, formationPlace } = item.meta;
-  const tag = `${abbr} ${pname}`;
-  if (abbr === "LB" || abbr === "LWB" || tag.includes("LEFT BACK") || tag.includes("LEFT WING")) return -100;
-  if (abbr === "LW" || abbr === "LF" || abbr === "LM" || abbr === "LAM") return -90;
-  if (abbr === "LCB" || abbr === "LDM" || abbr === "LCM" || abbr === "LS") return -30;
-  if (abbr === "RCB" || abbr === "RDM" || abbr === "RCM" || abbr === "RS") return 30;
-  if (abbr === "RW" || abbr === "RF" || abbr === "RM" || abbr === "RAM") return 90;
-  if (abbr === "RB" || abbr === "RWB" || tag.includes("RIGHT BACK") || tag.includes("RIGHT WING")) return 100;
+const buildFormationGrid = (starters, formationRows, isHome = true) => {
+  if (!Array.isArray(starters) || starters.length === 0) return [];
 
-  const optaOrder = { 3: -80, 11: -70, 4: -30, 5: 30, 6: -15, 10: -5, 9: 0, 8: 15, 7: 70, 2: 80 };
-  if (formationPlace && optaOrder[formationPlace] !== undefined) {
-    return optaOrder[formationPlace];
-  }
-  return item.role.hRank;
-};
-
-const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
-  if (roleTier === 0) return [0];
-  if (roleTier === 1) return [1];
-  if (roleTier === 4) return [numOutfieldLines];
-  if (roleTier === 3) {
-    if (numOutfieldLines >= 4) return [numOutfieldLines - 1, numOutfieldLines, Math.max(1, numOutfieldLines - 2)];
-    return [numOutfieldLines, Math.max(1, numOutfieldLines - 1)];
-  }
-  if (numOutfieldLines >= 4) return [2, 3, 1, numOutfieldLines];
-  if (numOutfieldLines === 3) return [2, 1, 3];
-  return [1];
-};
-
-/**
- * Reconciles misplaced players across lines when ESPN's `formationPlace` assigns
- * a player to a slot that conflicts with their true position tier (e.g. an attacker
- * `roleTier >= 3` placed in a deep/central midfield row while a midfielder `roleTier === 2`
- * is placed in an attacking row, or a defender `roleTier === 1` in a midfield row),
- * while respecting deliberate tactical selections where no conflicting role is in the target line.
- */
-const reconcileLineRoleSwaps = (grid) => {
-  if (!Array.isArray(grid) || grid.length < 3) return;
-  const lastRowIdx = grid.length - 1;
-  const attRowIdx = grid.length >= 5 ? grid.length - 2 : lastRowIdx;
-
-  // 1. Reconcile defender vs. midfielder swap between row 1 and row 2
-  const defRow = grid[1];
-  const midRow = grid[2];
-  if (Array.isArray(defRow) && Array.isArray(midRow)) {
-    const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
-    if (midIdx !== -1) {
-      let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
-      if (defIdx === -1 && defRow.length >= 2) defIdx = 1;
-      if (defIdx !== -1) {
-        const tmp = defRow[defIdx];
-        defRow[defIdx] = midRow[midIdx];
-        midRow[midIdx] = tmp;
-      }
-    }
-  }
-
-  // 2. Reconcile attacker (`roleTier >= 3`) vs. midfielder (`roleTier === 2`) swaps
-  // across attacking/forward rows and midfield rows.
-  const candidateAttRows = attRowIdx === lastRowIdx ? [lastRowIdx] : [attRowIdx, lastRowIdx];
-  for (let r = 1; r < grid.length; r++) {
-    const isAttLine = candidateAttRows.includes(r);
-    const isMidLine = !isAttLine && r >= 2;
-    if (!isAttLine && !isMidLine) continue;
-
-    for (let c = 0; c < grid[r].length; c++) {
-      const item = grid[r][c];
-      if (!item || !item.role) continue;
-      const tier = item.role.roleTier;
-
-      // Attacker (winger/forward, tier 3 or 4) placed in a non-attacking midfield line (tier 2)
-      if (isMidLine && tier >= 3) {
-        // Look for a midfielder (tier 2) sitting in an attacking/forward row
-        let swapTarget = null;
-        for (const targetR of candidateAttRows) {
-          const tIdx = grid[targetR].findIndex(cand => cand && cand.role && cand.role.roleTier === 2);
-          if (tIdx !== -1) {
-            swapTarget = { r: targetR, c: tIdx };
-            break;
-          }
-        }
-        if (swapTarget) {
-          const tmp = grid[r][c];
-          grid[r][c] = grid[swapTarget.r][swapTarget.c];
-          grid[swapTarget.r][swapTarget.c] = tmp;
-        }
-      }
-
-      // Midfielder (tier 2) placed in an attacking/forward row while an attacker (tier >= 3) sits deeper
-      if (isAttLine && tier === 2) {
-        let swapTarget = null;
-        for (let deeperR = 2; deeperR < grid.length; deeperR++) {
-          if (candidateAttRows.includes(deeperR)) continue;
-          const dIdx = grid[deeperR].findIndex(cand => cand && cand.role && cand.role.roleTier >= 3);
-          if (dIdx !== -1) {
-            swapTarget = { r: deeperR, c: dIdx };
-            break;
-          }
-        }
-        if (swapTarget) {
-          const tmp = grid[r][c];
-          grid[r][c] = grid[swapTarget.r][swapTarget.c];
-          grid[swapTarget.r][swapTarget.c] = tmp;
-        }
-      }
-    }
-  }
-};
-
-const getRowLateralKey = (item, rIdx, rowLen) => {
-  const abbr = String(item?.meta?.abbr || '').toUpperCase().trim();
-  const pname = String(item?.meta?.pname || '').toUpperCase().trim();
-  const fp = item?.meta?.formationPlace;
-  const tag = `${abbr} ${pname}`;
-
-  if (abbr === 'LB' || abbr === 'LWB' || tag.includes('LEFT BACK') || tag.includes('LEFT WINGBACK')) return -100;
-  if (abbr === 'LW' || abbr === 'LF' || tag.includes('LEFT WING') || tag.includes('LEFT FORWARD')) return -90;
-  if (abbr === 'LM' || tag.includes('LEFT MID')) return -80;
-  if (abbr === 'LAM' || tag.includes('LEFT ATTACKING MID')) return -60;
-  if (abbr === 'LCB' || abbr === 'LD' || tag.includes('LEFT CENTER BACK') || tag.includes('LEFT CENTRE BACK')) return -35;
-  if (abbr === 'LDM' || abbr === 'LCM' || tag.includes('LEFT DEFENSIVE MID') || tag.includes('LEFT CENTRAL MID')) return -25;
-  if (abbr === 'LS' || tag.includes('LEFT STRIKER')) return -20;
-
-  if (abbr === 'RS' || tag.includes('RIGHT STRIKER')) return 20;
-  if (abbr === 'RDM' || abbr === 'RCM' || tag.includes('RIGHT DEFENSIVE MID') || tag.includes('RIGHT CENTRAL MID')) return 25;
-  if (abbr === 'RCB' || abbr === 'RD' || tag.includes('RIGHT CENTER BACK') || tag.includes('RIGHT CENTRE BACK')) return 35;
-  if (abbr === 'RAM' || tag.includes('RIGHT ATTACKING MID')) return 60;
-  if (abbr === 'RM' || tag.includes('RIGHT MID')) return 80;
-  if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 90;
-  if (abbr === 'RB' || abbr === 'RWB' || tag.includes('RIGHT BACK') || tag.includes('RIGHT WINGBACK')) return 100;
-
-  if (item?.slot && typeof item.slot.col === 'number') {
-    const centeredCol = item.slot.col - ((rowLen - 1) / 2);
-    return centeredCol * 10;
-  }
-  const fpCenter = { 3: -95, 11: -85, 6: -20, 4: -30, 10: 0, 9: 0, 5: 30, 8: 20, 7: 85, 2: 95 };
-  if (fp && fpCenter[fp] !== undefined) return fpCenter[fp];
-  return (item?.idx ?? 0) * 0.01;
-};
-
-const sortRowsLeftToRight = (grid) => {
-  return grid.map((rowItems, rIdx) => {
-    if (rIdx === 0) return rowItems.map(x => x.player);
-    const sorted = [...rowItems].sort((a, b) => {
-      const latA = getRowLateralKey(a, rIdx, rowItems.length);
-      const latB = getRowLateralKey(b, rIdx, rowItems.length);
-      if (Math.abs(latA - latB) > 0.5) return latA - latB;
-      return (a.idx ?? 0) - (b.idx ?? 0);
-    });
-    return sorted.map(x => x.player);
-  });
-};
-
-const buildFormationGrid = (starters, formationRows) => {
-  const grid = formationRows.map(() => []);
-  const used = new Set();
-  const formKey = formationRows.slice(1).join("-");
-  const placeTable = ESPN_FORMATION_PLACE_TABLES[formKey] || buildDynamicPlaceTable(formationRows);
-  const numOutfieldLines = formationRows.length - 1;
+  const fpLatMap = { 3: -95, 11: -85, 4: -30, 6: -20, 10: 0, 9: 0, 8: 20, 5: 30, 7: 85, 2: 95 };
+  const fpDepthHint = { 1: 0, 2: 22, 3: 22, 4: 20, 5: 20, 6: 42, 8: 52, 10: 70, 11: 76, 7: 76, 9: 92 };
 
   const enriched = starters.map((player, idx) => {
-    const meta = getPlayerRoleMeta(player);
-    const role = getDetailedPositionScore(player, idx);
-    const slot = placeTable && meta.formationPlace ? placeTable[meta.formationPlace] : null;
-    return { player, idx, meta, role, slot };
+    const prof = getTacticalProfile(player, formationRows);
+    const { abbr } = prof.meta;
+    const fp = prof.formationPlace;
+
+    let effDepth = prof.depth;
+    if (!prof.specific && fp && fpDepthHint[fp] !== undefined) {
+      if (abbr === "M" || abbr === "MID") effDepth = 35 + fpDepthHint[fp] * 0.45;
+      else if (abbr === "F" || abbr === "FWD") effDepth = 78 + fpDepthHint[fp] * 0.16;
+      else if (abbr === "D" || abbr === "DEF") effDepth = 16 + fpDepthHint[fp] * 0.15;
+      else effDepth = fpDepthHint[fp];
+    } else if (fp && fpDepthHint[fp] !== undefined) {
+      effDepth += (fpDepthHint[fp] - 50) * 0.008;
+    }
+
+    let effLat = prof.lat;
+    if (effLat === null) {
+      if (fp && fpLatMap[fp] !== undefined) effLat = fpLatMap[fp];
+      else if (prof.jerseyNum === 3 || prof.jerseyNum === 11) effLat = -45;
+      else if (prof.jerseyNum === 2 || prof.jerseyNum === 7) effLat = 45;
+      else effLat = (idx - 5) * 0.1;
+    } else if (effLat === 0 && fp && fpLatMap[fp] !== undefined) {
+      effLat = fpLatMap[fp] * 0.05;
+    }
+
+    return { player, idx, effDepth, effLat, fp };
   });
 
-  if (placeTable) {
-    const claimedSlots = new Set();
-    enriched
-      .filter(it => it.slot && it.slot.row >= 0 && it.slot.row < grid.length)
-      .sort((a, b) => (a.slot.row - b.slot.row) || (a.slot.col - b.slot.col))
-      .forEach(it => {
-        const r = it.slot.row;
-        const slotKey = `${r}:${it.slot.col}`;
-        if (!claimedSlots.has(slotKey) && grid[r].length < formationRows[r]) {
-          grid[r].push(it);
-          used.add(it.idx);
-          claimedSlots.add(slotKey);
-        }
-      });
+  const gk =
+    enriched.find(it => it.effDepth === 0) ||
+    enriched.find(it => it.fp === 1) ||
+    enriched[0];
 
-    const leftovers = enriched
-      .filter(it => !used.has(it.idx))
-      .sort((a, b) => (a.role.roleTier - b.role.roleTier) || (getOptaLateralOrder(a) - getOptaLateralOrder(b)));
+  const outfield = enriched
+    .filter(it => it.idx !== gk.idx)
+    .sort((a, b) => (a.effDepth - b.effDepth) || (a.idx - b.idx));
 
-    leftovers.forEach(it => {
-      const prefRows = getPreferredRowsForRole(it.role.roleTier, numOutfieldLines);
-      for (const r of prefRows) {
-        if (r >= 0 && r < grid.length && grid[r].length < formationRows[r]) {
-          grid[r].push(it);
-          used.add(it.idx);
-          return;
-        }
-      }
-      for (let r = 0; r < grid.length; r++) {
-        if (grid[r].length < formationRows[r]) {
-          grid[r].push(it);
-          used.add(it.idx);
-          return;
-        }
-      }
-    });
-
-    reconcileLineRoleSwaps(grid);
-
-    if (used.size === starters.length) {
-      return sortRowsLeftToRight(grid);
-    }
-  }
-
-  grid.forEach(row => { row.length = 0; });
-  used.clear();
-
-  const gk = enriched.find(it => it.role.roleTier === 0 || it.meta.formationPlace === 1) || enriched[0];
-  if (gk && grid[0].length < formationRows[0]) {
-    grid[0].push(gk);
-    used.add(gk.idx);
-  }
-
-  const outfield = enriched.filter(it => !used.has(it.idx));
-
-  if (numOutfieldLines >= 1) {
-    outfield
-      .filter(it => !used.has(it.idx) && (it.role.roleTier === 1 || [2, 3, 4, 5].includes(it.meta.formationPlace)))
-      .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
-      .forEach(it => {
-        if (grid[1].length < formationRows[1]) {
-          grid[1].push(it);
-          used.add(it.idx);
-        }
-      });
-  }
-
-  if (numOutfieldLines >= 2) {
-    const lastRowIdx = formationRows.length - 1;
-    outfield
-      .filter(it => !used.has(it.idx) && (it.role.roleTier === 4 || it.meta.formationPlace === 9))
-      .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
-      .forEach(it => {
-        if (grid[lastRowIdx].length < formationRows[lastRowIdx]) {
-          grid[lastRowIdx].push(it);
-          used.add(it.idx);
-        }
-      });
-  }
-
-  if (numOutfieldLines >= 4) {
-    const attRowIdx = formationRows.length - 2;
-    outfield
-      .filter(it => !used.has(it.idx) && (it.role.roleTier === 3 || [7, 10, 11].includes(it.meta.formationPlace)))
-      .sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b))
-      .forEach(it => {
-        if (grid[attRowIdx].length < formationRows[attRowIdx]) {
-          grid[attRowIdx].push(it);
-          used.add(it.idx);
-        }
-      });
-  }
-
-  const remaining = outfield
-    .filter(it => !used.has(it.idx))
-    .sort((a, b) => (a.role.roleTier - b.role.roleTier) || (getOptaLateralOrder(a) - getOptaLateralOrder(b)));
+  const grid = [[gk.player]];
+  let cursor = 0;
 
   for (let r = 1; r < formationRows.length; r++) {
-    while (grid[r].length < formationRows[r] && remaining.length > 0) {
-      const next = remaining.shift();
-      if (next && !used.has(next.idx)) {
-        grid[r].push(next);
-        used.add(next.idx);
-      }
-    }
+    const count = formationRows[r];
+    const slice = outfield.slice(cursor, cursor + count);
+    cursor += slice.length;
+    // Home (bottom half, attacking up): Left -> Right
+    // Away (top half, attacking down): Right -> Left so Away RB faces Home LW
+    slice.sort((a, b) => {
+      const diff = isHome ? (a.effLat - b.effLat) : (b.effLat - a.effLat);
+      return Math.abs(diff) > 0.25 ? diff : (a.idx - b.idx);
+    });
+    grid.push(slice.map(x => x.player));
   }
 
-  reconcileLineRoleSwaps(grid);
-  return sortRowsLeftToRight(grid);
+  if (cursor < outfield.length && grid.length > 1) {
+    grid[grid.length - 1].push(...outfield.slice(cursor).map(x => x.player));
+  }
+
+  return grid;
 };
 
 const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
@@ -2947,7 +3218,7 @@ const useFootballFormations = (summary, width, height, isHome, comp = null) =>
     const formationRows = [1, ...(parsedForm.length > 0 ? parsedForm : [4, 3, 3])];
 
     const starters = getStartingEleven(teamRoster);
-    const groupedRows = buildFormationGrid(starters, formationRows);
+    const groupedRows = buildFormationGrid(starters, formationRows, isHome);
     const numRows = Math.max(1, formationRows.length - 1);
     const topPad = 12;
     const bottomPad = 42;
@@ -2996,7 +3267,7 @@ const PlayerJersey = memo(({ player, teamColor, accentColor = "#FFFFFF" }) => {
           <span className="text-[10px] font-extrabold leading-none tabular-nums" style={{ color: contrast }}>{player.jersey || '-'}</span>
         </div>
       </div>
-      <span className="text-[#F5F5F7] text-[8.5px] font-bold mt-1 text-center bg-black/85 px-1.5 py-0.5 rounded-[5px] truncate max-w-[82px] leading-tight">
+      <span className="text-[#F5F5F7] text-[8.5px] font-bold mt-1 text-center leading-tight break-words max-w-[84px]">
         {name}
       </span>
     </div>
@@ -3105,13 +3376,16 @@ const PitchMatchEventsSection = memo(({ summary, home, away }) => {
 
 const TacticalPitch = memo(({ summary, home, away }) => {
   const pitchRef = useRef(null);
-  const [pitchSize, setPitchSize] = useState({ width: 392, height: 640 });
+  const [pitchSize, setPitchSize] = useState(() => ({
+    width: typeof window !== 'undefined' ? Math.min(420, window.innerWidth - 20) : 392,
+    height: typeof window !== 'undefined' ? Math.max(760, Math.min(960, window.innerHeight * 0.96)) : 820
+  }));
 
   useEffect(() => {
     const update = () => {
       if (pitchRef.current) {
         const rect = pitchRef.current.getBoundingClientRect();
-        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(600, Math.min(760, window.innerHeight * 0.80)) });
+        if (rect.width > 0) setPitchSize({ width: rect.width, height: Math.max(760, Math.min(960, window.innerHeight * 0.96)) });
       }
     };
     update();
@@ -3145,8 +3419,11 @@ const TacticalPitch = memo(({ summary, home, away }) => {
   const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, false, away);
   const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, true, home);
 
-  if (!summary?.rosters) {
+  if (!summary) {
     return <WhitePillLoader className="py-16" />;
+  }
+  if (!Array.isArray(summary.rosters) || summary.rosters.length === 0) {
+    return <EmptyState icon={Users} title="Lineups Pending" message="Confirmed starting XIs will appear once announced." />;
   }
 
   return (
@@ -3212,29 +3489,29 @@ const TacticalPitch = memo(({ summary, home, away }) => {
 
 const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
   const scrollRef = useRef(null);
+  const didMountRef = useRef(false);
 
   const centerSelectedDate = useCallback((smooth = true) => {
     const container = scrollRef.current;
     if (!container) return;
     const selectedEl = container.querySelector('[data-selected="true"]');
     if (selectedEl) {
-      const containerRect = container.getBoundingClientRect();
-      const elRect = selectedEl.getBoundingClientRect();
-      const delta = (elRect.left + elRect.width / 2) - (containerRect.left + containerRect.width / 2);
-      container.scrollTo({ left: container.scrollLeft + delta, behavior: smooth ? 'smooth' : 'auto' });
+      const targetLeft = selectedEl.offsetLeft - (container.clientWidth / 2) + (selectedEl.offsetWidth / 2);
+      container.scrollTo({ left: Math.max(0, targetLeft), behavior: smooth ? 'smooth' : 'auto' });
     }
   }, []);
 
   useEffect(() => {
-    centerSelectedDate(true);
-    const t = setTimeout(() => centerSelectedDate(true), 120);
-    return () => clearTimeout(t);
+    const useSmooth = didMountRef.current;
+    didMountRef.current = true;
+    const raf = requestAnimationFrame(() => centerSelectedDate(useSmooth));
+    return () => cancelAnimationFrame(raf);
   }, [selectedDate, dates, centerSelectedDate]);
 
   return (
     <div className="px-4 pt-2.5 mb-2.5 w-full">
       <div className="bg-[#121212] h-[64px] rounded-[32px] px-3 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
-        <div ref={scrollRef} className="flex items-center overflow-x-auto scroll-smooth ios-momentum [&::-webkit-scrollbar]:hidden w-full">
+        <div ref={scrollRef} className="flex items-center overflow-x-auto ios-momentum [&::-webkit-scrollbar]:hidden w-full relative">
           {dates.map((d, i) => {
             const isSel = isSameDay(d, selectedDate);
             const isToday = isSameDay(d, new Date());
@@ -3249,7 +3526,7 @@ const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
                 key={i}
                 data-selected={isSel}
                 onClick={() => onSelectDate(new Date(d))}
-                className="w-[44px] mx-1 shrink-0 flex flex-col items-center justify-center py-1 transition-all duration-200 ease-out active:scale-95 outline-none"
+                className="w-[44px] mx-1 shrink-0 flex flex-col items-center justify-center py-1 transition-opacity duration-150 outline-none"
                 style={{ opacity: fadeOpacity }}
               >
                 <span className="text-[9px] font-bold tracking-[0.5px] mb-1 uppercase" style={{ color: dayColor }}>
@@ -3326,7 +3603,7 @@ const NewsCard = memo(({ item }) => {
   const sourceLabel = item.source || 'ESPN';
 
   return (
-    <article className="liquid-glass rounded-[26px] overflow-hidden mb-4 ios-card-press w-full [content-visibility:auto]">
+    <article className="liquid-glass rounded-[26px] overflow-hidden mb-4 ios-card-press w-full">
       {heroImg && (
         <div className="relative w-full h-[168px] overflow-hidden bg-[#1C1C1E]">
           <img
@@ -3409,7 +3686,7 @@ const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideD
   const leagueLogo = getFootballLeagueLogo(match, leagueName);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full [content-visibility:auto]">
+    <div onTouchStart={() => { if (match?.id) fetchWithCache(`${API_SOCCER_SCORE_BASE}/${match._leagueId || 'all'}/summary?event=${match.id}`).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
         <img src={getSafeFootballLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h?.team?.shortDisplayName || h?.team?.name}</span>
@@ -3425,7 +3702,7 @@ const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideD
         {isLive ? (
           <BlinkingTime time={match?.status?.displayClock} color={THEME.success} />
         ) : isPre ? (
-          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] truncate w-full">{getFavFormattedDate(match.date, hideDate)}</span>
+          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] w-full">{getFavFormattedDate(match.date, hideDate)}</span>
         ) : (
           <span className="text-[10px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[1px]">{match?.status?.type?.shortDetail || 'FT'}</span>
         )}
@@ -3446,12 +3723,12 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   const aScore = formatCricketScore(a.score);
 
   const { isLive, isActionLive, displayLabel, color, detailedStatus } = getCricketMatchStatus(match, selectedDate);
-  const isPre = !isLive && (match.status === 'SCHEDULED' || match.status === 'PRE' || (match.start_time && new Date(match.start_time) > new Date()));
+  const isPre = !isLive && isCricketMatchUpcoming(match);
   const shortLeague = getShortLeagueName(match.league || match.series || match.title);
   const leagueLogo = getCricketLeagueLogo(match.league || match.series || match.title, match.league_logo);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full [content-visibility:auto]">
+    <div onTouchStart={() => { if (match?.match_id) fetchWithCache(`${API_CRICKET_BASE}/match/${match.match_id}`, false, 10000).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
         <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h.short_name || h.name}</span>
@@ -3470,13 +3747,13 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
           <>
             <LiveIndicator label={displayLabel} isActionLive={isActionLive} color={color} />
             {detailedStatus && detailedStatus.toUpperCase() !== displayLabel && (
-              <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1 line-clamp-2 leading-tight">{detailedStatus}</span>
+              <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1 leading-tight">{detailedStatus}</span>
             )}
           </>
         ) : isPre ? (
-          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] truncate w-full">{getFavFormattedDate(match.start_time, hideDate)}</span>
+          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] w-full">{getFavFormattedDate(match.start_time, hideDate)}</span>
         ) : (
-          <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1.5 line-clamp-2 leading-tight">{detailedStatus || match.status_text || displayLabel}</span>
+          <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1.5 leading-tight">{detailedStatus || match.status_text || displayLabel}</span>
         )}
       </div>
 
@@ -3997,7 +4274,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   const [data, setData] = useState(() => {
     const cachedStd = getCachedSync(stdUrl);
-    const cachedSched = getCachedSync(schedUrl) || getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) || [];
+    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHEDULE_URL) || [];
     return buildCurrentLeagues(cachedStd, cachedSched);
   });
   const [selectedLeague, setSelectedLeague] = useState(() => data[0] || null);
@@ -4006,7 +4283,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   useEffect(() => {
     let active = true;
-    const cachedSched = getCachedSync(schedUrl) || getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) || [];
+    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHEDULE_URL) || [];
 
     Promise.all([
       fetchWithCache(stdUrl, false, 6000).catch(() => null),
@@ -4467,6 +4744,7 @@ const CRICKET_MATCH_TABS = [
 ];
 
 const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
+  const { closing, handleClose } = useSmoothDismiss(onClose);
   const id = match?.match_id;
   const [matchDetails, setMatchDetails] = useState(() => id ? getCachedSync(`${API_CRICKET_BASE}/match/${id}`) : null);
   const [matchCommentary, setMatchCommentary] = useState(() => {
@@ -4485,7 +4763,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     if (!id) return;
     if (!isSilent && !matchDetails) setDetailsLoading(true);
 
-    fetchWithCache(`${API_CRICKET_BASE}/match/${id}`, isSilent).then(detailsRes => {
+    fetchWithCache(`${API_CRICKET_BASE}/match/${id}`, isSilent, 20000).then(detailsRes => {
       if (detailsRes) {
         setMatchDetails(detailsRes);
         if (autoSelectInningsRef.current && detailsRes.innings && detailsRes.innings.length > 0) {
@@ -4581,6 +4859,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   }, [matchCommentary, activeInnings]);
 
   const renderCricketModalHero = () => {
+    if (!match?.teams || match.teams.length < 2) return null;
     const hTeam = match.teams[0];
     const aTeam = match.teams[1];
     let hScore = formatCricketScore(hTeam.score);
@@ -4608,7 +4887,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
       <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hTeam, null, null, 'cricket')}>
           <img src={getCricketLogo(hTeam)} onError={(e) => handleImageError(e, hTeam.short_name || hTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
-          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{hTeam.short_name || hTeam.name}</span>
+          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{hTeam.short_name || hTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore.runs || '-'}</span>
             {hScore.overs && <span className="text-[11px] text-[#8E8E93] font-bold mt-1">{hScore.overs}</span>}
@@ -4623,7 +4902,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
         </div>
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aTeam, null, null, 'cricket')}>
           <img src={getCricketLogo(aTeam)} onError={(e) => handleImageError(e, aTeam.short_name || aTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
-          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{aTeam.short_name || aTeam.name}</span>
+          <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{aTeam.short_name || aTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             {aScore.runs ? (
               <>
@@ -4739,7 +5018,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               <div className="w-full bg-[#1C1C1E] py-4 px-4 rounded-[16px] border border-[rgba(255,255,255,0.08)]">
                 <Star size={20} color={THEME.fwd} className="mb-1.5 shrink-0" />
                 <span className="block text-[9px] font-extrabold tracking-[1.5px] mb-1 mt-1" style={{ color: THEME.fwd }}>PLAYER OF THE MATCH</span>
-                <span className="block text-[#F5F5F7] text-[13px] font-extrabold" style={{ color: THEME.fwd }}>{matchDetails.player_of_match}</span>
+                <span className="block text-[#F5F5F7] text-[13px] font-extrabold" style={{ color: THEME.fwd }}>{cleanPlayerName(matchDetails.player_of_match)}</span>
               </div>
             )}
           </div>
@@ -4825,7 +5104,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
           {(inning.batting || []).map((b, i) => (
             <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
               <div className="flex-[3] pr-2 min-w-0">
-                <span className="block text-[#F5F5F7] text-[14px] font-bold break-words leading-snug">{decodeEntities(b.name)}{!b.is_out && '*'}</span>
+                <span className="block text-[#F5F5F7] text-[14px] font-bold break-words leading-snug">{cleanPlayerName(b.name)}{!b.is_out && '*'}</span>
                 <span className="block text-[#8E8E93] text-[11px] mt-1 font-medium break-words leading-snug">{cleanCricketDismissalText(b.dismissal, b.is_out)}</span>
               </div>
               <span className="w-[30px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{b.runs}</span>
@@ -4854,7 +5133,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
           </div>
           {(inning.bowling || []).map((b, i) => (
             <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
-              <span className="flex-[3] text-[#F5F5F7] text-[14px] font-bold break-words leading-snug pr-2">{decodeEntities(b.name || 'Bowler')}</span>
+              <span className="flex-[3] text-[#F5F5F7] text-[14px] font-bold break-words leading-snug pr-2">{cleanPlayerName(b.name || 'Bowler')}</span>
               <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.overs}</span>
               <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.maidens || 0}</span>
               <span className="w-[30px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{b.runs}</span>
@@ -4879,7 +5158,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               else if (p.bat1_name && p.bat2_name) names = `${p.bat1_name} & ${p.bat2_name}`;
               return (
                 <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
-                  <span className="flex-1 text-[#F5F5F7] text-[14px] font-bold pr-2 break-words leading-snug">{decodeEntities(names)}</span>
+                  <span className="flex-1 text-[#F5F5F7] text-[14px] font-bold pr-2 break-words leading-snug">{cleanPlayerName(names)}</span>
                   <span className="w-[45px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{p.runs ?? '-'}</span>
                   <span className="w-[45px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{p.balls ?? '-'}</span>
                 </div>
@@ -4897,7 +5176,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
             </div>
             {fow.map((w, i) => (
               <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
-                <span className="flex-1 text-[#F5F5F7] text-[14px] font-bold pr-2 break-words leading-snug">{decodeEntities(w.player_name || 'Batter')}</span>
+                <span className="flex-1 text-[#F5F5F7] text-[14px] font-bold pr-2 break-words leading-snug">{cleanPlayerName(w.player_name || 'Batter')}</span>
                 <span className="w-[55px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{w.score}-{w.wicket_number}</span>
                 <span className="w-[45px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{w.overs}</span>
               </div>
@@ -5013,10 +5292,10 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
-      <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
-        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
+    <div className={`fixed inset-0 z-50 bg-black/70 ${closing ? 'ios-backdrop-out' : 'ios-backdrop-in'} flex flex-col justify-end`}>
+      <div className="absolute inset-0" onClick={handleClose} />
+      <div className={`relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ${closing ? 'ios-sheet-down' : 'ios-sheet-up'} transform-gpu`}>
+        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={handleClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
 
@@ -5053,7 +5332,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`min-w-0 py-2.5 px-1 rounded-[12px] text-[11px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                    className={`min-w-0 py-2.5 px-1 rounded-[12px] text-[11px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {t.label}
                   </button>
@@ -5061,7 +5340,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               })}
             </div>
 
-            <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+            <div key={`${activeTab}-${activeInnings}`} className="flex-1 overflow-y-auto ios-tab-fade [&::-webkit-scrollbar]:hidden">
               {activeTab === 'info' && renderInfoTab()}
               {activeTab === 'scorecard' && renderScorecardTab()}
               {activeTab === 'summary' && renderSummaryTab()}
@@ -5075,7 +5354,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
                       <div key={idx} className="bg-[#121212] rounded-[24px] p-5 mb-4 border border-[rgba(255,255,255,0.08)]">
                         <div className="flex justify-between mb-3 border-b border-[rgba(255,255,255,0.08)] pb-2.5">
                           <span className="text-[#F5F5F7] text-[12px] font-extrabold">OVER {item.num}</span>
-                          <span className="text-[#8E8E93] text-[12px] font-bold">{item.bowler}</span>
+                          <span className="text-[#8E8E93] text-[12px] font-bold">{cleanPlayerName(item.bowler)}</span>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                           {item.balls.map((b, i) => (
@@ -5112,6 +5391,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 // ==========================================
 
 const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
+  const { closing, handleClose } = useSmoothDismiss(onClose);
   const sumUrl = `${API_SOCCER_SCORE_BASE}/${match?._leagueId || 'all'}/summary?event=${match?.id}`;
   const [summary, setSummary] = useState(() => match?.id ? getCachedSync(sumUrl) : null);
   const [tab, setTab] = useState('lineup');
@@ -5137,24 +5417,24 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
   let hScore = getSafeFootballScore(hComp?.score);
   let aScore = getSafeFootballScore(aComp?.score);
   if (summary?.header?.competitions?.[0]?.competitors) {
-    const sumH = summary.header.competitions[0].competitors.find(c => c.team.id === hComp?.team?.id);
-    const sumA = summary.header.competitions[0].competitors.find(c => c.team.id === aComp?.team?.id);
+    const sumH = summary.header.competitions[0].competitors.find(c => c.team?.id === hComp?.team?.id);
+    const sumA = summary.header.competitions[0].competitors.find(c => c.team?.id === aComp?.team?.id);
     if (sumH && sumH.score !== undefined) hScore = getSafeFootballScore(sumH.score);
     if (sumA && sumA.score !== undefined) aScore = getSafeFootballScore(sumA.score);
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
-      <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
-        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
+    <div className={`fixed inset-0 z-50 bg-black/70 ${closing ? 'ios-backdrop-out' : 'ios-backdrop-in'} flex flex-col justify-end`}>
+      <div className="absolute inset-0" onClick={handleClose} />
+      <div className={`relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ${closing ? 'ios-sheet-down' : 'ios-sheet-up'} transform-gpu`}>
+        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={handleClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
 
         <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hComp?.team, match._leagueId, null, 'soccer')}>
             <img src={getSafeFootballLogo(hComp?.team)} onError={(e) => handleImageError(e, hComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
-            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{hComp?.team?.shortDisplayName}</span>
+            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{hComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore}</span>
             </div>
@@ -5166,7 +5446,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
 
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aComp?.team, match._leagueId, null, 'soccer')}>
             <img src={getSafeFootballLogo(aComp?.team)} onError={(e) => handleImageError(e, aComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
-            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5 line-clamp-2">{aComp?.team?.shortDisplayName}</span>
+            <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{aComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{aScore}</span>
             </div>
@@ -5180,7 +5460,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
               >
                 {capitalize(t)}
               </button>
@@ -5188,7 +5468,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        <div key={tab} className="flex-1 overflow-y-auto ios-tab-fade [&::-webkit-scrollbar]:hidden">
           {tab === 'lineup' && (
             <div className="pb-10">
               <TacticalPitch summary={summary} home={hComp} away={aComp} />
@@ -5335,12 +5615,13 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
 // ==========================================
 
 const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, onClose, onOpenMatch }) => {
+  const { closing, handleClose } = useSmoothDismiss(onClose);
   const [teamTab, setTeamTab] = useState('squad');
   const [teamData, setTeamData] = useState(() => {
     const teamIdStr = team.team_id || team.id;
     const cachedProf = teamIdStr ? getCachedSync(`${API_CRICKET_BASE}/team/${teamIdStr}`) : null;
     const cachedStd = getCachedSync(`${API_CRICKET_BASE}/standings`) || [];
-    const cachedSched = getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) || [];
+    const cachedSched = getCachedSync(CRICKET_SCHEDULE_URL) || [];
 
     let foundStats = existingStats || cachedProf?.stats || null;
     let leagueName = stripSeasonYear(existingStats?._leagueTitle || team._leagueTitle || '');
@@ -5477,25 +5758,45 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
           {formList.length > 0 ? (
             <>
               <div className="grid grid-cols-5 gap-2 mb-4">
-                {formList.map((item, i) => {
+                {Array.from({ length: 5 }, (_, i) => {
+                  const item = formList[i] || null;
+                  if (!item) {
+                    return (
+                      <div key={i} className="bg-[#1C1C1E]/55 rounded-[16px] py-2.5 px-1 flex flex-col items-center justify-center border border-[rgba(255,255,255,0.05)] h-[92px]">
+                        <div className="h-[12px] flex items-center justify-center" />
+                        <div className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border border-white/[0.08] bg-white/[0.03] my-1.5 shrink-0">
+                          <span className="font-bold text-[12px] leading-none text-[#8E8E93]/60">—</span>
+                        </div>
+                        <div className="h-[14px] w-full flex items-center justify-center">
+                          <span className="text-[9px] font-bold text-[#8E8E93]/40 leading-none">—</span>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const res = item.result;
                   let bgColor = THEME.surfaceHighlight;
                   let color = THEME.text;
                   if (res === 'W') { bgColor = `${THEME.success}20`; color = THEME.success; }
                   else if (res === 'L') { bgColor = `${THEME.danger}20`; color = THEME.danger; }
                   else if (res === 'D' || res === 'NR' || res === 'T') { bgColor = `${THEME.warning}20`; color = THEME.warning; }
+                  const oppCode = getCompactCricketAbbr(item.opp);
 
                   return (
-                    <div key={i} className="bg-[#1C1C1E] rounded-[16px] py-2.5 px-1.5 flex flex-col items-center justify-between border border-[rgba(255,255,255,0.08)] min-h-[86px]">
-                      <span className={`text-[7px] font-black tracking-[0.6px] uppercase h-[10px] leading-none ${i === 0 ? 'text-[#0A84FF]' : 'text-transparent'}`}>
-                        LATEST
-                      </span>
-                      <div className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border my-1" style={{ backgroundColor: bgColor, borderColor: color }}>
+                    <div key={i} className="bg-[#1C1C1E] rounded-[16px] py-2.5 px-1 flex flex-col items-center justify-center border border-[rgba(255,255,255,0.08)] h-[92px] min-w-0">
+                      <div className="h-[12px] flex items-center justify-center">
+                        <span className={`text-[7px] font-black tracking-[0.6px] uppercase leading-none ${i === 0 ? 'text-[#0A84FF]' : 'invisible'}`}>
+                          LATEST
+                        </span>
+                      </div>
+                      <div className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border my-1.5 shrink-0" style={{ backgroundColor: bgColor, borderColor: color }}>
                         <span className="font-black text-[13px] leading-none" style={{ color }}>{res}</span>
                       </div>
-                      <span className="text-[9px] font-bold text-[#8E8E93] text-center truncate w-full leading-tight">
-                        {item.opp ? `vs ${item.opp}` : `M${i + 1}`}
-                      </span>
+                      <div className="h-[14px] w-full flex items-center justify-center px-0.5">
+                        <span className="text-[9px] font-bold text-[#8E8E93] text-center truncate max-w-full leading-none">
+                          {oppCode ? `vs ${oppCode}` : `M${i + 1}`}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -5620,15 +5921,15 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
   const isFav = favorites.includes(favKey);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
-      <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
-        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
+    <div className={`fixed inset-0 z-50 bg-black/70 ${closing ? 'ios-backdrop-out' : 'ios-backdrop-in'} flex flex-col justify-end`}>
+      <div className="absolute inset-0" onClick={handleClose} />
+      <div className={`relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ${closing ? 'ios-sheet-down' : 'ios-sheet-up'} transform-gpu`}>
+        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={handleClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
 
         <div className="flex justify-between items-center px-5 pb-2 shrink-0">
-          <button onClick={onClose} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
+          <button onClick={handleClose} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
             <ChevronDown size={28} color={THEME.text} />
           </button>
           <button onClick={() => onToggleFavorite(favKey)} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
@@ -5648,7 +5949,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   <button
                     key={t}
                     onClick={() => setTeamTab(t)}
-                    className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                    className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {capitalize(t)}
                   </button>
@@ -5657,7 +5958,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+          <div key={teamTab} className="flex-1 overflow-y-auto px-4 pb-16 ios-tab-fade [&::-webkit-scrollbar]:hidden">
             {teamTab === 'stats' && renderCricketTeamStats()}
             {teamTab === 'squad' && (
               squadGroups.length === 0 ? (
@@ -5679,7 +5980,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                               <User size={16} color={g.color} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="block text-[#F5F5F7] text-[15px] font-bold break-words leading-snug">{p.name}</span>
+                              <span className="block text-[#F5F5F7] text-[15px] font-bold break-words leading-snug">{cleanPlayerName(p.name)}</span>
                               {detailsList.length > 0 && <span className="block text-[#8E8E93] text-[12px] mt-1 font-medium break-words leading-snug">{detailsList.join(' • ')}</span>}
                             </div>
                           </div>
@@ -5705,7 +6006,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                         <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{h.short_name || h.name}</span>
                       </div>
                       <div className="w-[120px] flex flex-col items-center justify-center">
-                        <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase truncate max-w-[100px]">{getShortLeagueName(m.league)}</span>
+                        <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase max-w-[100px]">{getShortLeagueName(m.league)}</span>
                         <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.start_time, false)}</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center gap-1.5">
@@ -5729,6 +6030,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
 // ==========================================
 
 const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favorites, onToggleFavorite, onClose, onOpenMatch }) => {
+  const { closing, handleClose } = useSmoothDismiss(onClose);
   const [teamData, setTeamData] = useState(null);
   const [teamTab, setTeamTab] = useState('squad');
 
@@ -5737,8 +6039,14 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
     const fetchHubData = async () => {
       let lid = leagueId;
       if (!lid) {
-        const checks = await Promise.all(FOOTBALL_LEAGUES.map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/teams/${team.id}`).then(() => l.id).catch(() => null)));
-        lid = checks.find(id => id !== null) || 'eng.1';
+        const allInfo = await fetchWithCache(`${API_SOCCER_SCORE_BASE}/all/teams/${team.id}`).catch(() => null);
+        const defSlug = allInfo?.team?.defaultLeague?.slug || allInfo?.team?.leagues?.[0]?.slug || '';
+        if (defSlug && FOOTBALL_LEAGUES.some(l => l.id === defSlug)) {
+          lid = defSlug;
+        } else {
+          const checks = await Promise.all(FOOTBALL_LEAGUES.map(l => fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/teams/${team.id}`).then(() => l.id).catch(() => null)));
+          lid = checks.find(id => id !== null) || 'eng.1';
+        }
       }
       try {
         const [info, roster, scheduleRes, fixturesRes, stdRes] = await Promise.all([
@@ -5771,7 +6079,8 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
         }).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5);
 
         const apiV = b.venue || (b.venues && b.venues[0]) || b.franchise?.venue || null;
-        const venueInfo = lookupFootballStadium(namesToTry, apiV);
+        const schedV = extractHomeVenueFromSchedule(combinedSchedule, b.id || team.id, namesToTry);
+        const venueInfo = lookupFootballStadium(namesToTry, apiV, schedV);
         const cleanLeagueTitle = stripSeasonYear(leagueObj?.name || stdEntry?._groupName || 'League Standings');
 
         setTeamData({
@@ -5942,15 +6251,15 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
   const isFav = favorites.includes(favId);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
-      <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
-        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
+    <div className={`fixed inset-0 z-50 bg-black/70 ${closing ? 'ios-backdrop-out' : 'ios-backdrop-in'} flex flex-col justify-end`}>
+      <div className="absolute inset-0" onClick={handleClose} />
+      <div className={`relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ${closing ? 'ios-sheet-down' : 'ios-sheet-up'} transform-gpu`}>
+        <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={handleClose}>
           <div className="w-[48px] h-[5px] bg-[rgba(255,255,255,0.08)] rounded-[3px]" />
         </div>
 
         <div className="flex justify-between items-center px-5 pb-2 shrink-0">
-          <button onClick={onClose} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
+          <button onClick={handleClose} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
             <ChevronDown size={28} color={THEME.text} />
           </button>
           <button onClick={() => onToggleFavorite(favId)} className="w-[44px] h-[44px] rounded-full bg-[#121212] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
@@ -5973,7 +6282,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                     <button
                       key={t}
                       onClick={() => setTeamTab(t)}
-                      className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center truncate transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                      className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                     >
                       {capitalize(t)}
                     </button>
@@ -5982,9 +6291,11 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+            <div key={teamTab} className="flex-1 overflow-y-auto px-4 pb-16 ios-tab-fade [&::-webkit-scrollbar]:hidden">
               {teamTab === 'stats' && renderTeamSeasonStats()}
-              {teamTab === 'squad' && squadGroups.map(g => {
+              {teamTab === 'squad' && (squadGroups.length === 0 ? (
+                <EmptyState icon={Users} title="Squad Pending" message="Roster data has not been published for this club yet." />
+              ) : squadGroups.map(g => {
                 const IconComp = g.icon;
                 return (
                   <div key={g.title} className="px-1 mb-8">
@@ -5997,12 +6308,12 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                         <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center mr-4 shrink-0" style={{ backgroundColor: `${g.color}20` }}>
                           <span className="text-[14px] font-extrabold" style={{ color: g.color }}>{p.jersey || '#'}</span>
                         </div>
-                        <span className="text-[#F5F5F7] text-[15px] font-bold break-words leading-snug">{p.displayName}</span>
+                        <span className="text-[#F5F5F7] text-[15px] font-bold break-words leading-snug">{cleanPlayerName(p.displayName)}</span>
                       </div>
                     ))}
                   </div>
                 );
-              })}
+              }))}
               {teamTab === 'matches' && (
                 teamData.upcoming?.length === 0 ? (
                   <EmptyState icon={Calendar} title="No Upcoming Fixtures" message="This team does not have any scheduled matches." />
@@ -6019,7 +6330,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                           <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{h?.team?.shortDisplayName}</span>
                         </div>
                         <div className="w-[120px] flex flex-col items-center justify-center">
-                          <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase truncate max-w-[100px]">{getFootballMatchLeagueName(m)}</span>
+                          <span className="text-[9px] font-extrabold text-[#0A84FF] tracking-[0.5px] mb-1.5 text-center uppercase max-w-[100px]">{getFootballMatchLeagueName(m)}</span>
                           <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.date, false)}</span>
                         </div>
                         <div className="flex-1 flex flex-col items-center gap-1.5">
@@ -6059,11 +6370,12 @@ function App() {
   }, []);
   const [, startTransition] = useTransition();
 
-  const [footballMatches, setSoccerMatches] = useState([]);
-  const [cricketMatches, setCricketMatches] = useState([]);
+  const [footballState, setFootballState] = useState({ dateKey: '', items: [] });
+  const [cricketState, setCricketState] = useState({ dateKey: '', items: [] });
   const [favMatches, setFavMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+  const scheduleContainerRef = useRef(null);
 
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -6170,17 +6482,57 @@ function App() {
     });
   }, []);
 
+  const fetchSeqRef = useRef(0);
+
+  const getCachedFootballForDateKey = useCallback((isoDateKey) => {
+    const ds = isoDateKey.replace(/-/g, '');
+    let hitCount = 0;
+    const events = [];
+    FOOTBALL_LEAGUES.forEach(l => {
+      const c = getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${ds}`);
+      if (c) {
+        hitCount++;
+        if (c.events) events.push(...c.events.map(e => ({ ...e, _leagueId: l.id })));
+      }
+    });
+    return hitCount > 0 ? events : null;
+  }, []);
+
+  const activeViewKeyRef = useRef('');
+  const lastCricketScheduleFetchRef = useRef(0);
+  const todayCricketArchiveRef = useRef(loadTodayCricketArchive());
+
+  const getAllCachedCricketSchedules = useCallback(() => {
+    // Ordered oldest/widest -> most recent so fresh primary schedule always wins
+    return [
+      ...extractCricketArray(getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=45&days_ahead=30`)),
+      ...extractCricketArray(getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=30&days_ahead=30`)),
+      ...extractCricketArray(getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`)),
+      ...extractCricketArray(getCachedSync(CRICKET_SCHEDULE_EXT_URL)),
+      ...extractCricketArray(getCachedSync(CRICKET_SCHEDULE_URL))
+    ];
+  }, []);
+
+  const getCachedCricketForDate = useCallback((targetDate) => {
+    const isViewingToday = isSameDay(targetDate, new Date());
+    const cachedLive = getCachedSync(`${API_CRICKET_BASE}/live`);
+    const combinedSched = getAllCachedCricketSchedules();
+    const archive = isViewingToday ? todayCricketArchiveRef.current : [];
+    if (!cachedLive && combinedSched.length === 0 && archive.length === 0) return null;
+    const merged = mergeCricketSources(combinedSched, cachedLive, archive, isViewingToday);
+    return filterAndSortCricketForDate(merged, targetDate);
+  }, [getAllCachedCricketSchedules]);
+
   const fetchFootballMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
-    const ds = date.toISOString().split('T')[0].replace(/-/g, '');
-    const cachedEvents = [];
-    if (!forceRefresh) {
-      FOOTBALL_LEAGUES.forEach(l => {
-        const c = getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${ds}`);
-        if (c?.events) cachedEvents.push(...c.events.map(e => ({ ...e, _leagueId: l.id })));
-      });
-    }
-    if (cachedEvents.length > 0) {
-      setSoccerMatches(cachedEvents);
+    const dateKey = toLocalIsoDate(date);
+    const expectedKey = `soccer|${dateKey}`;
+    activeViewKeyRef.current = expectedKey;
+    const reqId = isSilent ? fetchSeqRef.current : ++fetchSeqRef.current;
+    const ds = dateKey.replace(/-/g, '');
+    const cachedEvents = !forceRefresh ? getCachedFootballForDateKey(dateKey) : null;
+
+    if (cachedEvents !== null) {
+      setFootballState({ dateKey, items: cachedEvents });
       setLoading(false);
     } else if (!isSilent) {
       setLoading(true);
@@ -6194,72 +6546,168 @@ function App() {
             .catch(() => [])
         )
       );
-      setSoccerMatches(results.flat());
+      if (activeViewKeyRef.current !== expectedKey || (!isSilent && reqId !== fetchSeqRef.current)) return;
+      const nextEvents = results.flat();
+      startTransition(() => setFootballState({ dateKey, items: nextEvents }));
     } catch {
-      if (!isSilent && cachedEvents.length === 0) setSoccerMatches([]);
+      if (activeViewKeyRef.current !== expectedKey) return;
+      if (!isSilent && cachedEvents === null) setFootballState({ dateKey, items: [] });
     } finally {
-      if (!isSilent) setLoading(false);
+      if (activeViewKeyRef.current === expectedKey && !isSilent) setLoading(false);
     }
-  }, [date]);
+  }, [date, getCachedFootballForDateKey, startTransition]);
 
   const fetchCricketMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
-    const selectedDateStr = date.toISOString().split('T')[0];
-    const selectedDateObj = new Date(selectedDateStr);
-    const isViewingToday = isSameDay(date, new Date());
+    const dateKey = toLocalIsoDate(date);
+    const expectedKey = `cricket|${dateKey}`;
+    activeViewKeyRef.current = expectedKey;
+    const reqId = isSilent ? fetchSeqRef.current : ++fetchSeqRef.current;
+    const now = new Date();
+    const isViewingToday = isSameDay(date, now);
+    const dayDiff = Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+    const needExtendedRender = dayDiff < -5 || dayDiff > 5;
+    const cachedItems = !forceRefresh ? getCachedCricketForDate(date) : null;
 
-    const filterCricketEvents = (liveData, schedData) => {
-      const matchMap = new Map();
-      (Array.isArray(schedData) ? schedData : []).forEach(m => matchMap.set(m.match_id, m));
-      if (isViewingToday) {
-        (Array.isArray(liveData) ? liveData : []).forEach(m => matchMap.set(m.match_id, m));
-      }
-      return Array.from(matchMap.values()).filter(m => {
-        if (!m.start_time) return false;
-        const titleLower = String(m.title || m.match_title || m.league || m.format || '').toLowerCase();
-        if (CRICKET_DOMESTIC_LEAGUE_REGEX.test(titleLower)) return false;
-
-        const startDateStr = String(m.start_time).split('T')[0];
-        const startDateObj = new Date(startDateStr);
-        if (startDateStr === selectedDateStr) return true;
-
-        const statUpper = String(m.status || m.status_text || '').toUpperCase();
-        let endDateObj = new Date(startDateObj);
-        if (m.end_date || m.end_time) {
-          endDateObj = new Date(String(m.end_date || m.end_time).split('T')[0]);
-        } else if (titleLower.includes('test')) {
-          endDateObj.setDate(startDateObj.getDate() + 4);
-        } else if (titleLower.includes('first class') || titleLower.includes('fc')) {
-          endDateObj.setDate(startDateObj.getDate() + 3);
-        }
-
-        if (selectedDateObj >= startDateObj && selectedDateObj <= endDateObj) return true;
-        const isMatchActive = statUpper === 'LIVE' || statUpper === 'IN' || statUpper.includes('DAY ') || statUpper.includes('STUMPS') || statUpper.includes('RAIN') || statUpper.includes('TEA') || statUpper.includes('LUNCH') || statUpper.includes('BREAK');
-        if (isViewingToday && isMatchActive && startDateObj <= selectedDateObj) return true;
-        return false;
-      });
-    };
-
-    const cachedLive = !forceRefresh ? getCachedSync(`${API_CRICKET_BASE}/live`) : null;
-    const cachedSched = !forceRefresh ? getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) : null;
-    if (cachedLive || cachedSched) {
-      setCricketMatches(filterCricketEvents(cachedLive, cachedSched));
+    if (cachedItems !== null) {
+      setCricketState({ dateKey, items: cachedItems });
       setLoading(false);
     } else if (!isSilent) {
       setLoading(true);
     }
 
+    // Don't hammer Render's /schedule endpoint every 15s during silent live polls:
+    // Poll /live every 15s, and force-refresh /schedule at most once every 60s (or immediately on pull-to-refresh)
+    const shouldRefreshSchedule = forceRefresh || !isSilent || (Date.now() - lastCricketScheduleFetchRef.current > 60000);
+
+    const fetchRenderWithRetry = async (url, force) => {
+      try {
+        return await fetchWithCache(url, force, 25000);
+      } catch {
+        return await fetchWithCache(url, true, 25000).catch(() => []);
+      }
+    };
+
     try {
-      const [liveRes, schedRes] = await Promise.all([
-        isViewingToday ? fetchWithCache(`${API_CRICKET_BASE}/live`, isSilent || forceRefresh).catch(() => []) : Promise.resolve([]),
-        fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=5&days_ahead=5`, isSilent || forceRefresh).catch(() => [])
+      const [schedRes, liveRes, schedExtRes] = await Promise.all([
+        fetchRenderWithRetry(CRICKET_SCHEDULE_URL, forceRefresh || (isSilent && shouldRefreshSchedule)),
+        isViewingToday ? fetchRenderWithRetry(`${API_CRICKET_BASE}/live`, isSilent || forceRefresh) : Promise.resolve([]),
+        needExtendedRender ? fetchRenderWithRetry(CRICKET_SCHEDULE_EXT_URL, forceRefresh) : Promise.resolve([])
       ]);
-      setCricketMatches(filterCricketEvents(liveRes, schedRes));
+      if (activeViewKeyRef.current !== expectedKey || (!isSilent && reqId !== fetchSeqRef.current)) return;
+
+      const freshSched = extractCricketArray(schedRes);
+      const freshExt = extractCricketArray(schedExtRes);
+      const freshLive = extractCricketArray(liveRes);
+      if (freshSched.length > 0 && shouldRefreshSchedule) {
+        lastCricketScheduleFetchRef.current = Date.now();
+      }
+
+      // Priority: older cached schedules first -> fresh extended -> fresh primary schedule LAST (so fresh always wins!)
+      const primarySched = [
+        ...getAllCachedCricketSchedules(),
+        ...freshExt,
+        ...freshSched
+      ];
+
+      const archivePool = isViewingToday ? todayCricketArchiveRef.current : [];
+      const merged = mergeCricketSources(primarySched, freshLive, archivePool, isViewingToday);
+      const finalFiltered = filterAndSortCricketForDate(merged, date);
+
+      if (isViewingToday && finalFiltered.length > 0) {
+        todayCricketArchiveRef.current = finalFiltered;
+        saveTodayCricketArchive(finalFiltered);
+
+        // If a match was live earlier today and dropped off /live before /schedule marked it finished,
+        // silently fetch its final result from Render /match/{id} so finished scores stay accurate.
+        const liveIdSet = new Set(freshLive.map(m => String(m.match_id ?? m.id ?? '')));
+        const staleLiveMatches = finalFiltered.filter(m => {
+          const mid = String(m.match_id || '');
+          return mid && !liveIdSet.has(mid) && !isCricketMatchFinished(m) && !isCricketMatchUpcoming(m);
+        }).slice(0, 3);
+
+        if (staleLiveMatches.length > 0) {
+          Promise.all(
+            staleLiveMatches.map(m =>
+              fetchWithCache(`${API_CRICKET_BASE}/match/${m.match_id}`, true, 12000)
+                .then(det => ({ id: String(m.match_id), det }))
+                .catch(() => null)
+            )
+          ).then(resolvedDetails => {
+            if (activeViewKeyRef.current !== expectedKey) return;
+            const patchMap = new Map();
+            resolvedDetails.filter(Boolean).forEach(({ id, det }) => {
+              if (!det) return;
+              const patch = {};
+              if (det.status) patch.status = det.status;
+              if (det.status_text) patch.status_text = det.status_text;
+              if (det.match_update) patch.match_update = det.match_update;
+              if (Array.isArray(det.innings) && det.innings.length > 0) patch._innings = det.innings;
+              patchMap.set(id, patch);
+            });
+            if (patchMap.size === 0) return;
+            const patchedList = finalFiltered.map(m => {
+              const p = patchMap.get(String(m.match_id));
+              if (!p) return m;
+              const updatedTeams = p._innings && Array.isArray(m.teams)
+                ? m.teams.map(t => {
+                    const inn = p._innings.filter(i => i.team_name === t.name || i.team_name === t.short_name).pop();
+                    return inn ? { ...t, score: `${inn.runs}/${inn.wickets} (${inn.overs} ov)` } : t;
+                  })
+                : m.teams;
+              return {
+                ...m,
+                status: p.status || 'POST',
+                status_text: p.status_text || m.status_text,
+                match_update: p.match_update || m.match_update,
+                teams: updatedTeams,
+                _fromLive: false
+              };
+            });
+            const resorted = filterAndSortCricketForDate(patchedList, date);
+            todayCricketArchiveRef.current = resorted;
+            saveTodayCricketArchive(resorted);
+            startTransition(() => setCricketState({ dateKey, items: resorted }));
+          }).catch(() => {});
+        }
+      }
+
+      startTransition(() => {
+        setCricketState({ dateKey, items: finalFiltered });
+      });
     } catch {
-      if (!isSilent && !cachedSched) setCricketMatches([]);
+      if (activeViewKeyRef.current !== expectedKey) return;
+      if (!isSilent && cachedItems === null) {
+        setCricketState({ dateKey, items: [] });
+      }
     } finally {
-      if (!isSilent) setLoading(false);
+      if (activeViewKeyRef.current === expectedKey && !isSilent) setLoading(false);
     }
-  }, [date]);
+  }, [date, getCachedCricketForDate, getAllCachedCricketSchedules, startTransition]);
+
+  // Silently warm adjacent dates on idle (Football scoreboards + extended Render Cricket schedule if needed)
+  useEffect(() => {
+    if (view !== 'scores') return;
+    const timer = setTimeout(() => {
+      runWhenIdle(() => {
+        if (activeSport === 'soccer') {
+          [-1, 1].forEach(offset => {
+            const adj = new Date(date);
+            adj.setDate(adj.getDate() + offset);
+            const adjDs = toLocalIsoDate(adj).replace(/-/g, '');
+            FOOTBALL_LEAGUES.forEach(l => {
+              const url = `${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${adjDs}`;
+              if (!getCachedSync(url)) fetchWithCache(url, false, 6500).catch(() => {});
+            });
+          });
+        } else {
+          if (!getCachedSync(CRICKET_SCHEDULE_URL)) {
+            fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
+          }
+        }
+      }, 300);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [view, activeSport, date]);
 
   const fetchFavSchedule = useCallback(async (forceRefresh = false) => {
     if (footballFavs.length === 0 && cricketFavs.length === 0) {
@@ -6272,7 +6720,7 @@ function App() {
     });
     try {
       const nowMs = Date.now();
-      const todayDs = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const todayDs = toLocalIsoDate(new Date()).replace(/-/g, '');
       const [soccerTeamResults, soccerScoreboards, cricketSched, cricketLive] = await Promise.all([
         footballFavs.length > 0
           ? Promise.all(
@@ -6471,13 +6919,25 @@ function App() {
     }
   }, [view]);
 
-  const handleGoBack = useCallback(() => {
-    if (activeMatch) {
-      setActiveMatch(null);
-      return true;
+  useEffect(() => {
+    if (view === 'home' && favoritesList.length === 0) {
+      setView('scores');
     }
+  }, [view, favoritesList.length]);
+
+  useEffect(() => {
+    const hasModal = Boolean(activeMatch || activeTeam);
+    document.body.style.overflow = hasModal ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [activeMatch, activeTeam]);
+
+  const handleGoBack = useCallback(() => {
     if (activeTeam) {
       setActiveTeam(null);
+      return true;
+    }
+    if (activeMatch) {
+      setActiveMatch(null);
       return true;
     }
     if (navHistoryRef.current.length > 0) {
@@ -6489,6 +6949,9 @@ function App() {
     return false;
   }, [activeMatch, activeTeam, startTransition]);
 
+  const gestureStateRef = useRef({});
+  gestureStateRef.current = { activeMatch, activeTeam, view, handleGoBack, stepScoreDate, triggerForceRefresh };
+
   useEffect(() => {
     const scheduleFrame = () => {
       const g = gestureRef.current;
@@ -6496,11 +6959,17 @@ function App() {
       g.rafId = requestAnimationFrame(() => {
         g.rafId = null;
         if (!g.active) return;
-        if (g.mode === 'back' && g.dx > 0 && g.targetSheet && (activeMatch || activeTeam)) {
+        const st = gestureStateRef.current;
+        if (g.mode === 'horiz' && g.dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) {
           const clamped = Math.min(g.dx, 280);
           g.targetSheet.style.transition = 'none';
           g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
           g.targetSheet.style.opacity = String(Math.max(0.55, 1 - clamped / 540));
+        } else if (g.mode === 'horiz' && !st.activeMatch && !st.activeTeam && st.view === 'scores' && !g.inHorizScroll && scheduleContainerRef.current) {
+          const dragX = Math.max(-72, Math.min(72, g.dx * 0.34));
+          scheduleContainerRef.current.style.transition = 'none';
+          scheduleContainerRef.current.style.transform = `translate3d(${dragX}px, 0, 0)`;
+          scheduleContainerRef.current.style.opacity = String(Math.max(0.72, 1 - Math.abs(dragX) / 220));
         } else if (g.mode === 'pull' && g.dy > 0) {
           setPullDistance(g.dy);
         }
@@ -6509,8 +6978,12 @@ function App() {
 
     const onTouchStart = (e) => {
       if (!e.touches || e.touches.length !== 1) return;
+      const st = gestureStateRef.current;
       const t = e.touches[0];
       const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const horizScrollEl = e.target && typeof e.target.closest === 'function' ? e.target.closest('.ios-momentum') : null;
+      const inHorizScroll = Boolean(horizScrollEl && horizScrollEl.scrollWidth > horizScrollEl.clientWidth + 4);
+      const sheets = document.querySelectorAll('.ios-sheet-up');
       gestureRef.current = {
         active: true,
         mode: null,
@@ -6518,15 +6991,17 @@ function App() {
         startY: t.clientY,
         dx: 0,
         dy: 0,
-        atTop: scrollTop <= 2 && !activeMatch && !activeTeam,
+        atTop: scrollTop <= 2 && !st.activeMatch && !st.activeTeam,
+        inHorizScroll,
         rafId: null,
-        targetSheet: document.querySelector('.ios-sheet-up')
+        targetSheet: sheets.length > 0 ? sheets[sheets.length - 1] : null
       };
     };
 
     const onTouchMove = (e) => {
       const g = gestureRef.current;
       if (!g.active || !e.touches || e.touches.length !== 1) return;
+      const st = gestureStateRef.current;
       const t = e.touches[0];
       const dx = t.clientX - g.startX;
       const dy = t.clientY - g.startY;
@@ -6545,11 +7020,9 @@ function App() {
 
       if (g.mode === 'horiz') {
         g.dx = dx;
-        if (dx > 0 && g.targetSheet && (activeMatch || activeTeam)) {
-          const clamped = Math.min(dx, 280);
-          g.targetSheet.style.transition = 'none';
-          g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
-          g.targetSheet.style.opacity = String(Math.max(0.55, 1 - clamped / 540));
+        if ((dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) ||
+            (!st.activeMatch && !st.activeTeam && st.view === 'scores' && !g.inHorizScroll)) {
+          scheduleFrame();
         }
       } else if (g.mode === 'pull' && dy > 0) {
         g.dy = Math.min(96, Math.pow(dy, 0.84));
@@ -6564,30 +7037,54 @@ function App() {
         cancelAnimationFrame(g.rafId);
         g.rafId = null;
       }
-      const { mode, dx, dy, targetSheet } = g;
+      const st = gestureStateRef.current;
+      const { mode, dx, dy, targetSheet, inHorizScroll } = g;
       g.active = false;
       g.mode = null;
 
       if (targetSheet) {
-        targetSheet.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease';
+        targetSheet.style.transition = 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
         targetSheet.style.transform = '';
         targetSheet.style.opacity = '';
       }
 
       if (mode === 'horiz') {
-        if (activeMatch || activeTeam) {
-          if (dx > 72) handleGoBack();
-        } else if (view === 'scores') {
-          // Swipe left -> next day (+1), swipe right -> previous day (-1)
-          if (dx < -64) stepScoreDate(1);
-          else if (dx > 64) stepScoreDate(-1);
+        const schedEl = scheduleContainerRef.current;
+        if (st.activeMatch || st.activeTeam) {
+          if (dx > 72) st.handleGoBack();
+        } else if (st.view === 'scores' && !inHorizScroll) {
+          if (dx < -52) {
+            if (schedEl) {
+              schedEl.style.transition = 'transform 0.11s ease-out, opacity 0.10s ease-out';
+              schedEl.style.transform = 'translate3d(-34px, 0, 0)';
+              schedEl.style.opacity = '0';
+            }
+            setTimeout(() => {
+              if (schedEl) { schedEl.style.transition = ''; schedEl.style.transform = ''; schedEl.style.opacity = ''; }
+              st.stepScoreDate(1);
+            }, 90);
+          } else if (dx > 52) {
+            if (schedEl) {
+              schedEl.style.transition = 'transform 0.11s ease-out, opacity 0.10s ease-out';
+              schedEl.style.transform = 'translate3d(34px, 0, 0)';
+              schedEl.style.opacity = '0';
+            }
+            setTimeout(() => {
+              if (schedEl) { schedEl.style.transition = ''; schedEl.style.transform = ''; schedEl.style.opacity = ''; }
+              st.stepScoreDate(-1);
+            }, 90);
+          } else if (schedEl) {
+            schedEl.style.transition = 'transform 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
+            schedEl.style.transform = 'translate3d(0, 0, 0)';
+            schedEl.style.opacity = '1';
+          }
         } else if (dx > 82) {
-          handleGoBack();
+          st.handleGoBack();
         }
       } else if (mode === 'pull') {
         if (dy >= 54) {
           setPullDistance(0);
-          triggerForceRefresh();
+          st.triggerForceRefresh();
         } else {
           setPullDistance(0);
         }
@@ -6603,7 +7100,7 @@ function App() {
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
     };
-  }, [activeMatch, activeTeam, view, handleGoBack, stepScoreDate, triggerForceRefresh]);
+  }, []);
 
   useEffect(() => {
     if (view === 'home') fetchFavSchedule(false);
@@ -6623,6 +7120,8 @@ function App() {
   }, [view, activeSport, date, fetchFootballMatches, fetchCricketMatches]);
 
   const openMatchModal = useCallback((m) => {
+    setPullDistance(0);
+    setActiveTeam(null);
     setActiveMatch(m);
   }, []);
 
@@ -6696,7 +7195,7 @@ function App() {
         </button>
       </div>
 
-      <div key={`${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col section-enter-${view}`}>
+      <div key={view === 'scores' ? `scores-${refreshTick}` : `${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col section-enter-${view}`}>
         {view === 'home' && (
           <div className="flex-1 px-4 pt-3 pb-40">
             
@@ -6716,45 +7215,46 @@ function App() {
           </div>
         )}
 
-        {view === 'scores' && (
-          <div className="flex-1 flex flex-col">
-            <DateSelector dates={dates} selectedDate={date} onSelectDate={handleSelectDateSmooth} />
-            <div
-              key={`${activeSport}-${date.toISOString().split('T')[0]}`}
-              className={`px-4 pb-36 ${dateDir >= 0 ? 'schedule-load-next' : 'schedule-load-prev'}`}
-            >
-              {loading && (activeSport === 'soccer' ? footballMatches.length === 0 : cricketMatches.length === 0) ? (
-                <WhitePillLoader className="py-20" />
-              ) : activeSport === 'soccer' ? (
-                footballMatches.length === 0 ? (
-                  <EmptyState icon={CircleDashed} title="No Broadcasts" message="There are no scheduled games for this date." />
+        {view === 'scores' && (() => {
+          const curDateKey = toLocalIsoDate(date);
+          const resolvedFootball = footballState.dateKey === curDateKey
+            ? footballState.items
+            : getCachedFootballForDateKey(curDateKey);
+          const resolvedCricket = cricketState.dateKey === curDateKey
+            ? cricketState.items
+            : getCachedCricketForDate(date);
+          const activeList = activeSport === 'soccer' ? resolvedFootball : resolvedCricket;
+          const isSchedulePending = activeList === null || (loading && activeList.length === 0);
+
+          return (
+            <div className="flex-1 flex flex-col">
+              <DateSelector dates={dates} selectedDate={date} onSelectDate={handleSelectDateSmooth} />
+              <div
+                ref={scheduleContainerRef}
+                key={`${activeSport}-${curDateKey}`}
+                className={`px-4 pb-36 ${dateDir >= 0 ? 'schedule-load-next' : 'schedule-load-prev'}`}
+              >
+                {isSchedulePending ? (
+                  <WhitePillLoader className="py-20" />
+                ) : activeSport === 'soccer' ? (
+                  activeList.length === 0 ? (
+                    <EmptyState icon={CircleDashed} title="No Broadcasts" message="There are no scheduled games for this date." />
+                  ) : (
+                    activeList.map(m => (
+                      <FootballMatchCard key={m.id} match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
+                    ))
+                  )
+                ) : activeList.length === 0 ? (
+                  <EmptyState icon={Activity} title="No Broadcasts" message="No cricket fixtures found for this date." />
                 ) : (
-                  footballMatches.map((m, idx) => (
-                    <div
-                      key={m.id}
-                      className="schedule-card-item"
-                      style={{ animationDelay: `${170 + Math.min(idx, 8) * 55}ms` }}
-                    >
-                      <FootballMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
-                    </div>
+                  activeList.map(m => (
+                    <CricketMatchCard key={m.match_id} match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                   ))
-                )
-              ) : cricketMatches.length === 0 ? (
-                <EmptyState icon={Activity} title="No Broadcasts" message="No cricket fixtures found for this date." />
-              ) : (
-                cricketMatches.map((m, idx) => (
-                  <div
-                    key={m.match_id}
-                    className="schedule-card-item"
-                    style={{ animationDelay: `${170 + Math.min(idx, 8) * 55}ms` }}
-                  >
-                    <CricketMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
-                  </div>
-                ))
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {view === 'standings' && (
           activeSport === 'soccer' ? (
