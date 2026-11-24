@@ -219,7 +219,7 @@
     }
 
     .section-enter-home {
-      animation: sectionHomeEnter 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+      animation: sectionHomeEnter 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) 0.02s both;
       will-change: transform, opacity;
     }
 
@@ -258,34 +258,34 @@
 
     .schedule-load-next {
       opacity: 0;
-      animation: scheduleLoadNext 0.68s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
+      animation: scheduleLoadNext 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) 0.04s both;
       will-change: transform, opacity;
     }
 
     .schedule-load-prev {
       opacity: 0;
-      animation: scheduleLoadPrev 0.68s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
+      animation: scheduleLoadPrev 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) 0.04s both;
       will-change: transform, opacity;
     }
 
     .schedule-card-item {
       opacity: 0;
-      animation: scheduleCardGlide 0.56s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: scheduleCardGlide 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
       will-change: transform, opacity;
     }
 
     .section-enter-scores {
-      animation: sectionScoresEnter 0.42s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+      animation: sectionScoresEnter 0.30s cubic-bezier(0.2, 0.8, 0.2, 1) 0.02s both;
       will-change: transform, opacity;
     }
 
     .section-enter-standings {
-      animation: sectionStandingsEnter 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+      animation: sectionStandingsEnter 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) 0.02s both;
       will-change: transform, opacity;
     }
 
     .section-enter-intel {
-      animation: sectionIntelEnter 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+      animation: sectionIntelEnter 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) 0.02s both;
       will-change: transform, opacity;
     }
 
@@ -4682,6 +4682,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   }, [matchCommentary, activeInnings]);
 
   const renderCricketModalHero = () => {
+    if (!match?.teams || match.teams.length < 2) return null;
     const hTeam = match.teams[0];
     const aTeam = match.teams[1];
     let hScore = formatCricketScore(hTeam.score);
@@ -6612,6 +6613,8 @@ function App() {
       if (!e.touches || e.touches.length !== 1) return;
       const t = e.touches[0];
       const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const horizScrollEl = e.target && typeof e.target.closest === 'function' ? e.target.closest('.ios-momentum') : null;
+      const inHorizScroll = Boolean(horizScrollEl && horizScrollEl.scrollWidth > horizScrollEl.clientWidth + 4);
       gestureRef.current = {
         active: true,
         mode: null,
@@ -6620,6 +6623,7 @@ function App() {
         dx: 0,
         dy: 0,
         atTop: scrollTop <= 2 && !activeMatch && !activeTeam,
+        inHorizScroll,
         rafId: null,
         targetSheet: document.querySelector('.ios-sheet-up')
       };
@@ -6678,7 +6682,7 @@ function App() {
       if (mode === 'horiz') {
         if (activeMatch || activeTeam) {
           if (dx > 72) handleGoBack();
-        } else if (view === 'scores') {
+        } else if (view === 'scores' && !g.inHorizScroll) {
           // Swipe left -> next day (+1), swipe right -> previous day (-1)
           if (dx < -64) stepScoreDate(1);
           else if (dx > 64) stepScoreDate(-1);
@@ -6724,6 +6728,7 @@ function App() {
   }, [view, activeSport, date, fetchFootballMatches, fetchCricketMatches]);
 
   const openMatchModal = useCallback((m) => {
+    setPullDistance(0);
     setActiveMatch(m);
   }, []);
 
@@ -6834,7 +6839,7 @@ function App() {
                     <div
                       key={m.id}
                       className="schedule-card-item"
-                      style={{ animationDelay: `${220 + Math.min(idx, 8) * 65}ms` }}
+                      style={{ animationDelay: `${60 + Math.min(idx, 8) * 35}ms` }}
                     >
                       <FootballMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                     </div>
@@ -6847,7 +6852,7 @@ function App() {
                   <div
                     key={m.match_id}
                     className="schedule-card-item"
-                    style={{ animationDelay: `${220 + Math.min(idx, 8) * 65}ms` }}
+                    style={{ animationDelay: `${60 + Math.min(idx, 8) * 35}ms` }}
                   >
                     <CricketMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                   </div>
