@@ -2627,6 +2627,28 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
+    // Swap #4 and #27 when one is a defender (`roleTier === 1`) and the other is a midfielder
+    // (`roleTier === 2` or `3`) and they sit in different rows, without moving any other players.
+    const p4 = grid.flat().find(x => String(x?.player?.jersey) === '4');
+    const p27 = grid.flat().find(x => String(x?.player?.jersey) === '27');
+    if (p4 && p27) {
+      let loc4 = null, loc27 = null;
+      for (let r = 0; r < grid.length; r++) {
+        for (let c = 0; c < grid[r].length; c++) {
+          if (grid[r][c] === p4) loc4 = { r, c };
+          if (grid[r][c] === p27) loc27 = { r, c };
+        }
+      }
+      const isDefMidPair =
+        (p4.role?.roleTier === 1 && (p27.role?.roleTier === 2 || p27.role?.roleTier === 3)) ||
+        (p27.role?.roleTier === 1 && (p4.role?.roleTier === 2 || p4.role?.roleTier === 3));
+      if (loc4 && loc27 && isDefMidPair && loc4.r !== loc27.r) {
+        const tmp = grid[loc4.r][loc4.c];
+        grid[loc4.r][loc4.c] = grid[loc27.r][loc27.c];
+        grid[loc27.r][loc27.c] = tmp;
+      }
+    }
+
     // If `4` (LCB/CB) and `37` (pivot/midfielder) landed on opposite lines or swapped order,
     // swap them within the grid while preserving all other players in place.
     const j4 = String(starters.find(s => String(s?.jersey) === '4')?.athlete?.id || '');
