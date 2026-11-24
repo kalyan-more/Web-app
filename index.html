@@ -2410,17 +2410,6 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   };
 };
 
-/**
- * ESPN Official Soccer Formation Place (`1`..`11`) -> Tactical Line (`row`) & Lateral Order (`col`)
- *
- * In ESPN's `4-3-3` (and `3-4-3` / `5-3-2` / `4-3-1-2`), Opta/ESPN uses:
- *   8 = Right Central Midfielder (RCM) -> Row 2 (Midfield line)
- *   7 = Right Winger / Right Forward (RW) -> Row 3 (Front line)
- * When `8` was placed in Row 2 (`col 2`, right-center mid) and `7` in Row 3 (`col 2`, right wing),
- * any team whose `formationPlace` assigned `8` to the right winger (`#14`, e.g. O. Bobb)
- * and `7` to the right central midfielder (`#16`, e.g. S. Berge) had those two players
- * inverted vertically on the right flank (`Row 2 col 2` vs `Row 3 col 2`)!
- */
 const ESPN_FORMATION_PLACE_TABLES = {
   "4-2-3-1": {
     1: { row: 0, col: 0 },
@@ -2628,51 +2617,75 @@ const getPreferredRowsForRole = (roleTier, numOutfieldLines) => {
 };
 
 /**
- * Reconciles single-player vertical line mismatches across ALL formations:
- *  1) Defender (`roleTier === 1`) placed in midfield line (`grid[2]`) vs.
- *     Midfielder (`roleTier === 2`) placed in defensive line (`grid[1]`)
- *     (e.g. Brentford #4 vs #27 in 4-2-3-1).
- *  2) Forward / Winger (`roleTier >= 3`) placed in midfield line (`grid[2]`) vs.
- *     Central/Holding Midfielder (`roleTier === 2`) placed in forward/attacking line (`grid[lastRow]`)
- *     (e.g. Fulham #14 O. Bobb in midfield row vs #16 S. Berge in forward row in 4-3-3).
+ * Why #14 and #16 (or any two players across adjacent/non-adjacent rows) ended up swapped:
+ * When ESPN's `formationPlace` assigns two players to slots whose role tiers or line positions
+ * conflict (for instance a deeper/holding midfielder vs. an attacking/advanced player or when
+ * two players in `4-2-3-1` / `4-3-3` / `4-4-2` lines have swapped `formationPlace` codes such as
+ * `6`/`8` vs. `10`/`7` or an attacking mid placed in row 2 and a deeper mid in row 3),
+ * row order or `formationPlace` can place them on opposite rows/sides while leaving the rest of
+ * the lineup accurate.
  *
- * Swaps ONLY the misplaced pair on the same lateral flank while leaving every
- * other player in the lineup untouched.
+ * This general reconciliation pass checks `grid` across outfield rows so that:
+ * 1) Defenders (`roleTier === 1`) stay in row 1 and midfielders (`roleTier === 2`) stay in row 2
+ *    (`reconcileDefenderMidfieldSwap`), and
+ * 2) When a player in a deeper midfield row has a higher attacking tier (`roleTier >= 3`) or a
+ *    player in an attacking/advanced midfield row has a deeper midfield tier (`roleTier === 2`)
+ *    and their lateral/slot alignment is inverted on the same flank, they swap positions without
+ *    altering any other player in the grid.
  */
-const reconcileLineMismatches = (grid) => {
+const reconcileMisplacedLinePair = (grid) => {
   if (!Array.isArray(grid) || grid.length < 3) return;
 
-  // Pass 1: Defender (`roleTier === 1`) in `grid[2]` <-> Midfielder (`roleTier === 2`) in `grid[1]`
+  // 1. Defender (row 1) vs Midfielder (row 2)
   const defRow = grid[1];
   const midRow = grid[2];
   if (Array.isArray(defRow) && Array.isArray(midRow)) {
-    const midDefIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
-    if (midDefIdx !== -1) {
-      let defMidIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
-      if (defMidIdx === -1 && defRow.length >= 2) {
-        defMidIdx = 1;
+    const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
+    if (midIdx !== -1) {
+      let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
+      if (defIdx === -1 && defRow.length >= 2) {
+        defIdx = 1;
       }
-      if (defMidIdx !== -1) {
-        const tmp = defRow[defMidIdx];
-        defRow[defMidIdx] = midRow[midDefIdx];
-        midRow[midDefIdx] = tmp;
+      if (defIdx !== -1 && midIdx !== -1) {
+        const tmp = defRow[defIdx];
+        defRow[defIdx] = midRow[midIdx];
+        midRow[midIdx] = tmp;
       }
     }
   }
 
-  // Pass 2: Forward/Winger (`roleTier >= 3`) in midfield line (`grid[2]`) <->
-  //         Central/Defensive Midfielder (`roleTier === 2`) in front/attacking line (`grid[lastRow]`)
-  const lastRowIdx = grid.length - 1;
-  if (lastRowIdx >= 3 && Array.isArray(midRow) && Array.isArray(grid[lastRowIdx])) {
-    const frontRow = grid[lastRowIdx];
-    const midFwdIdx = midRow.findIndex(item => item && item.role && item.role.roleTier >= 3);
-    const frontMidIdx = frontRow.findIndex(item => item && item.role && item.role.roleTier === 2);
+  // 2. General cross-row role swap between adjacent/non-adjacent midfield & attacking rows
+  // (e.g., #14 and #16 swapping rows while keeping every other position identical)
+  for (let rA = 1; rA < grid.length; rA++) {
+    for (let rB = rA + 1; rB < grid.length; rB++) {
+      const rowA = grid[rA];
+      const rowB = grid[rB];
+      if (!Array.isArray(rowA) || !Array.isArray(rowB)) continue;
 
-    if (midFwdIdx !== -1 && frontMidIdx !== -1) {
-      // Preserve each player's lateral slot index if they sit on the same flank, or swap directly
-      const tmp = midRow[midFwdIdx];
-      midRow[midFwdIdx] = frontRow[frontMidIdx];
-      frontRow[frontMidIdx] = tmp;
+      for (let cA = 0; cA < rowA.length; cA++) {
+        const itemA = rowA[cA];
+        if (!itemA?.role) continue;
+        // Skip forward/striker row mismatches unless truly misplaced
+        if (rB === grid.length - 1 && itemA.role.roleTier === 4) continue;
+
+        for (let cB = 0; cB < rowB.length; cB++) {
+          const itemB = rowB[cB];
+          if (!itemB?.role) continue;
+          if (rA === 1 && (itemA.role.roleTier === 1 || itemB.role.roleTier === 1)) continue;
+
+          // Swap when the front/higher row (rB) holds a lower-tier (deeper) player than the back/lower row (rA)
+          // on a matching lateral side/column, without moving any other players.
+          const latA = getOptaLateralOrder(itemA);
+          const latB = getOptaLateralOrder(itemB);
+          const sameSide = Math.abs(latA - latB) <= 45 || (cA === cB);
+          if (itemB.role.roleTier < itemA.role.roleTier && sameSide) {
+            const tmp = rowA[cA];
+            rowA[cA] = rowB[cB];
+            rowB[cB] = tmp;
+            return;
+          }
+        }
+      }
     }
   }
 };
@@ -2744,24 +2757,10 @@ const buildFormationGrid = (starters, formationRows) => {
       }
     });
 
-    // Sort each row left-to-right first so lateral columns align, then reconcile vertical line mismatches
-    // without disturbing any other player's column position!
-    for (let r = 1; r < grid.length; r++) {
-      grid[r].sort((a, b) => {
-        const latA = getOptaLateralOrder(a);
-        const latB = getOptaLateralOrder(b);
-        if (Math.abs(latA - latB) > 2) return latA - latB;
-        const colA = a.slot ? a.slot.col : 0;
-        const colB = b.slot ? b.slot.col : 0;
-        if (colA !== colB) return colA - colB;
-        return a.idx - b.idx;
-      });
-    }
-
-    reconcileLineMismatches(grid);
+    reconcileMisplacedLinePair(grid);
 
     if (used.size === starters.length) {
-      return grid.map(rowItems => rowItems.map(x => x.player));
+      return sortRowsLeftToRight(grid);
     }
   }
 
@@ -2828,11 +2827,8 @@ const buildFormationGrid = (starters, formationRows) => {
     }
   }
 
-  for (let r = 1; r < grid.length; r++) {
-    grid[r].sort((a, b) => getOptaLateralOrder(a) - getOptaLateralOrder(b));
-  }
-  reconcileLineMismatches(grid);
-  return grid.map(rowItems => rowItems.map(x => x.player));
+  reconcileMisplacedLinePair(grid);
+  return sortRowsLeftToRight(grid);
 };
 
 const resolveTeamRosterBySide = (summary, isHome, comp = null) => {
