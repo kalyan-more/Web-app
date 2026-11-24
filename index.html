@@ -68,23 +68,21 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.45);
     }
 
-    /* Sleek, refined Liquid Glass surfaces */
+    /* Sleek, refined Liquid Glass surfaces (GPU-light on repeating cards, blurred on overlays) */
     .liquid-glass {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(15, 15, 19, 0.82) 100%);
-      -webkit-backdrop-filter: blur(18px) saturate(165%);
-      backdrop-filter: blur(18px) saturate(165%);
-      border: 1px solid rgba(255, 255, 255, 0.095);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 22px rgba(0, 0, 0, 0.34);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(16, 16, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 6px 18px rgba(0, 0, 0, 0.30);
     }
 
     .liquid-glass-header {
-      background: rgba(22, 22, 26, 0.90);
+      background: rgba(22, 22, 26, 0.92);
       -webkit-backdrop-filter: blur(12px) saturate(145%);
       backdrop-filter: blur(12px) saturate(145%);
     }
 
     .liquid-glass-pill {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(15, 15, 18, 0.86) 100%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(15, 15, 19, 0.86) 100%);
       -webkit-backdrop-filter: blur(22px) saturate(170%);
       backdrop-filter: blur(22px) saturate(170%);
       border: 1px solid rgba(255, 255, 255, 0.14);
@@ -92,22 +90,22 @@
     }
 
     .liquid-glass-sheet {
-      background: linear-gradient(180deg, rgba(18, 18, 22, 0.95) 0%, rgba(4, 4, 6, 0.99) 100%);
-      -webkit-backdrop-filter: blur(26px) saturate(170%);
-      backdrop-filter: blur(26px) saturate(170%);
+      background: linear-gradient(180deg, rgba(18, 18, 22, 0.96) 0%, rgba(4, 4, 6, 0.99) 100%);
+      -webkit-backdrop-filter: blur(22px) saturate(165%);
+      backdrop-filter: blur(22px) saturate(165%);
       border-top: 1px solid rgba(255, 255, 255, 0.13);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Distinct, silky Apple-like transitions for different sections & UI elements */
+    /* Silky GPU-composited Apple-like transitions (transform + opacity only) */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.35;
-        transform: translate3d(0, 48px, 0) scale3d(0.98, 0.98, 1);
+        opacity: 0;
+        transform: translate3d(0, 36px, 0);
       }
       100% {
         opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+        transform: translate3d(0, 0, 0);
       }
     }
 
@@ -116,59 +114,50 @@
       100% { opacity: 1; }
     }
 
-    /* Section-specific transitions */
-    @keyframes sectionHomeEnter {
-      0% { opacity: 0; transform: translate3d(0, 14px, 0) scale3d(0.988, 0.988, 1); }
-      100% { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
-    }
-
-    @keyframes sectionScoresEnter {
-      0% { opacity: 0; transform: translate3d(12px, 0, 0); }
+    @keyframes sectionFadeGlide {
+      0% { opacity: 0; transform: translate3d(0, 8px, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
-    @keyframes sectionStandingsEnter {
-      0% { opacity: 0; transform: translate3d(0, 12px, 0); }
-      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    @keyframes scheduleLoadNext {
+      0% {
+        opacity: 0;
+        transform: translate3d(20px, 0, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
     }
 
-    @keyframes sectionIntelEnter {
-      0% { opacity: 0; transform: translate3d(-10px, 6px, 0); }
-      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    @keyframes scheduleLoadPrev {
+      0% {
+        opacity: 0;
+        transform: translate3d(-20px, 0, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
     }
 
     @keyframes iosExpandIn {
       0% {
         opacity: 0;
-        transform: translate3d(0, 10px, 0) scale3d(0.992, 0.992, 1);
+        transform: translate3d(0, 8px, 0);
       }
       100% {
         opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+        transform: translate3d(0, 0, 0);
       }
     }
 
     @keyframes iosOpeningIcon {
-      0% {
-        opacity: 0;
-        transform: scale3d(0.86, 0.86, 1);
-      }
-      22% {
-        opacity: 0;
-        transform: scale3d(0.88, 0.88, 1);
-      }
-      55% {
-        opacity: 1;
-        transform: scale3d(1.01, 1.01, 1);
-      }
-      80% {
-        opacity: 1;
-        transform: scale3d(1, 1, 1);
-      }
-      100% {
-        opacity: 0;
-        transform: scale3d(1.025, 1.025, 1);
-      }
+      0% { opacity: 0; transform: scale3d(0.88, 0.88, 1); }
+      22% { opacity: 0; transform: scale3d(0.90, 0.90, 1); }
+      55% { opacity: 1; transform: scale3d(1.01, 1.01, 1); }
+      80% { opacity: 1; transform: scale3d(1, 1, 1); }
+      100% { opacity: 0; transform: scale3d(1.02, 1.02, 1); }
     }
 
     @keyframes iosOpeningOverlayFade {
@@ -183,23 +172,34 @@
       100% { transform: translate3d(-18px, 0, 0) scaleX(0.92); }
     }
 
+    @keyframes bounceBar {
+      0% { transform: translate3d(-12px, 0, 0); }
+      50% { transform: translate3d(12px, 0, 0); }
+      100% { transform: translate3d(-12px, 0, 0); }
+    }
+
     @keyframes liveClockPulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.48; }
     }
 
     .ios-opening-overlay {
-      animation: iosOpeningOverlayFade 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningOverlayFade 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: opacity;
     }
 
     .ios-opening-icon {
-      animation: iosOpeningIcon 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: iosOpeningIcon 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       will-change: transform, opacity;
     }
 
     .white-pill-bounce {
-      animation: whitePillBounce 1.45s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      animation: whitePillBounce 1.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      will-change: transform;
+    }
+
+    .animate-bounce-bar {
+      animation: bounceBar 1.75s cubic-bezier(0.37, 0, 0.63, 1) infinite;
       will-change: transform;
     }
 
@@ -209,91 +209,48 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: iosSheetSlideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
       will-change: transform, opacity;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.26s ease-out both;
+      animation: iosBackdropFadeIn 0.22s ease-out both;
     }
 
-    @keyframes scheduleLoadNext {
-      0% {
-        opacity: 0;
-        transform: translate3d(16px, 4px, 0) scale3d(0.994, 0.994, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-      }
-    }
-
-    @keyframes scheduleLoadPrev {
-      0% {
-        opacity: 0;
-        transform: translate3d(-16px, 4px, 0) scale3d(0.994, 0.994, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-      }
-    }
-
-    @keyframes scheduleCardGlide {
-      0% {
-        opacity: 0;
-        transform: translate3d(0, 8px, 0);
-      }
-      100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-      }
-    }
-
-    .section-enter-home {
-      animation: sectionHomeEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    .section-enter-scores {
-      animation: sectionScoresEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    .section-enter-standings {
-      animation: sectionStandingsEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
+    .section-enter-home,
+    .section-enter-scores,
+    .section-enter-standings,
     .section-enter-intel {
-      animation: sectionIntelEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: sectionFadeGlide 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .schedule-load-next {
-      animation: scheduleLoadNext 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: scheduleLoadNext 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
     .schedule-load-prev {
-      animation: scheduleLoadPrev 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    .schedule-card-item {
-      animation: scheduleCardGlide 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: scheduleLoadPrev 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
     .ios-expand-in {
-      animation: iosExpandIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: iosExpandIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .ios-card-press {
       touch-action: manipulation;
-      contain: layout style;
-      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s ease, border-color 0.18s ease, opacity 0.16s ease;
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.15s ease, border-color 0.16s ease;
     }
     .ios-card-press:active {
-      transform: scale3d(0.976, 0.976, 1);
+      transform: scale3d(0.978, 0.978, 1);
     }
 
     button {
       touch-action: manipulation;
-      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.20s ease, color 0.20s ease, opacity 0.20s ease;
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
     }
     button:active {
       transform: scale3d(0.962, 0.962, 1);
@@ -365,6 +322,15 @@ const { useState, useEffect, useCallback, useMemo, useRef, useTransition, memo }
 const API_SOCCER_SCORE_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
 const API_SOCCER_STANDINGS_BASE = "https://site.api.espn.com/apis/v2/sports/soccer";
 const API_CRICKET_BASE = "https://cricket-api-1-1yo0.onrender.com/api";
+const CRICKET_SCHED_URL = `${API_CRICKET_BASE}/schedule?days_past=11&days_ahead=11`;
+const unpackCricketArray = (res) => {
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res?.matches)) return res.matches;
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res?.events)) return res.events;
+  if (Array.isArray(res?.fixtures)) return res.fixtures;
+  return [];
+};
 const CRICINFO_RSS_JSON = "https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.espncricinfo.com%2Frss%2Fcontent%2Fstory%2Ffeeds%2F0.xml";
 
 // 🎨 UNIFIED OBSIDIAN THEME
@@ -855,7 +821,7 @@ const prewarmSportsAPIs = () => {
         fetchWithCache(`${API_SOCCER_SCORE_BASE}/${id}/scoreboard?dates=${todayDs}`).catch(() => {});
       });
       fetchWithCache(`${API_CRICKET_BASE}/live`).catch(() => {});
-      fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`).catch(() => {});
+      fetchWithCache(CRICKET_SCHED_URL).catch(() => {});
     }, 250);
   }, 1450);
 
@@ -1287,10 +1253,24 @@ const getCricketMatchStatus = (match, selectedDate) => {
   let color = THEME.accent;
   const isViewingToday = !selectedDate || isSameDay(selectedDate, new Date());
 
-  if ((match.status === 'IN' || statUpper.includes('LIVE')) && isViewingToday) {
+  const rawSt = String(match.status || '').toUpperCase();
+  const isPostState = rawSt === 'POST' || rawSt === 'FINAL' || rawSt === 'COMPLETED' || rawSt === 'RESULT' ||
+    statUpper.includes('FINAL') || statUpper.includes('WON BY') || statUpper.includes(' WON') ||
+    statUpper.includes('RESULT') || statUpper.includes('MATCH OVER') || statUpper.includes('MATCH ENDED') ||
+    statUpper.includes('TIED') || statUpper.includes('DRAWN');
+  const isAbandonedState = statUpper.includes('ABANDON') || statUpper.includes('CANCEL') || statUpper.includes('NO RESULT');
+  const isPreState = !isPostState && !isAbandonedState && (rawSt === 'PRE' || rawSt === 'SCHEDULED' || statUpper === 'SCHEDULED' || statUpper === 'UPCOMING');
+  const isLiveState = !isPostState && !isAbandonedState && !isPreState && (
+    rawSt === 'IN' || rawSt === 'LIVE' || Boolean(match._fromLive) ||
+    statUpper.includes('LIVE') || statUpper.includes('STUMPS') || statUpper.includes('INNINGS BREAK') ||
+    statUpper.includes('TEA') || statUpper.includes('LUNCH') || statUpper.includes('RAIN') ||
+    statUpper.includes('DELAY') || statUpper.includes('DAY ') || statUpper.includes('TOSS')
+  );
+
+  if (isLiveState && isViewingToday) {
     isLive = true;
     isActionLive = true;
-    const checkText = statUpper === 'LIVE' && primaryUpdate ? primaryUpdate : statUpper;
+    const checkText = (statUpper === 'LIVE' || !statUpper) && primaryUpdate ? primaryUpdate : statUpper;
     if (checkText.includes('STUMPS') || checkText.includes('END OF DAY')) { isActionLive = false; displayLabel = "STUMPS"; color = THEME.warning; }
     else if (checkText.includes('RAIN') || checkText.includes('DELAY') || checkText.includes('WET')) { isActionLive = false; displayLabel = "DELAYED"; color = THEME.danger; }
     else if (checkText.includes('TEA')) { isActionLive = false; displayLabel = "TEA BREAK"; color = THEME.warning; }
@@ -1298,12 +1278,12 @@ const getCricketMatchStatus = (match, selectedDate) => {
     else if (checkText.includes('INNINGS BREAK')) { isActionLive = false; displayLabel = "INNINGS BREAK"; color = THEME.warning; }
     else if (checkText.includes('TOSS')) { isActionLive = false; displayLabel = "TOSS"; }
     else { displayLabel = "LIVE"; color = THEME.success; }
-  } else if (match.status === 'POST' || statUpper.includes('FINAL') || statUpper.includes('WON') || statUpper.includes('RESULT') || statUpper.includes('OVER')) {
-    displayLabel = match.status_text || 'FT';
-    color = THEME.muted;
-  } else if (statUpper.includes('ABANDON') || statUpper.includes('CANCEL') || statUpper.includes('NO RESULT')) {
+  } else if (isAbandonedState) {
     displayLabel = 'ABANDONED';
     color = THEME.danger;
+  } else if (isPostState) {
+    displayLabel = match.status_text || 'FT';
+    color = THEME.muted;
   } else {
     displayLabel = match.status_text && !statUpper.includes('LIVE') ? match.status_text : 'UPCOMING';
     color = THEME.muted;
@@ -2900,34 +2880,34 @@ const TacticalPitch = memo(({ summary, home, away }) => {
 
 const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
   const scrollRef = useRef(null);
-
-  const centerSelectedDate = useCallback((smooth = true) => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const selectedEl = container.querySelector('[data-selected="true"]');
-    if (selectedEl) {
-      const containerRect = container.getBoundingClientRect();
-      const elRect = selectedEl.getBoundingClientRect();
-      const delta = (elRect.left + elRect.width / 2) - (containerRect.left + containerRect.width / 2);
-      container.scrollTo({ left: container.scrollLeft + delta, behavior: smooth ? 'smooth' : 'auto' });
-    }
-  }, []);
+  const didMountRef = useRef(false);
 
   useEffect(() => {
-    centerSelectedDate(true);
-    const t = setTimeout(() => centerSelectedDate(true), 120);
-    return () => clearTimeout(t);
-  }, [selectedDate, dates, centerSelectedDate]);
+    const raf = requestAnimationFrame(() => {
+      const container = scrollRef.current;
+      if (!container) return;
+      const selectedEl = container.querySelector('[data-selected="true"]');
+      if (selectedEl) {
+        const targetLeft = selectedEl.offsetLeft + selectedEl.offsetWidth / 2 - container.clientWidth / 2;
+        container.scrollTo({
+          left: Math.max(0, targetLeft),
+          behavior: didMountRef.current ? 'smooth' : 'auto'
+        });
+        didMountRef.current = true;
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [selectedDate, dates]);
 
   return (
-    <div className="px-4 pt-2.5 mb-2.5 w-full">
-      <div className="bg-[#121212] h-[64px] rounded-[32px] px-3 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
-        <div ref={scrollRef} className="flex items-center overflow-x-auto scroll-smooth ios-momentum [&::-webkit-scrollbar]:hidden w-full">
+    <div className="px-4 pt-2 mb-3 w-full">
+      <div className="bg-[#121212] h-[64px] rounded-[32px] px-2.5 flex items-center border border-[rgba(255,255,255,0.08)] overflow-hidden">
+        <div ref={scrollRef} className="relative flex items-center overflow-x-auto ios-momentum [&::-webkit-scrollbar]:hidden w-full">
           {dates.map((d, i) => {
             const isSel = isSameDay(d, selectedDate);
             const isToday = isSameDay(d, new Date());
             const diffDays = Math.abs((d - selectedDate) / (1000 * 60 * 60 * 24));
-            const fadeOpacity = isSel || isToday ? 1 : Math.max(0.3, 1 - (diffDays * 0.15));
+            const fadeOpacity = isSel || isToday ? 1 : Math.max(0.35, 1 - (diffDays * 0.14));
 
             const dayColor = isSel ? THEME.accent : isToday ? THEME.success : THEME.muted;
             const dateColor = isSel ? THEME.accent : isToday ? THEME.success : THEME.text;
@@ -2937,13 +2917,13 @@ const DateSelector = memo(({ dates, selectedDate, onSelectDate }) => {
                 key={i}
                 data-selected={isSel}
                 onClick={() => onSelectDate(new Date(d))}
-                className="w-[44px] mx-1 shrink-0 flex flex-col items-center justify-center py-1 transition-all duration-200 ease-out active:scale-95 outline-none"
+                className={`w-[46px] h-[48px] mx-0.5 shrink-0 flex flex-col items-center justify-center rounded-[18px] outline-none ${isSel ? 'bg-white/[0.08] border border-white/[0.10]' : 'border border-transparent'}`}
                 style={{ opacity: fadeOpacity }}
               >
-                <span className="text-[9px] font-bold tracking-[0.5px] mb-1 uppercase" style={{ color: dayColor }}>
+                <span className="text-[9px] font-bold tracking-[0.5px] mb-1 uppercase leading-none" style={{ color: dayColor }}>
                   {d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase()}
                 </span>
-                <span className="text-[16px] font-extrabold tabular-nums leading-none" style={{ color: dateColor }}>
+                <span className="text-[15px] font-extrabold tabular-nums leading-none" style={{ color: dateColor }}>
                   {d.getDate()}
                 </span>
               </button>
@@ -3014,7 +2994,7 @@ const NewsCard = memo(({ item }) => {
   const sourceLabel = item.source || 'ESPN';
 
   return (
-    <article className="liquid-glass rounded-[26px] overflow-hidden mb-4 ios-card-press w-full [content-visibility:auto]">
+    <article className="liquid-glass rounded-[26px] overflow-hidden mb-4 ios-card-press w-full">
       {heroImg && (
         <div className="relative w-full h-[168px] overflow-hidden bg-[#1C1C1E]">
           <img
@@ -3097,29 +3077,40 @@ const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideD
   const leagueLogo = getFootballLeagueLogo(match, leagueName);
 
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full [content-visibility:auto]">
+    <div onClick={() => onOpen({ ...match, _sport: 'soccer' })} className={`bg-[#121212] rounded-[24px] px-4 py-[18px] flex items-center justify-between mb-3.5 border cursor-pointer ios-card-press w-full ${isLive ? 'border-[#32D74B]/25' : 'border-[rgba(255,255,255,0.08)]'}`}>
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
-        <img src={getSafeFootballLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
+        <img src={getSafeFootballLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[42px] h-[42px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h?.team?.shortDisplayName || h?.team?.name}</span>
       </div>
-      <div className="w-[128px] flex flex-col items-center justify-center shrink-0">
+      <div className="w-[126px] flex flex-col items-center justify-center shrink-0">
         <div className="flex items-center justify-center gap-1 mb-1.5 max-w-[120px]">
           <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, leagueName)} className="w-3.5 h-3.5 object-contain shrink-0 rounded-sm" alt="" />
           <span className="text-[9px] font-extrabold text-[#8E8E93] tracking-[0.5px] text-center uppercase break-words leading-tight">{leagueName}</span>
         </div>
-        <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums">
-          {getSafeFootballScore(h?.score)} <span className="text-[#8E8E93] font-normal">—</span> {getSafeFootballScore(a?.score)}
-        </span>
-        {isLive ? (
-          <BlinkingTime time={match?.status?.displayClock} color={THEME.success} />
-        ) : isPre ? (
-          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] w-full">{getFavFormattedDate(match.date, hideDate)}</span>
+        {isPre ? (
+          <>
+            <span className="text-[17px] font-extrabold text-[#F5F5F7] tabular-nums tracking-[0.3px]">
+              {get24HourTime(match.date) || 'TBD'}
+            </span>
+            <span className="text-[10px] text-[#8E8E93] font-bold text-center mt-1 tracking-[0.6px] uppercase">
+              {hideDate ? 'Kickoff' : getFavFormattedDate(match.date, false).split(' • ')[0]}
+            </span>
+          </>
         ) : (
-          <span className="text-[10px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[1px]">{match?.status?.type?.shortDetail || 'FT'}</span>
+          <>
+            <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums leading-none">
+              {getSafeFootballScore(h?.score)} <span className="text-[#8E8E93] font-normal">—</span> {getSafeFootballScore(a?.score)}
+            </span>
+            {isLive ? (
+              <BlinkingTime time={match?.status?.displayClock || 'LIVE'} color={THEME.success} />
+            ) : (
+              <span className="text-[10px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[1px]">{match?.status?.type?.shortDetail || 'FT'}</span>
+            )}
+          </>
         )}
       </div>
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a?.team, match._leagueId, null, 'soccer'); }}>
-        <img src={getSafeFootballLogo(a?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
+        <img src={getSafeFootballLogo(a?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[42px] h-[42px] object-contain shrink-0" alt="Away" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a?.team?.shortDisplayName || a?.team?.name}</span>
       </div>
     </div>
@@ -3138,18 +3129,22 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   const shortLeague = getShortLeagueName(match.league || match.series || match.title);
   const leagueLogo = getCricketLeagueLogo(match.league || match.series || match.title, match.league_logo);
 
+  const hasAnyScore = Boolean(hScore.runs || aScore.runs);
+
   return (
-    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press transform-gpu w-full [content-visibility:auto]">
+    <div onClick={() => onOpen({ ...match, _sport: 'cricket' })} className={`bg-[#121212] rounded-[24px] px-4 py-[18px] flex items-center justify-between mb-3.5 border cursor-pointer ios-card-press w-full ${isLive ? 'border-[#32D74B]/25' : 'border-[rgba(255,255,255,0.08)]'}`}>
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
-        <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
+        <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[42px] h-[42px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h.short_name || h.name}</span>
-        <div className="h-[40px] flex flex-col items-center justify-start">
-          <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums leading-tight">{hScore.runs}</span>
-          {hScore.overs ? <span className="text-[10px] text-[#8E8E93] font-semibold">{hScore.overs}</span> : null}
-        </div>
+        {hasAnyScore && (
+          <div className="min-h-[34px] flex flex-col items-center justify-start">
+            <span className="text-[20px] font-extrabold text-[#F5F5F7] tabular-nums leading-tight">{hScore.runs || '—'}</span>
+            {hScore.overs ? <span className="text-[10px] text-[#8E8E93] font-semibold">{hScore.overs}</span> : null}
+          </div>
+        )}
       </div>
 
-      <div className="w-[128px] flex flex-col items-center justify-center shrink-0">
+      <div className="w-[126px] flex flex-col items-center justify-center shrink-0">
         <div className="flex items-center justify-center gap-1 mb-1.5 max-w-[120px]">
           <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, shortLeague)} className="w-3.5 h-3.5 object-contain shrink-0 rounded-sm" alt="" />
           <span className="text-[9px] font-extrabold text-[#8E8E93] tracking-[0.5px] text-center uppercase break-words leading-tight">{shortLeague}</span>
@@ -3158,27 +3153,38 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
           <>
             <LiveIndicator label={displayLabel} isActionLive={isActionLive} color={color} />
             {detailedStatus && detailedStatus.toUpperCase() !== displayLabel && (
-              <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1 leading-tight">{detailedStatus}</span>
+              <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1 leading-tight line-clamp-2">{detailedStatus}</span>
             )}
           </>
         ) : isPre ? (
-          <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5 tracking-[0.5px] w-full">{getFavFormattedDate(match.start_time, hideDate)}</span>
+          <>
+            <span className="text-[16px] font-extrabold text-[#F5F5F7] tabular-nums tracking-[0.3px]">
+              {get24HourTime(match.start_time) || 'TBD'}
+            </span>
+            <span className="text-[10px] text-[#8E8E93] font-bold text-center mt-1 tracking-[0.5px] uppercase">
+              {hideDate ? 'Start' : getFavFormattedDate(match.start_time, false).split(' • ')[0]}
+            </span>
+          </>
         ) : (
-          <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1.5 leading-tight">{detailedStatus || match.status_text || displayLabel}</span>
+          <span className="text-[10px] text-[#F5F5F7] font-bold text-center mt-1 leading-tight line-clamp-3">{detailedStatus || match.status_text || displayLabel}</span>
         )}
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a, null, null, 'cricket'); }}>
-        <img src={getCricketLogo(a)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
+        <img src={getCricketLogo(a)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[42px] h-[42px] object-contain shrink-0" alt="Away" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a.short_name || a.name}</span>
-        <div className="h-[40px] flex flex-col items-center justify-start">
-          {aScore.runs ? (
-            <>
-              <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums leading-tight">{aScore.runs}</span>
-              {aScore.overs ? <span className="text-[10px] text-[#8E8E93] font-semibold">{aScore.overs}</span> : null}
-            </>
-          ) : null}
-        </div>
+        {hasAnyScore && (
+          <div className="min-h-[34px] flex flex-col items-center justify-start">
+            {aScore.runs ? (
+              <>
+                <span className="text-[20px] font-extrabold text-[#F5F5F7] tabular-nums leading-tight">{aScore.runs}</span>
+                {aScore.overs ? <span className="text-[10px] text-[#8E8E93] font-semibold">{aScore.overs}</span> : null}
+              </>
+            ) : (
+              <span className="text-[11px] text-[#8E8E93] font-semibold italic mt-1">Yet to bat</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3616,7 +3622,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   const buildCurrentLeagues = useCallback((json, sched = []) => {
     if (!Array.isArray(json) || json.length === 0) return [];
-    const safeSched = Array.isArray(sched) ? sched : [];
+    const safeSched = unpackCricketArray(sched);
     const cacheKey = `cricket_std_v2|${json.length}|${safeSched.length}`;
     if (standingsParsedCache.has(cacheKey)) return standingsParsedCache.get(cacheKey);
 
@@ -3685,7 +3691,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   const [data, setData] = useState(() => {
     const cachedStd = getCachedSync(stdUrl);
-    const cachedSched = getCachedSync(schedUrl) || getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) || [];
+    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHED_URL) || [];
     return buildCurrentLeagues(cachedStd, cachedSched);
   });
   const [selectedLeague, setSelectedLeague] = useState(() => data[0] || null);
@@ -3694,7 +3700,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
 
   useEffect(() => {
     let active = true;
-    const cachedSched = getCachedSync(schedUrl) || getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) || [];
+    const cachedSched = getCachedSync(schedUrl) || getCachedSync(CRICKET_SCHED_URL) || [];
 
     Promise.all([
       fetchWithCache(stdUrl, false, 6000).catch(() => null),
@@ -4199,9 +4205,13 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 
   useEffect(() => {
     fetchMatchHub(false);
-    const interval = setInterval(() => fetchMatchHub(true), 8000);
+    const st = String(match?.status || '').toUpperCase();
+    const stTxt = String(match?.status_text || '').toUpperCase();
+    const isFinished = st === 'POST' || st === 'FINAL' || st === 'COMPLETED' || stTxt.includes('FINAL') || stTxt.includes('WON BY');
+    if (isFinished) return;
+    const interval = setInterval(() => fetchMatchHub(true), 10000);
     return () => clearInterval(interval);
-  }, [fetchMatchHub]);
+  }, [fetchMatchHub, match?.status, match?.status_text]);
 
   const groupedOvers = useMemo(() => {
     if (!matchCommentary || matchCommentary.length === 0) return [];
@@ -4817,9 +4827,11 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
 
   useEffect(() => {
     fetchActiveDetails(false);
-    const interval = setInterval(() => fetchActiveDetails(true), 10000);
+    const state = match?.status?.type?.state;
+    if (state === 'post') return;
+    const interval = setInterval(() => fetchActiveDetails(true), 12000);
     return () => clearInterval(interval);
-  }, [fetchActiveDetails]);
+  }, [fetchActiveDetails, match?.status?.type?.state]);
 
   const hComp = match?.competitions?.[0]?.competitors?.find(c => c.homeAway === 'home');
   const aComp = match?.competitions?.[0]?.competitors?.find(c => c.homeAway === 'away');
@@ -5029,7 +5041,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
     const teamIdStr = team.team_id || team.id;
     const cachedProf = teamIdStr ? getCachedSync(`${API_CRICKET_BASE}/team/${teamIdStr}`) : null;
     const cachedStd = getCachedSync(`${API_CRICKET_BASE}/standings`) || [];
-    const cachedSched = getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) || [];
+    const cachedSched = getCachedSync(CRICKET_SCHED_URL) || [];
 
     let foundStats = existingStats || cachedProf?.stats || null;
     let leagueName = stripSeasonYear(existingStats?._leagueTitle || team._leagueTitle || '');
@@ -5068,7 +5080,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
       fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=45&days_ahead=30`).catch(() => [])
     ]).then(([teamProf, stdRes, schedRes]) => {
       if (!active) return;
-      const allSched = Array.isArray(schedRes) ? schedRes : [];
+      const allSched = unpackCricketArray(schedRes);
       const upcoming = allSched.filter(m => {
         const isTeamMatch = (m.teams || []).some(t => doesCricketTeamMatch(t, team));
         return isTeamMatch && (m.status === 'PRE' || m.status === 'SCHEDULED' || new Date(m.start_time) > new Date());
@@ -5309,7 +5321,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
   const isFav = favorites.includes(favKey);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
+    <div className="fixed inset-0 z-[60] bg-black/70 ios-backdrop-in flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
@@ -5631,7 +5643,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
   const isFav = favorites.includes(favId);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 ios-backdrop-in flex flex-col justify-end">
+    <div className="fixed inset-0 z-[60] bg-black/70 ios-backdrop-in flex flex-col justify-end">
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative h-[94vh] max-w-md w-full mx-auto pt-4 bg-[#000000] rounded-t-[40px] flex flex-col overflow-hidden border-t border-[rgba(255,255,255,0.12)] ios-sheet-up transform-gpu">
         <div className="w-full h-[30px] flex items-center justify-center cursor-pointer shrink-0" onClick={onClose}>
@@ -5732,42 +5744,249 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
 // 🚀 MAIN APP WRAPPER
 // ==========================================
 
+const sortFootballMatches = (list = []) => {
+  const rank = (m) => {
+    const st = m?.status?.type?.state;
+    if (st === 'in') return 0;
+    if (st === 'pre') return 1;
+    return 2;
+  };
+  return [...list].sort((a, b) => {
+    const ra = rank(a);
+    const rb = rank(b);
+    if (ra !== rb) return ra - rb;
+    return new Date(a?.date || 0).getTime() - new Date(b?.date || 0).getTime();
+  });
+};
+
+const parseCricketLocalIso = (rawVal) => {
+  if (!rawVal) return '';
+  const s = String(rawVal).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const dt = new Date(s);
+  if (!isNaN(dt)) return toLocalIsoDate(dt);
+  const m = s.match(/(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : '';
+};
+
+const localIsoToMidnightMs = (iso) => {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return NaN;
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).getTime();
+};
+
+const filterAndSortCricketForDate = (liveRaw, schedRaw, targetDate) => {
+  const selectedDateStr = toLocalIsoDate(targetDate);
+  const selectedMs = localIsoToMidnightMs(selectedDateStr);
+  const todayStr = toLocalIsoDate(new Date());
+  const isViewingToday = selectedDateStr === todayStr;
+
+  const schedList = unpackCricketArray(schedRaw);
+  const liveList = unpackCricketArray(liveRaw);
+
+  const matchMap = new Map();
+
+  schedList.forEach(m => {
+    if (!m) return;
+    const key = String(m.match_id || m.id || m.event_id || '');
+    if (!key) return;
+    matchMap.set(key, { ...m, match_id: m.match_id || m.id || key });
+  });
+
+  if (isViewingToday) {
+    liveList.forEach(m => {
+      if (!m) return;
+      const key = String(m.match_id || m.id || m.event_id || '');
+      if (!key) return;
+      const existing = matchMap.get(key) || {};
+      matchMap.set(key, {
+        ...existing,
+        ...m,
+        match_id: m.match_id || existing.match_id || key,
+        start_time: m.start_time || m.date || m.start_date || existing.start_time || existing.date || '',
+        league: m.league || m.series || existing.league || existing.series || '',
+        teams: Array.isArray(m.teams) && m.teams.length >= 2 ? m.teams : (existing.teams || []),
+        _fromLive: true
+      });
+    });
+  }
+
+  const filtered = Array.from(matchMap.values()).filter(m => {
+    if (!Array.isArray(m.teams) || m.teams.length < 2) return false;
+
+    const rawStart = m.start_time || m.date || m.start_date || m.match_date || m.utc_time || '';
+    const startLocalIso = parseCricketLocalIso(rawStart);
+    const startUtcIso = rawStart ? String(rawStart).split('T')[0] : '';
+    const titleLower = String(m.title || m.match_title || m.league || m.series || m.format || '').toLowerCase();
+    const statUpper = String(m.status || m.status_text || '').toUpperCase();
+    const updateUpper = String(m.match_update || '').toUpperCase();
+    const combinedStat = `${statUpper} ${updateUpper}`;
+
+    const isFinished = statUpper === 'POST' || statUpper === 'FINAL' || statUpper === 'COMPLETED' ||
+      /\b(WON BY|MATCH TIED|MATCH DRAWN|ABANDONED|NO RESULT|CANCELLED)\b/.test(combinedStat);
+    const isActiveLive = !isFinished && (
+      Boolean(m._fromLive) || statUpper === 'LIVE' || statUpper === 'IN' ||
+      combinedStat.includes('LIVE') || combinedStat.includes('DAY ') ||
+      combinedStat.includes('STUMPS') || combinedStat.includes('RAIN') ||
+      combinedStat.includes('TEA') || combinedStat.includes('LUNCH') ||
+      combinedStat.includes('INNINGS BREAK') || combinedStat.includes('TOSS')
+    );
+
+    // 1. Live matches returned by /api/live or actively live are ALWAYS shown on Today
+    if (isViewingToday && (m._fromLive || isActiveLive)) {
+      if (!startLocalIso) return true;
+      const startMs = localIsoToMidnightMs(startLocalIso);
+      if (isNaN(startMs) || startMs <= selectedMs + 86400000) return true;
+    }
+
+    // 2. Direct calendar date match (local timezone primary; fallback for date-only strings)
+    if (startLocalIso === selectedDateStr) return true;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(rawStart).trim()) && startUtcIso === selectedDateStr) return true;
+
+    // 3. Multi-day Test / First-Class / 4-day / Ranji / Shield / County matches spanning targetDate
+    const startMs = localIsoToMidnightMs(startLocalIso);
+    if (!isNaN(startMs) && !isNaN(selectedMs)) {
+      let endMs = startMs;
+      const rawEnd = m.end_date || m.end_time || '';
+      const endLocalIso = parseCricketLocalIso(rawEnd);
+      if (endLocalIso) {
+        const parsedEnd = localIsoToMidnightMs(endLocalIso);
+        if (!isNaN(parsedEnd) && parsedEnd >= startMs) endMs = parsedEnd;
+      } else if (titleLower.includes('test') || String(m.format || '').toLowerCase() === 'test') {
+        endMs = startMs + 4 * 86400000;
+      } else if (/(first class|\bfc\b|4-day|four-day|ranji|shield|plunket|county championship|duleep|irani)/i.test(titleLower) || /DAY\s+[2-5]/.test(combinedStat)) {
+        endMs = startMs + 3 * 86400000;
+      }
+
+      if (selectedMs >= startMs && selectedMs <= endMs) return true;
+    }
+
+    return false;
+  });
+
+  // Sort: Live first -> Upcoming (earliest first) -> Completed
+  return filtered.sort((a, b) => {
+    const sa = getCricketMatchStatus(a, targetDate);
+    const sb = getCricketMatchStatus(b, targetDate);
+    const rankOf = (m, st) => {
+      if (st.isLive) return 0;
+      const rawS = String(m.status || '').toUpperCase();
+      const txtS = String(m.status_text || '').toUpperCase();
+      const isPost = rawS === 'POST' || rawS === 'FINAL' || rawS === 'COMPLETED' || txtS.includes('FINAL') || txtS.includes('WON') || txtS.includes('RESULT');
+      return isPost ? 2 : 1;
+    };
+    const ra = rankOf(a, sa);
+    const rb = rankOf(b, sb);
+    if (ra !== rb) return ra - rb;
+    const ta = new Date(a.start_time || 0).getTime() || 0;
+    const tb = new Date(b.start_time || 0).getTime() || 0;
+    return ta - tb;
+  });
+};
+
+const readCachedFootballForIso = (isoDate) => {
+  const ds = isoDate.replace(/-/g, '');
+  let anyCached = false;
+  const events = [];
+  FOOTBALL_LEAGUES.forEach(l => {
+    const c = getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${ds}`);
+    if (c) {
+      anyCached = true;
+      if (Array.isArray(c.events)) {
+        events.push(...c.events.map(e => ({ ...e, _leagueId: l.id })));
+      }
+    }
+  });
+  return anyCached ? sortFootballMatches(events) : null;
+};
+
+const readCachedCricketForDate = (targetDate) => {
+  const cachedLive = getCachedSync(`${API_CRICKET_BASE}/live`);
+  const cachedSched = getCachedSync(CRICKET_SCHED_URL);
+  if (!cachedLive && !cachedSched) return null;
+  return filterAndSortCricketForDate(cachedLive, cachedSched, targetDate);
+};
+
 function App() {
   const [activeSport, setActiveSport] = useState('soccer');
   const [view, setView] = useState('scores');
   const [date, setDate] = useState(() => new Date());
   const [dateDir, setDateDir] = useState(1);
 
+  const dates = useMemo(() => {
+    const r = [];
+    for (let i = -10; i <= 10; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      r.push(d);
+    }
+    return r;
+  }, []);
+
+  const minDateMs = useMemo(() => new Date(dates[0].getFullYear(), dates[0].getMonth(), dates[0].getDate()).getTime(), [dates]);
+  const maxDateMs = useMemo(() => new Date(dates[dates.length - 1].getFullYear(), dates[dates.length - 1].getMonth(), dates[dates.length - 1].getDate()).getTime(), [dates]);
+
   const handleSelectDateSmooth = useCallback((nextDate) => {
     setDate(prev => {
       const prevDay = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate()).getTime();
       const nextDay = new Date(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate()).getTime();
-      if (nextDay !== prevDay) setDateDir(nextDay > prevDay ? 1 : -1);
+      if (nextDay === prevDay) return prev;
+      setDateDir(nextDay > prevDay ? 1 : -1);
       return nextDate;
     });
   }, []);
+
+  const stepScoreDate = useCallback((deltaDays) => {
+    setDate(prev => {
+      const next = new Date(prev);
+      next.setDate(next.getDate() + deltaDays);
+      const nextDayMs = new Date(next.getFullYear(), next.getMonth(), next.getDate()).getTime();
+      if (nextDayMs < minDateMs || nextDayMs > maxDateMs) return prev;
+      setDateDir(deltaDays >= 0 ? 1 : -1);
+      return next;
+    });
+  }, [minDateMs, maxDateMs]);
+
   const [, startTransition] = useTransition();
 
-  const [footballMatches, setSoccerMatches] = useState([]);
-  const [cricketMatches, setCricketMatches] = useState([]);
+  const [soccerByDate, setSoccerByDate] = useState(() => {
+    const iso = toLocalIsoDate(new Date());
+    const init = readCachedFootballForIso(iso);
+    return init ? { [iso]: init } : {};
+  });
+  const [cricketByDate, setCricketByDate] = useState(() => {
+    const now = new Date();
+    const iso = toLocalIsoDate(now);
+    const init = readCachedCricketForDate(now);
+    return init ? { [iso]: init } : {};
+  });
   const [favMatches, setFavMatches] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingFavs, setLoadingFavs] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const scheduleContainerRef = useRef(null);
 
   useEffect(() => {
     const el = document.getElementById('sideline-opening');
     if (!el) return;
     const timer = setTimeout(() => {
       if (el && el.parentNode) el.parentNode.removeChild(el);
-    }, 1500);
+    }, 1450);
     return () => clearTimeout(timer);
   }, []);
 
   const [activeMatch, setActiveMatch] = useState(null);
   const [activeTeam, setActiveTeam] = useState(null);
+
+  // Lock background page scroll while any modal sheet is open
+  useEffect(() => {
+    const hasModal = Boolean(activeMatch || activeTeam);
+    document.body.style.overflow = hasModal ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [activeMatch, activeTeam]);
 
   const [favoritesList, setFavoritesList] = useState(() => {
     try {
@@ -5807,6 +6026,13 @@ function App() {
     }
   });
 
+  // If user removes their last favorite while on home view, bounce cleanly back to scores
+  useEffect(() => {
+    if (view === 'home' && favoritesList.length === 0) {
+      setView('scores');
+    }
+  }, [view, favoritesList.length]);
+
   const persistUnifiedFavorites = useCallback((nextList) => {
     try {
       localStorage.setItem('sideline_unified_favorites', JSON.stringify(nextList));
@@ -5840,42 +6066,18 @@ function App() {
   const toggleFootballFav = useCallback((teamId) => toggleFavorite('soccer', teamId), [toggleFavorite]);
   const toggleCricketFav = useCallback((teamId) => toggleFavorite('cricket', teamId), [toggleFavorite]);
 
-  const dates = useMemo(() => {
-    const r = [];
-    for (let i = -10; i <= 10; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      r.push(d);
-    }
-    return r;
-  }, []);
-
-  const stepScoreDate = useCallback((deltaDays) => {
-    setDateDir(deltaDays >= 0 ? 1 : -1);
-    setDate(prev => {
-      const next = new Date(prev);
-      next.setDate(next.getDate() + deltaDays);
-      return next;
-    });
-  }, []);
-
   const fetchSeqRef = useRef(0);
 
-  const fetchFootballMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
+  const fetchFootballMatches = useCallback(async (isSilent = false, forceRefresh = false, targetDate = date) => {
     const reqId = ++fetchSeqRef.current;
-    const ds = toLocalIsoDate(date).replace(/-/g, '');
-    const cachedEvents = [];
+    const iso = toLocalIsoDate(targetDate);
+    const ds = iso.replace(/-/g, '');
+
     if (!forceRefresh) {
-      FOOTBALL_LEAGUES.forEach(l => {
-        const c = getCachedSync(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${ds}`);
-        if (c?.events) cachedEvents.push(...c.events.map(e => ({ ...e, _leagueId: l.id })));
-      });
-    }
-    if (cachedEvents.length > 0) {
-      setSoccerMatches(cachedEvents);
-      setLoading(false);
-    } else if (!isSilent) {
-      setLoading(true);
+      const cached = readCachedFootballForIso(iso);
+      if (cached) {
+        setSoccerByDate(prev => ({ ...prev, [iso]: cached }));
+      }
     }
 
     try {
@@ -5887,84 +6089,77 @@ function App() {
         )
       );
       if (reqId !== fetchSeqRef.current) return;
-      setSoccerMatches(results.flat());
+      const sorted = sortFootballMatches(results.flat());
+      setSoccerByDate(prev => ({ ...prev, [iso]: sorted }));
     } catch {
       if (reqId !== fetchSeqRef.current) return;
-      if (!isSilent && cachedEvents.length === 0) setSoccerMatches([]);
-    } finally {
-      if (reqId === fetchSeqRef.current && !isSilent) setLoading(false);
+      setSoccerByDate(prev => (prev[iso] ? prev : { ...prev, [iso]: [] }));
     }
   }, [date]);
 
-  const fetchCricketMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
+  const fetchCricketMatches = useCallback(async (isSilent = false, forceRefresh = false, targetDate = date) => {
     const reqId = ++fetchSeqRef.current;
-    const selectedDateStr = toLocalIsoDate(date);
-    const selectedDateObj = new Date(selectedDateStr);
-    const isViewingToday = isSameDay(date, new Date());
+    const iso = toLocalIsoDate(targetDate);
+    const isViewingToday = isSameDay(targetDate, new Date());
 
-    const filterCricketEvents = (liveData, schedData) => {
-      const matchMap = new Map();
-      (Array.isArray(schedData) ? schedData : []).forEach(m => matchMap.set(m.match_id, m));
-      if (isViewingToday) {
-        (Array.isArray(liveData) ? liveData : []).forEach(m => matchMap.set(m.match_id, m));
+    if (!forceRefresh) {
+      const cached = readCachedCricketForDate(targetDate);
+      if (cached) {
+        setCricketByDate(prev => ({ ...prev, [iso]: cached }));
       }
-      return Array.from(matchMap.values()).filter(m => {
-        if (!m.start_time) return false;
-        const titleLower = String(m.title || m.match_title || m.league || m.format || '').toLowerCase();
-        if (CRICKET_DOMESTIC_LEAGUE_REGEX.test(titleLower)) return false;
-
-        const startDateStr = String(m.start_time).split('T')[0];
-        const startDateObj = new Date(startDateStr);
-        if (startDateStr === selectedDateStr) return true;
-
-        const statUpper = String(m.status || m.status_text || '').toUpperCase();
-        let endDateObj = new Date(startDateObj);
-        if (m.end_date || m.end_time) {
-          endDateObj = new Date(String(m.end_date || m.end_time).split('T')[0]);
-        } else if (titleLower.includes('test')) {
-          endDateObj.setDate(startDateObj.getDate() + 4);
-        } else if (titleLower.includes('first class') || titleLower.includes('fc')) {
-          endDateObj.setDate(startDateObj.getDate() + 3);
-        }
-
-        if (selectedDateObj >= startDateObj && selectedDateObj <= endDateObj) return true;
-        const isMatchActive = statUpper === 'LIVE' || statUpper === 'IN' || statUpper.includes('DAY ') || statUpper.includes('STUMPS') || statUpper.includes('RAIN') || statUpper.includes('TEA') || statUpper.includes('LUNCH') || statUpper.includes('BREAK');
-        if (isViewingToday && isMatchActive && startDateObj <= selectedDateObj) return true;
-        return false;
-      });
-    };
-
-    const cachedLive = !forceRefresh ? getCachedSync(`${API_CRICKET_BASE}/live`) : null;
-    const cachedSched = !forceRefresh ? getCachedSync(`${API_CRICKET_BASE}/schedule?days_past=3&days_ahead=4`) : null;
-    if (cachedLive || cachedSched) {
-      setCricketMatches(filterCricketEvents(cachedLive, cachedSched));
-      setLoading(false);
-    } else if (!isSilent) {
-      setLoading(true);
     }
 
     try {
       const [liveRes, schedRes] = await Promise.all([
         isViewingToday ? fetchWithCache(`${API_CRICKET_BASE}/live`, isSilent || forceRefresh).catch(() => []) : Promise.resolve([]),
-        fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=5&days_ahead=5`, isSilent || forceRefresh).catch(() => [])
+        fetchWithCache(CRICKET_SCHED_URL, isSilent || forceRefresh).catch(() => [])
       ]);
       if (reqId !== fetchSeqRef.current) return;
-      setCricketMatches(filterCricketEvents(liveRes, schedRes));
+      const filtered = filterAndSortCricketForDate(liveRes, schedRes, targetDate);
+      setCricketByDate(prev => ({ ...prev, [iso]: filtered }));
     } catch {
       if (reqId !== fetchSeqRef.current) return;
-      if (!isSilent && !cachedSched) setCricketMatches([]);
-    } finally {
-      if (reqId === fetchSeqRef.current && !isSilent) setLoading(false);
+      setCricketByDate(prev => (prev[iso] ? prev : { ...prev, [iso]: [] }));
     }
   }, [date]);
+
+  // Silently prefetch adjacent football dates (prev & next day) so date swipes are instant
+  useEffect(() => {
+    if (view !== 'scores' || activeSport !== 'soccer') return;
+    const timer = setTimeout(() => {
+      runWhenIdle(() => {
+        [-1, 1].forEach(offset => {
+          const adj = new Date(date);
+          adj.setDate(adj.getDate() + offset);
+          const adjMs = new Date(adj.getFullYear(), adj.getMonth(), adj.getDate()).getTime();
+          if (adjMs < minDateMs || adjMs > maxDateMs) return;
+          const adjIso = toLocalIsoDate(adj);
+          if (readCachedFootballForIso(adjIso)) return;
+          const ds = adjIso.replace(/-/g, '');
+          Promise.all(
+            FOOTBALL_LEAGUES.map(l =>
+              fetchWithCache(`${API_SOCCER_SCORE_BASE}/${l.id}/scoreboard?dates=${ds}`, false, 6000)
+                .then(data => (data.events || []).map(e => ({ ...e, _leagueId: l.id })))
+                .catch(() => [])
+            )
+          ).then(res => {
+            const sorted = sortFootballMatches(res.flat());
+            setSoccerByDate(prev => (prev[adjIso] ? prev : { ...prev, [adjIso]: sorted }));
+          }).catch(() => {});
+        });
+      }, 300);
+    }, 550);
+    return () => clearTimeout(timer);
+  }, [view, activeSport, date, minDateMs, maxDateMs]);
 
   const fetchFavSchedule = useCallback(async (forceRefresh = false) => {
     if (footballFavs.length === 0 && cricketFavs.length === 0) {
       setFavMatches([]);
+      setLoadingFavs(false);
       return;
     }
     setFavMatches(prev => {
-      if (prev.length === 0) setLoading(true);
+      if (prev.length === 0) setLoadingFavs(true);
       return prev;
     });
     try {
@@ -6055,11 +6250,11 @@ function App() {
       });
 
       const cricketPool = new Map();
-      (Array.isArray(cricketSched) ? cricketSched : []).forEach(m => {
+      unpackCricketArray(cricketSched).forEach(m => {
         if (m?.match_id) cricketPool.set(String(m.match_id), m);
       });
-      (Array.isArray(cricketLive) ? cricketLive : []).forEach(m => {
-        if (m?.match_id) cricketPool.set(String(m.match_id), { ...cricketPool.get(String(m.match_id)), ...m, _isLive: true });
+      unpackCricketArray(cricketLive).forEach(m => {
+        if (m?.match_id) cricketPool.set(String(m.match_id), { ...cricketPool.get(String(m.match_id)), ...m, _isLive: true, _fromLive: true });
       });
 
       cricketPool.forEach((m) => {
@@ -6099,7 +6294,7 @@ function App() {
     } catch {
       setFavMatches([]);
     } finally {
-      setLoading(false);
+      setLoadingFavs(false);
     }
   }, [footballFavs, cricketFavs]);
 
@@ -6127,7 +6322,7 @@ function App() {
         } else {
           await Promise.all([
             fetchWithCache(`${API_CRICKET_BASE}/standings`, true).catch(() => null),
-            fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=120&days_ahead=30`, true).catch(() => null)
+            fetchWithCache(`${API_CRICKET_BASE}/schedule?days_past=30&days_ahead=30`, true).catch(() => null)
           ]);
         }
         setRefreshTick(t => t + 1);
@@ -6142,7 +6337,7 @@ function App() {
         setRefreshTick(t => t + 1);
       }
     } finally {
-      setTimeout(() => setIsRefreshing(false), 220);
+      setTimeout(() => setIsRefreshing(false), 200);
     }
   }, [isRefreshing, view, activeSport, fetchFavSchedule, fetchFootballMatches, fetchCricketMatches]);
 
@@ -6153,9 +6348,11 @@ function App() {
     mode: null,
     startX: 0,
     startY: 0,
+    startTime: 0,
     dx: 0,
     dy: 0,
     atTop: true,
+    inHorizScroll: false,
     rafId: null,
     targetSheet: null
   });
@@ -6168,13 +6365,14 @@ function App() {
     }
   }, [view]);
 
+  // Close topmost sheet first (Team Modal sits above Match Modal)
   const handleGoBack = useCallback(() => {
-    if (activeMatch) {
-      setActiveMatch(null);
-      return true;
-    }
     if (activeTeam) {
       setActiveTeam(null);
+      return true;
+    }
+    if (activeMatch) {
+      setActiveMatch(null);
       return true;
     }
     if (navHistoryRef.current.length > 0) {
@@ -6197,11 +6395,18 @@ function App() {
         g.rafId = null;
         if (!g.active) return;
         const st = gestureStateRef.current;
-        if (g.mode === 'horiz' && g.dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) {
-          const clamped = Math.min(g.dx, 280);
-          g.targetSheet.style.transition = 'none';
-          g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
-          g.targetSheet.style.opacity = String(Math.max(0.55, 1 - clamped / 540));
+        if (g.mode === 'horiz') {
+          if (g.dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) {
+            const clamped = Math.min(g.dx, 280);
+            g.targetSheet.style.transition = 'none';
+            g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
+            g.targetSheet.style.opacity = String(Math.max(0.58, 1 - clamped / 540));
+          } else if (!st.activeMatch && !st.activeTeam && st.view === 'scores' && !g.inHorizScroll && scheduleContainerRef.current) {
+            const damped = Math.max(-72, Math.min(72, g.dx * 0.36));
+            scheduleContainerRef.current.style.transition = 'none';
+            scheduleContainerRef.current.style.transform = `translate3d(${damped}px, 0, 0)`;
+            scheduleContainerRef.current.style.opacity = String(Math.max(0.74, 1 - Math.abs(damped) / 240));
+          }
         } else if (g.mode === 'pull' && g.dy > 0) {
           setPullDistance(g.dy);
         }
@@ -6221,6 +6426,7 @@ function App() {
         mode: null,
         startX: t.clientX,
         startY: t.clientY,
+        startTime: Date.now(),
         dx: 0,
         dy: 0,
         atTop: scrollTop <= 2 && !st.activeMatch && !st.activeTeam,
@@ -6239,10 +6445,10 @@ function App() {
       const dy = t.clientY - g.startY;
 
       if (!g.mode) {
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-        if (Math.abs(dx) > Math.abs(dy) * 1.45) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        if (Math.abs(dx) > Math.abs(dy) * 1.35) {
           g.mode = 'horiz';
-        } else if (dy > 10 && g.atTop && Math.abs(dy) > Math.abs(dx) * 1.3) {
+        } else if (dy > 10 && g.atTop && Math.abs(dy) > Math.abs(dx) * 1.35) {
           g.mode = 'pull';
         } else {
           g.active = false;
@@ -6252,7 +6458,7 @@ function App() {
 
       if (g.mode === 'horiz') {
         g.dx = dx;
-        if (dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) {
+        if ((dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) || (!st.activeMatch && !st.activeTeam && st.view === 'scores' && !g.inHorizScroll)) {
           scheduleFrame();
         }
       } else if (g.mode === 'pull' && dy > 0) {
@@ -6261,7 +6467,7 @@ function App() {
       }
     };
 
-    const onTouchEnd = () => {
+    const finishGesture = (cancelled = false) => {
       const g = gestureRef.current;
       if (!g.active) return;
       if (g.rafId !== null) {
@@ -6269,7 +6475,8 @@ function App() {
         g.rafId = null;
       }
       const st = gestureStateRef.current;
-      const { mode, dx, dy, targetSheet, inHorizScroll } = g;
+      const { mode, dx, dy, startTime, targetSheet, inHorizScroll } = g;
+      const elapsed = Date.now() - startTime;
       g.active = false;
       g.mode = null;
 
@@ -6279,13 +6486,34 @@ function App() {
         targetSheet.style.opacity = '';
       }
 
+      const schedEl = scheduleContainerRef.current;
+      const isQuickFlick = Math.abs(dx) > 30 && elapsed < 220;
+      const shouldStepDate = !cancelled && mode === 'horiz' && !st.activeMatch && !st.activeTeam && st.view === 'scores' && !inHorizScroll && (Math.abs(dx) > 54 || isQuickFlick);
+
+      if (schedEl) {
+        if (shouldStepDate) {
+          schedEl.style.transition = 'none';
+          schedEl.style.transform = '';
+          schedEl.style.opacity = '';
+        } else {
+          schedEl.style.transition = 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease';
+          schedEl.style.transform = '';
+          schedEl.style.opacity = '';
+        }
+      }
+
+      if (cancelled) {
+        setPullDistance(0);
+        return;
+      }
+
       if (mode === 'horiz') {
         if (st.activeMatch || st.activeTeam) {
           if (dx > 72) st.handleGoBack();
-        } else if (st.view === 'scores' && !inHorizScroll) {
-          if (dx < -64) st.stepScoreDate(1);
-          else if (dx > 64) st.stepScoreDate(-1);
-        } else if (dx > 82) {
+        } else if (shouldStepDate) {
+          if (dx < 0) st.stepScoreDate(1);
+          else st.stepScoreDate(-1);
+        } else if (dx > 82 && st.view !== 'scores') {
           st.handleGoBack();
         }
       } else if (mode === 'pull') {
@@ -6298,36 +6526,42 @@ function App() {
       }
     };
 
+    const onTouchEnd = () => finishGesture(false);
+    const onTouchCancel = () => finishGesture(true);
+
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', onTouchCancel, { passive: true });
     return () => {
       if (gestureRef.current.rafId !== null) cancelAnimationFrame(gestureRef.current.rafId);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchCancel);
     };
   }, []);
 
   useEffect(() => {
     if (view === 'home') fetchFavSchedule(false);
     else if (view === 'scores') {
-      if (activeSport === 'soccer') fetchFootballMatches(false, false);
-      else fetchCricketMatches(false, false);
+      if (activeSport === 'soccer') fetchFootballMatches(false, false, date);
+      else fetchCricketMatches(false, false, date);
     }
   }, [view, activeSport, date, fetchFootballMatches, fetchCricketMatches, fetchFavSchedule]);
 
   useEffect(() => {
     if (view !== 'scores' || !isSameDay(date, new Date())) return;
     const interval = setInterval(() => {
-      if (activeSport === 'soccer') fetchFootballMatches(true, false);
-      else fetchCricketMatches(true, false);
+      if (activeSport === 'soccer') fetchFootballMatches(true, false, date);
+      else fetchCricketMatches(true, false, date);
     }, 15000);
     return () => clearInterval(interval);
   }, [view, activeSport, date, fetchFootballMatches, fetchCricketMatches]);
 
   const openMatchModal = useCallback((m) => {
     setPullDistance(0);
+    setActiveTeam(null);
     setActiveMatch(m);
   }, []);
 
@@ -6342,16 +6576,22 @@ function App() {
     });
   }, [activeSport]);
 
+  const selectedDateIso = toLocalIsoDate(date);
+  const currentFootballMatches = useMemo(() => {
+    if (soccerByDate[selectedDateIso] !== undefined) return soccerByDate[selectedDateIso];
+    return readCachedFootballForIso(selectedDateIso);
+  }, [soccerByDate, selectedDateIso]);
+
+  const currentCricketMatches = useMemo(() => {
+    if (cricketByDate[selectedDateIso] !== undefined) return cricketByDate[selectedDateIso];
+    return readCachedCricketForDate(date);
+  }, [cricketByDate, selectedDateIso, date]);
+
   const pullVisibleHeight = isRefreshing ? 50 : pullDistance;
   const pullProgress = Math.min(1, pullVisibleHeight / 54);
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes bounceBar { 0% { transform: translate3d(-12px, 0, 0); } 50% { transform: translate3d(12px, 0, 0); } 100% { transform: translate3d(-12px, 0, 0); } }
-        .animate-bounce-bar { animation: bounceBar 1.75s cubic-bezier(0.37, 0, 0.63, 1) infinite; will-change: transform; }
-      `}} />
 
       <div
         style={{
@@ -6382,12 +6622,12 @@ function App() {
       </div>
 
       {/* SLEEK NON-BLURRED SPORT TOGGLE AT TOP */}
-      <div className="flex sport-bar-crisp rounded-[22px] mx-4 mt-3 mb-3.5 p-1">
+      <div className="flex sport-bar-crisp rounded-[22px] mx-4 mt-3 mb-3 p-1">
         <button
           onClick={() => startTransition(() => {
             setActiveSport('soccer');
           })}
-          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-150 ${activeSport === 'soccer' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
+          className={`flex-1 py-2.5 rounded-[18px] text-[13px] transition-colors duration-150 ${activeSport === 'soccer' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
         >
           ⚽ Football
         </button>
@@ -6395,111 +6635,121 @@ function App() {
           onClick={() => startTransition(() => {
             setActiveSport('cricket');
           })}
-          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-150 ${activeSport === 'cricket' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
+          className={`flex-1 py-2.5 rounded-[18px] text-[13px] transition-colors duration-150 ${activeSport === 'cricket' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
         >
           🏏 Cricket
         </button>
       </div>
 
-      <div key={`${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col section-enter-${view}`}>
-        {view === 'home' && (
-          <div className="flex-1 px-4 pt-3 pb-40">
-            
-            {loading && favMatches.length === 0 ? (
-              <WhitePillLoader className="mt-10 py-6" />
-            ) : favMatches.length === 0 ? (
-              <EmptyState icon={Calendar} title="No Live or Upcoming Matches" message="Your favorite football and cricket teams don't have any live or upcoming fixtures right now." />
-            ) : (
-              favMatches.map((m, idx) =>
-                m._favSport === 'soccer' ? (
-                  <FootballMatchCard key={`fav-s-${m.id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
-                ) : (
-                  <CricketMatchCard key={`fav-c-${m.match_id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
-                )
+      {view === 'home' && (
+        <div key={`home-${refreshTick}`} className="flex-1 px-4 pt-3 pb-40 section-enter-home">
+          {loadingFavs && favMatches.length === 0 ? (
+            <WhitePillLoader className="mt-10 py-6" />
+          ) : favMatches.length === 0 ? (
+            <EmptyState icon={Calendar} title="No Live or Upcoming Matches" message="Your favorite football and cricket teams don't have any live or upcoming fixtures right now." />
+          ) : (
+            favMatches.map((m, idx) =>
+              m._favSport === 'soccer' ? (
+                <FootballMatchCard key={`fav-s-${m.id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
+              ) : (
+                <CricketMatchCard key={`fav-c-${m.match_id || idx}`} match={m} selectedDate={m._isLive ? new Date() : null} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={false} />
               )
-            )}
-          </div>
-        )}
+            )
+          )}
+        </div>
+      )}
 
-        {view === 'scores' && (
-          <div className="flex-1 flex flex-col">
-            <DateSelector dates={dates} selectedDate={date} onSelectDate={handleSelectDateSmooth} />
+      {view === 'scores' && (
+        <div className="flex-1 flex flex-col">
+          <DateSelector dates={dates} selectedDate={date} onSelectDate={handleSelectDateSmooth} />
+          <div ref={scheduleContainerRef} className="flex-1 px-4 pb-36">
             <div
-              key={`${activeSport}-${toLocalIsoDate(date)}`}
-              className={`px-4 pb-36 ${dateDir >= 0 ? 'schedule-load-next' : 'schedule-load-prev'}`}
+              key={`${activeSport}-${selectedDateIso}-${refreshTick}`}
+              className={dateDir >= 0 ? 'schedule-load-next' : 'schedule-load-prev'}
             >
-              {loading && (activeSport === 'soccer' ? footballMatches.length === 0 : cricketMatches.length === 0) ? (
-                <WhitePillLoader className="py-20" />
-              ) : activeSport === 'soccer' ? (
-                footballMatches.length === 0 ? (
+              {activeSport === 'soccer' ? (
+                currentFootballMatches === null ? (
+                  <WhitePillLoader className="py-20" />
+                ) : currentFootballMatches.length === 0 ? (
                   <EmptyState icon={CircleDashed} title="No Broadcasts" message="There are no scheduled games for this date." />
                 ) : (
-                  footballMatches.map((m, idx) => (
-                    <div
-                      key={m.id}
-                      className="schedule-card-item"
-                      style={{ animationDelay: `${25 + Math.min(idx, 6) * 24}ms` }}
-                    >
-                      <FootballMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
-                    </div>
+                  currentFootballMatches.map((m) => (
+                    <FootballMatchCard key={m.id} match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                   ))
                 )
-              ) : cricketMatches.length === 0 ? (
+              ) : currentCricketMatches === null ? (
+                <WhitePillLoader className="py-20" />
+              ) : currentCricketMatches.length === 0 ? (
                 <EmptyState icon={Activity} title="No Broadcasts" message="No cricket fixtures found for this date." />
               ) : (
-                cricketMatches.map((m, idx) => (
-                  <div
-                    key={m.match_id}
-                    className="schedule-card-item"
-                    style={{ animationDelay: `${25 + Math.min(idx, 6) * 24}ms` }}
-                  >
-                    <CricketMatchCard match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
-                  </div>
+                currentCricketMatches.map((m) => (
+                  <CricketMatchCard key={m.match_id} match={m} selectedDate={date} onOpen={openMatchModal} onOpenTeam={openTeamHub} hideDate={true} />
                 ))
               )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {view === 'standings' && (
-          activeSport === 'soccer' ? (
-            <FootballStandingsView key={`std-s-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
+      {view === 'standings' && (
+        <div key={`standings-${activeSport}-${refreshTick}`} className="flex-1 flex flex-col section-enter-standings">
+          {activeSport === 'soccer' ? (
+            <FootballStandingsView onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
           ) : (
-            <CricketStandingsView key={`std-c-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
-          )
-        )}
+            <CricketStandingsView onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
+          )}
+        </div>
+      )}
 
-        {view === 'intel' && (
-          activeSport === 'soccer' ? <FootballIntelView key={`intel-s-${refreshTick}`} /> : <CricketIntelView key={`intel-c-${refreshTick}`} />
-        )}
-      </div>
+      {view === 'intel' && (
+        <div key={`intel-${activeSport}-${refreshTick}`} className="flex-1 flex flex-col section-enter-intel">
+          {activeSport === 'soccer' ? <FootballIntelView /> : <CricketIntelView />}
+        </div>
+      )}
 
-      <div className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
+      <div className="fixed bottom-[calc(18px+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 rounded-full p-1.5 flex items-center gap-1 liquid-glass-pill z-40 shadow-2xl">
         {favoritesList.length > 0 && (
-          <button onClick={() => startTransition(() => setView('home'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
-            <Star size={26} color={view === 'home' ? THEME.text : THEME.muted} />
+          <button
+            onClick={() => startTransition(() => setView('home'))}
+            aria-label="Favorites"
+            className={`px-5 py-2.5 rounded-full transition-colors ${view === 'home' ? 'bg-white/[0.10]' : ''}`}
+          >
+            <Star size={24} color={view === 'home' ? THEME.text : THEME.muted} />
           </button>
         )}
-        <button onClick={() => startTransition(() => setView('scores'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
-          <Activity size={26} color={view === 'scores' ? THEME.text : THEME.muted} />
+        <button
+          onClick={() => startTransition(() => setView('scores'))}
+          aria-label="Scores"
+          className={`px-5 py-2.5 rounded-full transition-colors ${view === 'scores' ? 'bg-white/[0.10]' : ''}`}
+        >
+          <Activity size={24} color={view === 'scores' ? THEME.text : THEME.muted} />
         </button>
-        <button onClick={() => startTransition(() => setView('standings'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
-          <Trophy size={26} color={view === 'standings' ? THEME.text : THEME.muted} />
+        <button
+          onClick={() => startTransition(() => setView('standings'))}
+          aria-label="Standings"
+          className={`px-5 py-2.5 rounded-full transition-colors ${view === 'standings' ? 'bg-white/[0.10]' : ''}`}
+        >
+          <Trophy size={24} color={view === 'standings' ? THEME.text : THEME.muted} />
         </button>
-        <button onClick={() => startTransition(() => setView('intel'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
-          <Zap size={26} color={view === 'intel' ? THEME.text : THEME.muted} />
+        <button
+          onClick={() => startTransition(() => setView('intel'))}
+          aria-label="News"
+          className={`px-5 py-2.5 rounded-full transition-colors ${view === 'intel' ? 'bg-white/[0.10]' : ''}`}
+        >
+          <Zap size={24} color={view === 'intel' ? THEME.text : THEME.muted} />
         </button>
       </div>
 
       {activeMatch && activeMatch._sport === 'soccer' && (
-        <FootballMatchModal match={activeMatch} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
+        <FootballMatchModal key={`fm-${activeMatch.id}`} match={activeMatch} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
       )}
       {activeMatch && activeMatch._sport === 'cricket' && (
-        <CricketMatchModal match={activeMatch} selectedDate={date} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
+        <CricketMatchModal key={`cm-${activeMatch.match_id}`} match={activeMatch} selectedDate={date} onClose={() => setActiveMatch(null)} onOpenTeam={openTeamHub} />
       )}
 
       {activeTeam && activeTeam.sport === 'soccer' && (
         <FootballTeamModal
+          key={`ft-${activeTeam.team?.id || activeTeam.team?.name}`}
           team={activeTeam.team}
           leagueId={activeTeam.leagueId}
           existingStats={activeTeam.existingStats}
@@ -6512,6 +6762,7 @@ function App() {
       )}
       {activeTeam && activeTeam.sport === 'cricket' && (
         <CricketTeamModal
+          key={`ct-${activeTeam.team?.team_id || activeTeam.team?.id || activeTeam.team?.name}`}
           team={activeTeam.team}
           existingStats={activeTeam.existingStats}
           favorites={cricketFavs}
