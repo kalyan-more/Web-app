@@ -305,6 +305,15 @@
       animation: iosExpandIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
+    /* Crisp contour visibility for dark crests & league emblems on obsidian surfaces */
+    .logo-on-dark {
+      filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.62)) drop-shadow(0 0 3.5px rgba(255, 255, 255, 0.24));
+    }
+
+    .logo-badge-dark {
+      filter: drop-shadow(0 0 0.85px rgba(255, 255, 255, 0.78)) drop-shadow(0 0 2.5px rgba(255, 255, 255, 0.30));
+    }
+
     .ios-card-press {
       touch-action: manipulation;
       transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease;
@@ -2203,6 +2212,104 @@ const extractDetailedFootballEvents = (summary, homeComp, awayComp) => {
   return { goals, cards, subs };
 };
 
+const buildFootballCommentaryTimeline = (summary, match, hComp, aComp) => {
+  const parseMin = (clockStr) => {
+    const t = String(clockStr || '').replace(/[’′']/g, '');
+    const parts = t.split('+').map(n => parseInt(n, 10) || 0);
+    return (parts[0] || 0) * 100 + (parts[1] || 0);
+  };
+
+  const rawCommentary = Array.isArray(summary?.commentary)
+    ? summary.commentary.filter(c => String(c?.text || c?.shortText || c?.play?.text || '').trim().length > 0)
+    : [];
+
+  if (rawCommentary.length > 0) {
+    const items = rawCommentary.map(c => ({
+      ...c,
+      text: decodeEntities(c.text || c.shortText || c.play?.text || ''),
+      timeStr: extractFootballTime(c)
+    }));
+    if (items.length > 1 && parseMin(items[0].timeStr) < parseMin(items[items.length - 1].timeStr)) {
+      items.reverse();
+    }
+    return items;
+  }
+
+  const rawKeyEvents = Array.isArray(summary?.keyEvents)
+    ? summary.keyEvents.filter(e => String(e?.text || e?.shortText || e?.type?.text || '').trim().length > 0)
+    : [];
+
+  if (rawKeyEvents.length > 0) {
+    const items = rawKeyEvents.map(ev => {
+      const pNames = (ev.participants || ev.athletesInvolved || [])
+        .map(p => cleanPlayerName(p?.athlete?.displayName || p?.displayName || ''))
+        .filter(Boolean);
+      const teamLabel = ev.team?.shortDisplayName || ev.team?.displayName || '';
+      const baseText = decodeEntities(ev.text || ev.shortText || '');
+      const fallbackText = [ev.type?.text, pNames.join(' / '), teamLabel ? `(${teamLabel})` : ''].filter(Boolean).join(' • ');
+      return {
+        ...ev,
+        text: baseText || fallbackText,
+        timeStr: extractFootballTime(ev)
+      };
+    }).filter(it => it.text);
+    if (items.length > 1 && parseMin(items[0].timeStr) < parseMin(items[items.length - 1].timeStr)) {
+      items.reverse();
+    }
+    if (items.length > 0) return items;
+  }
+
+  // Synthesize rich timeline commentary from match details, scoringPlays, scoreboard details & roster plays
+  const mergedSummary = {
+    ...(summary || {}),
+    details: [
+      ...(summary?.details || []),
+      ...(summary?.header?.competitions?.[0]?.details || []),
+      ...(match?.competitions?.[0]?.details || [])
+    ]
+  };
+  const { goals, cards, subs } = extractDetailedFootballEvents(mergedSummary, hComp, aComp);
+  const synthesized = [];
+
+  goals.forEach(g => {
+    const tag = g.isPen ? ' (Penalty)' : g.isOG ? ' (Own Goal)' : '';
+    const assistPart = g.assist ? ` Assisted by ${cleanPlayerName(g.assist)}.` : '';
+    synthesized.push({
+      timeStr: g.time || "0’",
+      min: g.min || parseMin(g.time),
+      text: `Goal! ${cleanPlayerName(g.scorer)}${tag} scores for ${g.teamName}.${assistPart}`,
+      teamLogo: g.teamLogo,
+      teamName: g.teamName,
+      _kind: 'goal'
+    });
+  });
+
+  cards.forEach(c => {
+    const cardLabel = c.cardType === 'red' ? 'Red card' : 'Yellow card';
+    synthesized.push({
+      timeStr: c.time || "0’",
+      min: c.min || parseMin(c.time),
+      text: `${cardLabel} shown to ${cleanPlayerName(c.player)} (${c.teamName}).`,
+      teamLogo: c.teamLogo,
+      teamName: c.teamName,
+      _kind: c.cardType === 'red' ? 'red' : 'yellow'
+    });
+  });
+
+  subs.forEach(s => {
+    synthesized.push({
+      timeStr: s.time || "0’",
+      min: s.min || parseMin(s.time),
+      text: `Substitution (${s.teamName}): ${cleanPlayerName(s.playerIn)} replaces ${cleanPlayerName(s.playerOut)}.`,
+      teamLogo: s.teamLogo,
+      teamName: s.teamName,
+      _kind: 'sub'
+    });
+  });
+
+  return synthesized.sort((a, b) => (b.min || 0) - (a.min || 0));
+};
+
 const normalizeClubKey = (s) =>
   String(s || '')
     .normalize('NFD')
@@ -3298,7 +3405,7 @@ const PitchMatchEventsSection = memo(({ summary, home, away }) => {
             {goals.map((g, i) => (
               <div key={i} className="flex items-center justify-between bg-[#1C1C1E] px-3.5 py-2.5 rounded-[16px] border border-[rgba(255,255,255,0.05)]">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <img src={g.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, g.teamName)} className="w-5 h-5 object-contain shrink-0" alt="" />
+                  <img src={g.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, g.teamName)} className="w-5 h-5 object-contain shrink-0 logo-badge-dark" alt="" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-[13px] font-bold text-[#F5F5F7] break-words leading-snug">{g.scorer}</span>
@@ -3327,7 +3434,7 @@ const PitchMatchEventsSection = memo(({ summary, home, away }) => {
             {subs.map((s, i) => (
               <div key={i} className="flex items-center justify-between bg-[#1C1C1E] px-3.5 py-2.5 rounded-[16px] border border-[rgba(255,255,255,0.05)]">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <img src={s.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, s.teamName)} className="w-5 h-5 object-contain shrink-0" alt="" />
+                  <img src={s.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, s.teamName)} className="w-5 h-5 object-contain shrink-0 logo-badge-dark" alt="" />
                   <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <ArrowUpRight size={13} color={THEME.success} className="shrink-0" />
@@ -3358,7 +3465,7 @@ const PitchMatchEventsSection = memo(({ summary, home, away }) => {
             {cards.map((c, i) => (
               <div key={i} className="flex items-center justify-between bg-[#1C1C1E] px-3.5 py-2.5 rounded-[16px] border border-[rgba(255,255,255,0.05)]">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <img src={c.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, c.teamName)} className="w-5 h-5 object-contain shrink-0" alt="" />
+                  <img src={c.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, c.teamName)} className="w-5 h-5 object-contain shrink-0 logo-badge-dark" alt="" />
                   <div className="w-[10px] h-[14px] rounded-[2px] shrink-0" style={{ backgroundColor: c.cardType === 'red' ? THEME.danger : THEME.warning }} />
                   <span className="text-[13px] font-bold text-[#F5F5F7] break-words leading-snug">{c.player}</span>
                 </div>
@@ -3429,7 +3536,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
   return (
     <div className="mb-10 mt-2.5">
       <div className="flex items-center px-5 my-3 gap-3">
-        <img src={getSafeFootballLogo(away?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, away?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <img src={getSafeFootballLogo(away?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, away?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0 logo-on-dark" alt="" />
         <div className="flex-1 flex items-center gap-3">
           <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
           <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
@@ -3472,7 +3579,7 @@ const TacticalPitch = memo(({ summary, home, away }) => {
       </div>
 
       <div className="flex items-center px-5 my-3 gap-3">
-        <img src={getSafeFootballLogo(home?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, home?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0" alt="" />
+        <img src={getSafeFootballLogo(home?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, home?.team?.shortDisplayName)} className="w-8 h-8 object-contain shrink-0 logo-on-dark" alt="" />
         <div className="flex-1 flex items-center gap-3">
           <div className="flex-1 h-[1px] bg-[rgba(255,255,255,0.08)]" />
           <span className="text-[#8E8E93] text-[10px] font-extrabold tracking-[2px] uppercase">
@@ -3688,12 +3795,12 @@ const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideD
   return (
     <div onTouchStart={() => { if (match?.id) fetchWithCache(`${API_SOCCER_SCORE_BASE}/${match._leagueId || 'all'}/summary?event=${match.id}`).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
-        <img src={getSafeFootballLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
+        <img src={getSafeFootballLogo(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0 logo-on-dark" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h?.team?.shortDisplayName || h?.team?.name}</span>
       </div>
       <div className="w-[128px] flex flex-col items-center justify-center shrink-0">
         <div className="flex items-center justify-center gap-1 mb-1.5 max-w-[120px]">
-          <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, leagueName)} className="w-3.5 h-3.5 object-contain shrink-0 rounded-sm" alt="" />
+          <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, leagueName)} className="w-3.5 h-3.5 object-contain shrink-0 rounded-sm logo-badge-dark" alt="" />
           <span className="text-[9px] font-extrabold text-[#8E8E93] tracking-[0.5px] text-center uppercase break-words leading-tight">{leagueName}</span>
         </div>
         <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums">
@@ -3708,7 +3815,7 @@ const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideD
         )}
       </div>
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a?.team, match._leagueId, null, 'soccer'); }}>
-        <img src={getSafeFootballLogo(a?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
+        <img src={getSafeFootballLogo(a?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0 logo-on-dark" alt="Away" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a?.team?.shortDisplayName || a?.team?.name}</span>
       </div>
     </div>
@@ -3730,7 +3837,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   return (
     <div onTouchStart={() => { if (match?.match_id) fetchWithCache(`${API_CRICKET_BASE}/match/${match.match_id}`, false, 10000).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
-        <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
+        <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0 logo-on-dark" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h.short_name || h.name}</span>
         <div className="h-[40px] flex flex-col items-center justify-start">
           <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums leading-tight">{hScore.runs}</span>
@@ -3740,7 +3847,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
 
       <div className="w-[128px] flex flex-col items-center justify-center shrink-0">
         <div className="flex items-center justify-center gap-1 mb-1.5 max-w-[120px]">
-          <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, shortLeague)} className="w-3.5 h-3.5 object-contain shrink-0 rounded-sm" alt="" />
+          <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, shortLeague)} className="w-3.5 h-3.5 object-contain shrink-0 rounded-sm logo-badge-dark" alt="" />
           <span className="text-[9px] font-extrabold text-[#8E8E93] tracking-[0.5px] text-center uppercase break-words leading-tight">{shortLeague}</span>
         </div>
         {isLive ? (
@@ -3758,7 +3865,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a, null, null, 'cricket'); }}>
-        <img src={getCricketLogo(a)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
+        <img src={getCricketLogo(a)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain shrink-0 logo-on-dark" alt="Away" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a.short_name || a.name}</span>
         <div className="h-[40px] flex flex-col items-center justify-start">
           {aScore.runs ? (
@@ -3798,7 +3905,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
     <div className="mb-7 w-full">
       <div className="flex items-center justify-between mb-3 px-1 gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          {leagueLogo && <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, leagueTitle || 'KO')} className="w-5 h-5 object-contain shrink-0 rounded-sm" alt="" />}
+          {leagueLogo && <img src={leagueLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, leagueTitle || 'KO')} className="w-5 h-5 object-contain shrink-0 rounded-sm logo-badge-dark" alt="" />}
           <span className="text-[#8E8E93] text-[11px] font-extrabold tracking-[1.5px] uppercase break-words leading-snug">
             Knockouts
           </span>
@@ -3856,7 +3963,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
                   className={`flex items-center gap-3 min-w-0 flex-1 ${m.home.team && !m.home.isTBD ? 'cursor-pointer' : ''}`}
                   onClick={(e) => { if (m.home.team && !m.home.isTBD && onOpenTeam) { e.stopPropagation(); onOpenTeam(m.home.team, null, null, sport); } }}
                 >
-                  <img src={m.home.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, m.home.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                  <img src={m.home.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, m.home.name)} className="w-6 h-6 object-contain shrink-0 logo-on-dark" alt="" />
                   <span className={`text-[14px] font-bold break-words leading-snug ${m.home.isTBD ? 'text-[#8E8E93] italic' : m.home.winner ? 'text-[#F5F5F7]' : 'text-[#8E8E93]'}`}>
                     {m.home.name}
                   </span>
@@ -3871,7 +3978,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
                   className={`flex items-center gap-3 min-w-0 flex-1 ${m.away.team && !m.away.isTBD ? 'cursor-pointer' : ''}`}
                   onClick={(e) => { if (m.away.team && !m.away.isTBD && onOpenTeam) { e.stopPropagation(); onOpenTeam(m.away.team, null, null, sport); } }}
                 >
-                  <img src={m.away.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, m.away.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                  <img src={m.away.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, m.away.name)} className="w-6 h-6 object-contain shrink-0 logo-on-dark" alt="" />
                   <span className={`text-[14px] font-bold break-words leading-snug ${m.away.isTBD ? 'text-[#8E8E93] italic' : m.away.winner ? 'text-[#F5F5F7]' : 'text-[#8E8E93]'}`}>
                     {m.away.name}
                   </span>
@@ -4074,7 +4181,7 @@ const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
               onClick={() => setLeague(l)}
               className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'liquid-glass'}`}
             >
-              <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.short || l.cleanName)} className="w-4 h-4 object-contain shrink-0" style={{ opacity: active ? 1 : 0.65 }} alt="" />
+              <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.short || l.cleanName)} className={`w-4 h-4 object-contain shrink-0 ${active ? '' : 'logo-badge-dark'}`} style={{ opacity: active ? 1 : 0.92 }} alt="" />
               <span className={`text-[12px] font-bold whitespace-nowrap ${active ? 'text-[#000000]' : 'text-[#8E8E93]'}`}>
                 {l.cleanName}
               </span>
@@ -4129,7 +4236,7 @@ const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                 <div key={gIdx} className="mb-6">
                   <div className="flex items-center justify-between gap-2 mb-3 px-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <img src={league.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, cleanLeagueTitle)} className="w-4 h-4 object-contain shrink-0" alt="" />
+                      <img src={league.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, cleanLeagueTitle)} className="w-4 h-4 object-contain shrink-0 logo-badge-dark" alt="" />
                       <span className="text-[#8E8E93] text-[11px] font-extrabold tracking-[1.5px] uppercase break-words leading-snug">
                         {headerText}
                       </span>
@@ -4169,7 +4276,7 @@ const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                           )}
                         </div>
                         <div className="flex-1 flex items-center ml-2 min-w-0">
-                          <img src={getSafeFootballLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
+                          <img src={getSafeFootballLogo(item?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0 logo-on-dark" alt="" />
                           <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{tName}</span>
                         </div>
                         <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{get('gamesPlayed')}</span>
@@ -4323,7 +4430,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                 onClick={() => setSelectedLeague(l)}
                 className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'bg-[#121212] border-[rgba(255,255,255,0.08)]'}`}
               >
-                <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.cleanTitle)} className="w-4 h-4 object-contain rounded-sm shrink-0" style={{ opacity: active ? 1 : 0.75 }} alt="" />
+                <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.cleanTitle)} className={`w-4 h-4 object-contain rounded-sm shrink-0 ${active ? '' : 'logo-badge-dark'}`} style={{ opacity: active ? 1 : 0.92 }} alt="" />
                 <span className={`text-[12px] font-bold whitespace-nowrap ${active ? 'text-[#000000]' : 'text-[#8E8E93]'}`}>
                   {l.cleanTitle}
                 </span>
@@ -4358,7 +4465,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
               <div key={gIdx} className="mb-6">
                 <div className="flex items-center justify-between gap-2 mb-3 px-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <img src={selectedLeague.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, selectedLeague.cleanTitle)} className="w-4 h-4 object-contain rounded-sm shrink-0" alt="" />
+                    <img src={selectedLeague.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, selectedLeague.cleanTitle)} className="w-4 h-4 object-contain rounded-sm shrink-0 logo-badge-dark" alt="" />
                     <span className="text-[#8E8E93] text-[11px] font-extrabold tracking-[1.5px] uppercase break-words leading-snug">
                       {headerText}
                     </span>
@@ -4400,7 +4507,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                     >
                       <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
                       <div className="flex-1 flex items-center ml-2 min-w-0">
-                        <img src={teamLogoUrl} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
+                        <img src={teamLogoUrl} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0 logo-on-dark" alt="" />
                         <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{tName}</span>
                       </div>
                       <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{played}</span>
@@ -4886,7 +4993,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     return (
       <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hTeam, null, null, 'cricket')}>
-          <img src={getCricketLogo(hTeam)} onError={(e) => handleImageError(e, hTeam.short_name || hTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
+          <img src={getCricketLogo(hTeam)} onError={(e) => handleImageError(e, hTeam.short_name || hTeam.name)} className="w-[68px] h-[68px] object-contain logo-on-dark" alt="" />
           <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{hTeam.short_name || hTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore.runs || '-'}</span>
@@ -4901,7 +5008,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
           )}
         </div>
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aTeam, null, null, 'cricket')}>
-          <img src={getCricketLogo(aTeam)} onError={(e) => handleImageError(e, aTeam.short_name || aTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
+          <img src={getCricketLogo(aTeam)} onError={(e) => handleImageError(e, aTeam.short_name || aTeam.name)} className="w-[68px] h-[68px] object-contain logo-on-dark" alt="" />
           <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{aTeam.short_name || aTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             {aScore.runs ? (
@@ -5093,25 +5200,25 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     return (
       <div className="px-4 pb-10">
         <div className="bg-[#121212] rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)]">
-          <div className="flex bg-[#1C1C1E] p-4 border-b border-[rgba(255,255,255,0.08)]">
-            <span className="flex-[3] text-[#8E8E93] text-[11px] font-extrabold uppercase">Batter</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">R</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">B</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">4s</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">6s</span>
-            <span className="w-[45px] text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">SR</span>
+          <div className="flex items-center gap-2 bg-[#1C1C1E] px-3.5 py-3.5 border-b border-[rgba(255,255,255,0.08)]">
+            <span className="flex-1 min-w-0 text-[#8E8E93] text-[11px] font-extrabold uppercase">Batter</span>
+            <span className="w-[34px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">R</span>
+            <span className="w-[34px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">B</span>
+            <span className="w-[24px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">4s</span>
+            <span className="w-[24px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">6s</span>
+            <span className="w-[44px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">SR</span>
           </div>
           {(inning.batting || []).map((b, i) => (
-            <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
-              <div className="flex-[3] pr-2 min-w-0">
-                <span className="block text-[#F5F5F7] text-[14px] font-bold break-words leading-snug">{cleanPlayerName(b.name)}{!b.is_out && '*'}</span>
+            <div key={i} className="flex items-center gap-2 px-3.5 py-3.5 border-b border-[rgba(255,255,255,0.08)]">
+              <div className="flex-1 min-w-0 pr-1">
+                <span className="block text-[#F5F5F7] text-[13.5px] font-bold break-words leading-snug">{cleanPlayerName(b.name)}{!b.is_out && '*'}</span>
                 <span className="block text-[#8E8E93] text-[11px] mt-1 font-medium break-words leading-snug">{cleanCricketDismissalText(b.dismissal, b.is_out)}</span>
               </div>
-              <span className="w-[30px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{b.runs}</span>
-              <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.balls}</span>
-              <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.fours || 0}</span>
-              <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.sixes || 0}</span>
-              <span className="w-[45px] text-right text-[#0A84FF] text-[14px] font-bold tabular-nums">{b.strike_rate || b.sr || ((b.runs / (b.balls || 1)) * 100).toFixed(1)}</span>
+              <span className="w-[34px] shrink-0 text-right text-[#F5F5F7] text-[13px] font-extrabold tabular-nums">{b.runs}</span>
+              <span className="w-[34px] shrink-0 text-right text-[#8E8E93] text-[13px] font-bold tabular-nums">{b.balls}</span>
+              <span className="w-[24px] shrink-0 text-right text-[#8E8E93] text-[13px] font-bold tabular-nums">{b.fours || 0}</span>
+              <span className="w-[24px] shrink-0 text-right text-[#8E8E93] text-[13px] font-bold tabular-nums">{b.sixes || 0}</span>
+              <span className="w-[44px] shrink-0 text-right text-[#0A84FF] text-[13px] font-bold tabular-nums">{b.strike_rate || b.sr || ((b.runs / (b.balls || 1)) * 100).toFixed(1)}</span>
             </div>
           ))}
           <div className="flex justify-between p-5 bg-[#1C1C1E]">
@@ -5123,22 +5230,22 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
         </div>
 
         <div className="bg-[#121212] rounded-[24px] overflow-hidden border border-[rgba(255,255,255,0.08)] mt-5">
-          <div className="flex bg-[#1C1C1E] p-4 border-b border-[rgba(255,255,255,0.08)]">
-            <span className="flex-[3] text-[#8E8E93] text-[11px] font-extrabold uppercase">Bowler</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">O</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">M</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">R</span>
-            <span className="w-[30px] text-center text-[#8E8E93] text-[11px] font-extrabold uppercase">W</span>
-            <span className="w-[45px] text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">ECON</span>
+          <div className="flex items-center gap-2 bg-[#1C1C1E] px-3.5 py-3.5 border-b border-[rgba(255,255,255,0.08)]">
+            <span className="flex-1 min-w-0 text-[#8E8E93] text-[11px] font-extrabold uppercase">Bowler</span>
+            <span className="w-[34px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">O</span>
+            <span className="w-[24px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">M</span>
+            <span className="w-[34px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">R</span>
+            <span className="w-[24px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">W</span>
+            <span className="w-[44px] shrink-0 text-right text-[#8E8E93] text-[11px] font-extrabold uppercase">ECON</span>
           </div>
           {(inning.bowling || []).map((b, i) => (
-            <div key={i} className="flex p-4 border-b border-[rgba(255,255,255,0.08)] items-center">
-              <span className="flex-[3] text-[#F5F5F7] text-[14px] font-bold break-words leading-snug pr-2">{cleanPlayerName(b.name || 'Bowler')}</span>
-              <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.overs}</span>
-              <span className="w-[30px] text-center text-[#8E8E93] text-[14px] font-bold tabular-nums">{b.maidens || 0}</span>
-              <span className="w-[30px] text-center text-[#F5F5F7] text-[14px] font-bold tabular-nums">{b.runs}</span>
-              <span className="w-[30px] text-center text-[#0A84FF] text-[14px] font-bold tabular-nums">{b.wickets}</span>
-              <span className="w-[45px] text-right text-[#0A84FF] text-[14px] font-bold tabular-nums">{b.economy || b.econ || (b.runs / (b.overs || 1)).toFixed(1)}</span>
+            <div key={i} className="flex items-center gap-2 px-3.5 py-3.5 border-b border-[rgba(255,255,255,0.08)]">
+              <span className="flex-1 min-w-0 text-[#F5F5F7] text-[13.5px] font-bold break-words leading-snug pr-1">{cleanPlayerName(b.name || 'Bowler')}</span>
+              <span className="w-[34px] shrink-0 text-right text-[#8E8E93] text-[13px] font-bold tabular-nums">{b.overs}</span>
+              <span className="w-[24px] shrink-0 text-right text-[#8E8E93] text-[13px] font-bold tabular-nums">{b.maidens || 0}</span>
+              <span className="w-[34px] shrink-0 text-right text-[#F5F5F7] text-[13px] font-extrabold tabular-nums">{b.runs}</span>
+              <span className="w-[24px] shrink-0 text-right text-[#0A84FF] text-[13px] font-extrabold tabular-nums">{b.wickets}</span>
+              <span className="w-[44px] shrink-0 text-right text-[#0A84FF] text-[13px] font-bold tabular-nums">{b.economy || b.econ || (b.runs / (b.overs || 1)).toFixed(1)}</span>
             </div>
           ))}
         </div>
@@ -5324,15 +5431,15 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               </div>
             )}
 
-            {/* Equal 5-Column Grid Tab Bar so Info, Scorecard, Summary, Overs, and Graphs align symmetrically */}
-            <div className="grid grid-cols-5 items-center bg-[#1C1C1E] rounded-[16px] p-1 mx-4 mb-4 border border-[rgba(255,255,255,0.08)] shrink-0">
+            {/* Content-proportional flex-auto Tab Bar so visual spacing between Info, Scorecard, Summary, Overs, and Graphs is perfectly even */}
+            <div className="flex items-center gap-1 bg-[#1C1C1E] rounded-[16px] p-1 mx-4 mb-4 border border-[rgba(255,255,255,0.08)] shrink-0">
               {CRICKET_MATCH_TABS.map(t => {
                 const active = activeTab === t.id;
                 return (
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`min-w-0 py-2.5 px-1 rounded-[12px] text-[11px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                    className={`flex-auto whitespace-nowrap py-2.5 px-2 rounded-[12px] text-[11px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {t.label}
                   </button>
@@ -5392,7 +5499,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
 
 const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
   const { closing, handleClose } = useSmoothDismiss(onClose);
-  const sumUrl = `${API_SOCCER_SCORE_BASE}/${match?._leagueId || 'all'}/summary?event=${match?.id}`;
+  const resolvedLeagueId = match?._leagueId || match?.league?.slug || match?.competitions?.[0]?.league?.slug || 'all';
+  const sumUrl = `${API_SOCCER_SCORE_BASE}/${resolvedLeagueId}/summary?event=${match?.id}`;
   const [summary, setSummary] = useState(() => match?.id ? getCachedSync(sumUrl) : null);
   const [tab, setTab] = useState('lineup');
 
@@ -5401,10 +5509,34 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
     try {
       const data = await fetchWithCache(sumUrl, isSilent);
       setSummary(data);
+
+      // Some leagues expose fuller commentary on the league-specific slug or /all summary endpoint
+      const hasComm = Array.isArray(data?.commentary) && data.commentary.length > 0;
+      if (!hasComm) {
+        const headerSlug = data?.header?.league?.slug || '';
+        const altLeague = resolvedLeagueId === 'all'
+          ? (headerSlug || null)
+          : 'all';
+        if (altLeague && altLeague !== resolvedLeagueId) {
+          fetchWithCache(`${API_SOCCER_SCORE_BASE}/${altLeague}/summary?event=${match.id}`, isSilent)
+            .then(altData => {
+              if (!altData) return;
+              const altComm = Array.isArray(altData.commentary) && altData.commentary.length > 0 ? altData.commentary : null;
+              const altKey = Array.isArray(altData.keyEvents) && altData.keyEvents.length > 0 ? altData.keyEvents : null;
+              if (altComm || (altKey && (!data?.keyEvents || data.keyEvents.length === 0))) {
+                setSummary(prev => ({
+                  ...(prev || data || {}),
+                  ...(altComm ? { commentary: altComm } : {}),
+                  ...(altKey && (!prev?.keyEvents || prev.keyEvents.length === 0) ? { keyEvents: altKey } : {})
+                }));
+              }
+            }).catch(() => {});
+        }
+      }
     } catch {
       if (!isSilent) setSummary(prev => prev || {});
     }
-  }, [match?.id, sumUrl]);
+  }, [match?.id, sumUrl, resolvedLeagueId]);
 
   useEffect(() => {
     fetchActiveDetails(false);
@@ -5433,7 +5565,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
 
         <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hComp?.team, match._leagueId, null, 'soccer')}>
-            <img src={getSafeFootballLogo(hComp?.team)} onError={(e) => handleImageError(e, hComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
+            <img src={getSafeFootballLogo(hComp?.team)} onError={(e) => handleImageError(e, hComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain logo-on-dark" alt="" />
             <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{hComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore}</span>
@@ -5445,7 +5577,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
           </div>
 
           <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aComp?.team, match._leagueId, null, 'soccer')}>
-            <img src={getSafeFootballLogo(aComp?.team)} onError={(e) => handleImageError(e, aComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain" alt="" />
+            <img src={getSafeFootballLogo(aComp?.team)} onError={(e) => handleImageError(e, aComp?.team?.shortDisplayName)} className="w-[68px] h-[68px] object-contain logo-on-dark" alt="" />
             <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{aComp?.team?.shortDisplayName}</span>
             <div className="h-[46px] flex flex-col items-center justify-start">
               <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{aScore}</span>
@@ -5453,14 +5585,14 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 items-center bg-[#1C1C1E] rounded-[16px] p-1 mx-4 mb-4 border border-[rgba(255,255,255,0.08)] shrink-0">
+        <div className="flex items-center gap-1 bg-[#1C1C1E] rounded-[16px] p-1 mx-4 mb-4 border border-[rgba(255,255,255,0.08)] shrink-0">
           {['lineup', 'commentary', 'stats'].map(t => {
             const active = tab === t;
             return (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`py-2.5 px-2 rounded-[12px] text-[12px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                className={`flex-auto whitespace-nowrap py-2.5 px-3 rounded-[12px] text-[12px] leading-none text-center transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
               >
                 {capitalize(t)}
               </button>
@@ -5551,36 +5683,27 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
             </div>
           )}
 
-          {tab === 'commentary' && (
-            (!summary?.commentary && !summary?.keyEvents) ? (
-              <EmptyState icon={MessageSquare} title="No Commentary" message="Live commentary stream is offline." />
-            ) : (
+          {tab === 'commentary' && (() => {
+            if (!summary) return <WhitePillLoader className="py-16" />;
+            const timelineItems = buildFootballCommentaryTimeline(summary, match, hComp, aComp);
+            if (timelineItems.length === 0) {
+              return <EmptyState icon={MessageSquare} title="No Commentary" message="Commentary and key match events will appear once play begins." />;
+            }
+            return (
               <div className="px-5 pb-10">
-                {(() => {
-                  const rawList = [...(summary?.commentary || summary?.keyEvents || [])];
-                  const parseMin = (it) => {
-                    const t = extractFootballTime(it).replace(/[’']/g, '');
-                    const parts = t.split('+').map(n => parseInt(n, 10) || 0);
-                    return (parts[0] || 0) * 100 + (parts[1] || 0);
-                  };
-                  if (rawList.length > 1 && parseMin(rawList[0]) < parseMin(rawList[rawList.length - 1])) {
-                    rawList.reverse();
-                  }
-                  return rawList;
-                })().map((item, index) => {
+                {timelineItems.map((item, index) => {
                   const txt = String(item.text || item.shortText || "").toLowerCase();
-                  const time = extractFootballTime(item);
+                  const time = item.timeStr || extractFootballTime(item);
                   let meta = { icon: Clock, color: THEME.muted, label: 'Match' };
-                  if (txt.includes('goal')) meta = { icon: CircleDashed, color: THEME.accent, label: 'Goal' };
+                  if (item._kind === 'goal' || txt.includes('goal')) meta = { icon: CircleDashed, color: THEME.success, label: 'Goal' };
                   else if (txt.includes('free kick')) meta = { icon: Mic, color: THEME.freekick, label: 'Free Kick' };
-                  else if (txt.includes('miss') || txt.includes('shot')) meta = { icon: Target, color: THEME.shot, label: 'Chance' };
-                  else if (txt.includes('yellow')) meta = { icon: Square, color: THEME.warning, label: 'Caution' };
-                  else if (txt.includes('red')) meta = { icon: Square, color: THEME.danger, label: 'Red Card' };
-                  else if (txt.includes('substitut')) meta = { icon: ArrowRightLeft, color: THEME.muted, label: 'Sub' };
+                  else if (txt.includes('miss') || txt.includes('shot') || txt.includes('attempt') || txt.includes('saved')) meta = { icon: Target, color: THEME.shot, label: 'Chance' };
+                  else if (item._kind === 'red' || txt.includes('red card') || txt.includes('sent off')) meta = { icon: Square, color: THEME.danger, label: 'Red Card' };
+                  else if (item._kind === 'yellow' || txt.includes('yellow')) meta = { icon: Square, color: THEME.warning, label: 'Caution' };
+                  else if (item._kind === 'sub' || txt.includes('substitut')) meta = { icon: ArrowRightLeft, color: THEME.accent, label: 'Sub' };
                   else if (txt.includes('offside')) meta = { icon: Flag, color: THEME.offside, label: 'Offside' };
                   else if (txt.includes('foul')) meta = { icon: AlertCircle, color: THEME.danger, label: 'Foul' };
                   const IconComp = meta.icon;
-
                   const minuteStamp = time || "0’";
 
                   return (
@@ -5594,6 +5717,9 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
                       </div>
                       <div className="flex-1 bg-[#121212] p-5 rounded-[24px] mb-6 border border-[rgba(255,255,255,0.08)]">
                         <div className="flex items-center gap-2 mb-2">
+                          {item.teamLogo && (
+                            <img src={item.teamLogo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, item.teamName)} className="w-4 h-4 object-contain shrink-0 logo-badge-dark" alt="" />
+                          )}
                           <span className="text-[11px] font-extrabold uppercase break-words" style={{ color: meta.color }}>{meta.label}</span>
                         </div>
                         <p className="text-[#F5F5F7] text-[14px] leading-[22px] font-medium text-left">{item.text || item.shortText}</p>
@@ -5602,8 +5728,8 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
                   );
                 })}
               </div>
-            )
-          )}
+            );
+          })()}
         </div>
       </div>
     </div>
@@ -5884,7 +6010,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   </div>
                   <div className="flex items-center justify-between py-1">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                      <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-6 h-6 object-contain shrink-0 logo-on-dark" alt="" />
                       <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{h.short_name || h.name}</span>
                     </div>
                     <div className="text-right">
@@ -5894,7 +6020,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   </div>
                   <div className="flex items-center justify-between py-1 mt-1">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                      <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-6 h-6 object-contain shrink-0 logo-on-dark" alt="" />
                       <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{a.short_name || a.name}</span>
                     </div>
                     <div className="text-right">
@@ -5939,7 +6065,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
 
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex flex-col items-center px-5 shrink-0">
-            <img src={getCricketLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
+            <img src={getCricketLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2 logo-on-dark" alt="" />
             <h2 className="text-[22px] font-black text-[#F5F5F7] mb-4 text-center">{teamData.displayName}</h2>
 
             <div className="grid grid-cols-3 items-center bg-[#1C1C1E] rounded-[16px] p-1 w-full mb-5 border border-[rgba(255,255,255,0.08)]">
@@ -6002,7 +6128,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   return (
                     <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
                       <div className="flex-1 flex flex-col items-center gap-1.5">
-                        <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain" alt="" />
+                        <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain logo-on-dark" alt="" />
                         <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{h.short_name || h.name}</span>
                       </div>
                       <div className="w-[120px] flex flex-col items-center justify-center">
@@ -6010,7 +6136,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                         <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.start_time, false)}</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center gap-1.5">
-                        <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain" alt="" />
+                        <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain logo-on-dark" alt="" />
                         <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{a.short_name || a.name}</span>
                       </div>
                     </div>
@@ -6272,7 +6398,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             <div className="flex flex-col items-center px-5 shrink-0">
-              <img src={getSafeFootballLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
+              <img src={getSafeFootballLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2 logo-on-dark" alt="" />
               <h2 className="text-[22px] font-black text-[#F5F5F7] mb-4 text-center">{teamData.displayName}</h2>
 
               <div className="grid grid-cols-3 items-center bg-[#1C1C1E] rounded-[16px] p-1 w-full mb-5 border border-[rgba(255,255,255,0.08)]">
@@ -6326,7 +6452,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                     return (
                       <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
                         <div className="flex-1 flex flex-col items-center gap-1.5">
-                          <img src={getSafeFootballLogo(h?.team)} onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain" alt="" />
+                          <img src={getSafeFootballLogo(h?.team)} onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain logo-on-dark" alt="" />
                           <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{h?.team?.shortDisplayName}</span>
                         </div>
                         <div className="w-[120px] flex flex-col items-center justify-center">
@@ -6334,7 +6460,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                           <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.date, false)}</span>
                         </div>
                         <div className="flex-1 flex flex-col items-center gap-1.5">
-                          <img src={getSafeFootballLogo(a?.team)} onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain" alt="" />
+                          <img src={getSafeFootballLogo(a?.team)} onError={(e) => handleImageError(e, a?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain logo-on-dark" alt="" />
                           <span className="text-[11px] font-bold text-[#F5F5F7] text-center">{a?.team?.shortDisplayName}</span>
                         </div>
                       </div>
