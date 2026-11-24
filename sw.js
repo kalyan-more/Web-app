@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sideline-pwa-v74';
+const CACHE_NAME = 'sideline-pwa-v68';
 const LOGO_CACHE_NAME = 'sideline-logos-swr-v1';
 const ASSETS = [
   './',
@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.hostname.includes('espn.com') || url.hostname.includes('espncricinfo.com') || url.hostname.includes('onrender.com') || url.hostname.includes('rss2json.com')) {
+  if (url.hostname.includes('espn.com') || url.hostname.includes('onrender.com') || url.hostname.includes('rss2json.com')) {
     event.respondWith(
       fetch(req).catch(() => caches.match(req))
     );
