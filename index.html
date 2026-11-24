@@ -972,6 +972,15 @@ const isSameDay = (d1, d2) => {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 };
 
+const toLocalIsoDate = (d) => {
+  const dt = d instanceof Date ? d : new Date(d);
+  if (isNaN(dt)) return '';
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, '0');
+  const day = String(dt.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 const decodeEntities = (str) => {
   if (!str) return '';
   return String(str).replace(/&dagger;/ig, '†').replace(/&amp;/ig, '&').replace(/&nbsp;/g, ' ').replace(/&copy;/ig, '©').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&ast;/ig, '*').replace(/\+/g, '');
@@ -1549,8 +1558,12 @@ const extractDetailedFootballEvents = (summary, homeComp, awayComp) => {
 
   const parseMinuteNum = (clockStr) => {
     if (!clockStr) return 0;
-    const m = String(clockStr).match(/(\d+)/);
-    return m ? parseInt(m[1], 10) : 0;
+    const cleaned = String(clockStr).replace(/[’′]/g, "'");
+    const m = cleaned.match(/(\d+)(?:\s*\+\s*(\d+))?/);
+    if (!m) return 0;
+    const base = parseInt(m[1], 10) || 0;
+    const added = m[2] ? (parseInt(m[2], 10) || 0) : 0;
+    return base * 100 + added;
   };
 
   const rawEvents = [
@@ -2354,11 +2367,23 @@ const getStartingEleven = (teamRoster) => {
   });
 
   const explicitStarters = deduped.filter(p => p?.starter === true);
+  const hasAnyExplicitStarterFlag = deduped.some(p => typeof p?.starter === 'boolean');
   if (explicitStarters.length >= 11) {
     return explicitStarters.slice(0, 11);
   }
-  const nonStarters = deduped.filter(p => p?.starter !== true);
-  return [...explicitStarters, ...nonStarters].slice(0, 11);
+  // If ESPN marks starters cleanly (or flags subs with starter: false), never pad with bench subs
+  if (explicitStarters.length >= 7 || (hasAnyExplicitStarterFlag && explicitStarters.length > 0)) {
+    return explicitStarters;
+  }
+  // Fallback only when ESPN omits the starter boolean across the entire roster
+  const withFormationPlace = deduped.filter(p => {
+    const fp = parseInt(String(p?.formationPlace ?? "").replace(/[^\d]/g, ""), 10);
+    return !isNaN(fp) && fp >= 1 && fp <= 11;
+  });
+  if (withFormationPlace.length >= 7) {
+    return withFormationPlace.slice(0, 11);
+  }
+  return deduped.slice(0, 11);
 };
 
 /**
@@ -2378,12 +2403,12 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
   ) {
     roleTier = 1;
   } else if (
-    ["ST", "CF", "LS", "RS"].includes(abbr) ||
-    tag.includes("STRIKER") || tag.includes("CENTRE FORWARD") || tag.includes("CENTER FORWARD")
+    ["ST", "CF", "LS", "RS", "SS"].includes(abbr) ||
+    tag.includes("STRIKER") || tag.includes("CENTRE FORWARD") || tag.includes("CENTER FORWARD") || tag.includes("SECOND STRIKER")
   ) {
     roleTier = 4;
   } else if (
-    ["LW", "RW", "LF", "RF"].includes(abbr) ||
+    ["LW", "RW", "LF", "RF", "W"].includes(abbr) ||
     tag.includes("WING")
   ) {
     roleTier = 3;
@@ -2404,19 +2429,20 @@ const getDetailedPositionScore = (player, fallbackIdx = 0) => {
     roleTier = 2;
   }
 
-  // Guard against ESPN formationPlace / position tag drift when subPosition or position clearly indicates a deeper/higher line
+  // Guard against formationPlace vs. position/subPosition drift across midfield and attacking lines
   const subAbbr = String(player?.subPosition?.abbreviation || "").toUpperCase().trim();
   const posAbbr = String(player?.position?.abbreviation || "").toUpperCase().trim();
-  if (formationPlace === 11 && ["LM", "LCM", "CM", "LDM", "CDM", "DM", "RM", "RCM", "RDM"].includes(subAbbr || posAbbr)) {
+  const effectiveAbbr = subAbbr || posAbbr;
+  if (formationPlace === 11 && ["LM", "LCM", "CM", "LDM", "CDM", "DM", "RM", "RCM", "RDM"].includes(effectiveAbbr)) {
     roleTier = 2;
   }
-  if (formationPlace === 7 && ["RM", "RCM", "CM", "RDM", "CDM", "DM", "LM", "LCM", "LDM"].includes(subAbbr || posAbbr)) {
+  if (formationPlace === 7 && ["RM", "RCM", "CM", "RDM", "CDM", "DM", "LM", "LCM", "LDM"].includes(effectiveAbbr)) {
     roleTier = 2;
   }
-  if (formationPlace === 10 && ["CM", "LCM", "RCM", "CDM", "DM", "LDM", "RDM"].includes(subAbbr || posAbbr)) {
+  if (formationPlace === 10 && ["CM", "LCM", "RCM", "CDM", "DM", "LDM", "RDM"].includes(effectiveAbbr)) {
     roleTier = 2;
   }
-  if ([6, 8].includes(formationPlace) && ["LW", "RW", "LF", "RF", "ST", "CF", "LS", "RS"].includes(subAbbr || posAbbr)) {
+  if ([6, 8].includes(formationPlace) && ["LW", "RW", "LF", "RF", "ST", "CF", "LS", "RS", "SS", "CAM", "AM", "LAM", "RAM"].includes(effectiveAbbr)) {
     roleTier = 3;
   }
 
@@ -2526,6 +2552,40 @@ const ESPN_FORMATION_PLACE_TABLES = {
     3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 6: { row: 1, col: 3 }, 2: { row: 1, col: 4 },
     11: { row: 2, col: 0 }, 10: { row: 2, col: 1 }, 8: { row: 2, col: 2 }, 7: { row: 2, col: 3 },
     9: { row: 3, col: 0 }
+  },
+  "4-2-1-3": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    6: { row: 2, col: 0 }, 8: { row: 2, col: 1 },
+    10: { row: 3, col: 0 },
+    11: { row: 4, col: 0 }, 9: { row: 4, col: 1 }, 7: { row: 4, col: 2 }
+  },
+  "3-1-4-2": {
+    1: { row: 0, col: 0 },
+    4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
+    8: { row: 2, col: 0 },
+    3: { row: 3, col: 0 }, 11: { row: 3, col: 1 }, 10: { row: 3, col: 2 }, 2: { row: 3, col: 3 },
+    7: { row: 4, col: 0 }, 9: { row: 4, col: 1 }
+  },
+  "3-2-4-1": {
+    1: { row: 0, col: 0 },
+    4: { row: 1, col: 0 }, 5: { row: 1, col: 1 }, 6: { row: 1, col: 2 },
+    8: { row: 2, col: 0 }, 10: { row: 2, col: 1 },
+    3: { row: 3, col: 0 }, 11: { row: 3, col: 1 }, 7: { row: 3, col: 2 }, 2: { row: 3, col: 3 },
+    9: { row: 4, col: 0 }
+  },
+  "4-3-2-1": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    6: { row: 2, col: 0 }, 8: { row: 2, col: 1 }, 10: { row: 2, col: 2 },
+    11: { row: 3, col: 0 }, 7: { row: 3, col: 1 },
+    9: { row: 4, col: 0 }
+  },
+  "4-5-1": {
+    1: { row: 0, col: 0 },
+    3: { row: 1, col: 0 }, 4: { row: 1, col: 1 }, 5: { row: 1, col: 2 }, 2: { row: 1, col: 3 },
+    11: { row: 2, col: 0 }, 6: { row: 2, col: 1 }, 10: { row: 2, col: 2 }, 8: { row: 2, col: 3 }, 7: { row: 2, col: 4 },
+    9: { row: 3, col: 0 }
   }
 };
 
@@ -2534,27 +2594,45 @@ const buildDynamicPlaceTable = (formationRows) => {
   const lastRow = numOutfieldLines;
   const attRow = numOutfieldLines >= 4 ? numOutfieldLines - 1 : lastRow;
   const midRow = numOutfieldLines >= 3 ? 2 : 1;
+  const defLineCount = formationRows[1] || 4;
+  const isBackThree = defLineCount === 3;
 
   const baseMap = {
     1: { row: 0, lat: -999 },
-    3: { row: 1, lat: -100 },
+    3: { row: isBackThree && numOutfieldLines >= 3 ? midRow : 1, lat: -100 },
     4: { row: 1, lat: -30 },
-    5: { row: 1, lat: 30 },
-    2: { row: 1, lat: 100 },
-    6: { row: midRow, lat: -60 },
-    11: { row: numOutfieldLines >= 4 ? attRow : midRow, lat: -90 },
-    8: { row: midRow, lat: 0 },
-    10: { row: numOutfieldLines >= 3 ? attRow : midRow, lat: -15 },
-    7: { row: numOutfieldLines >= 3 ? attRow : lastRow, lat: 90 },
-    9: { row: lastRow, lat: 15 }
+    5: { row: 1, lat: isBackThree ? 0 : 30 },
+    2: { row: isBackThree && numOutfieldLines >= 3 ? midRow : 1, lat: 100 },
+    6: { row: isBackThree ? 1 : midRow, lat: isBackThree ? 35 : -55 },
+    11: { row: numOutfieldLines >= 4 ? attRow : midRow, lat: -85 },
+    8: { row: midRow, lat: isBackThree ? -25 : 25 },
+    10: { row: numOutfieldLines >= 3 ? attRow : midRow, lat: 0 },
+    7: { row: numOutfieldLines >= 3 ? attRow : lastRow, lat: 85 },
+    9: { row: lastRow, lat: 10 }
   };
 
+  // Respect exact row capacities in `formationRows` so no row overflows or underfills
+  const rowCapacities = formationRows.slice();
   const rowBuckets = Array.from({ length: formationRows.length }, () => []);
-  for (let fp = 1; fp <= 11; fp++) {
+  const orderedFps = [1, 3, 4, 5, 2, 6, 8, 10, 11, 7, 9];
+
+  orderedFps.forEach(fp => {
     const info = baseMap[fp] || { row: midRow, lat: 0 };
-    const clampedRow = Math.max(0, Math.min(lastRow, info.row));
-    rowBuckets[clampedRow].push({ fp, lat: info.lat });
-  }
+    let targetRow = Math.max(0, Math.min(lastRow, info.row));
+    if (rowBuckets[targetRow].length >= rowCapacities[targetRow]) {
+      // Find nearest row with available capacity
+      let bestRow = targetRow;
+      let bestDist = 999;
+      for (let r = 1; r <= lastRow; r++) {
+        if (rowBuckets[r].length < rowCapacities[r] && Math.abs(r - targetRow) < bestDist) {
+          bestDist = Math.abs(r - targetRow);
+          bestRow = r;
+        }
+      }
+      targetRow = bestRow;
+    }
+    rowBuckets[targetRow].push({ fp, lat: info.lat });
+  });
 
   const table = {};
   rowBuckets.forEach((bucket, rIdx) => {
@@ -2645,10 +2723,16 @@ const reconcileLineRoleSwaps = (grid) => {
   const attRowIdx = grid.length >= 5 ? grid.length - 2 : lastRowIdx;
 
   // 1. Reconcile defender vs. midfielder swap between row 1 and row 2
+  // (Skip swapping wingbacks LWB/RWB/LB/RB when row 2 is a 4- or 5-man wingback midfield in 3-4-2-1 / 3-5-2)
   const defRow = grid[1];
   const midRow = grid[2];
   if (Array.isArray(defRow) && Array.isArray(midRow)) {
-    const midIdx = midRow.findIndex(item => item && item.role && item.role.roleTier === 1);
+    const isWingbackMid = defRow.length === 3 && midRow.length >= 4;
+    const midIdx = midRow.findIndex(item => {
+      if (!item?.role || item.role.roleTier !== 1) return false;
+      if (isWingbackMid && ["LWB", "RWB", "LB", "RB"].includes(item.meta?.abbr)) return false;
+      return true;
+    });
     if (midIdx !== -1) {
       let defIdx = defRow.findIndex(item => item && item.role && item.role.roleTier === 2);
       if (defIdx === -1 && defRow.length >= 2) defIdx = 1;
@@ -2675,7 +2759,10 @@ const reconcileLineRoleSwaps = (grid) => {
 
       // Attacker (winger/forward, tier 3 or 4) placed in a non-attacking midfield line (tier 2)
       if (isMidLine && tier >= 3) {
-        // Look for a midfielder (tier 2) sitting in an attacking/forward row
+        // In 4-4-2 / 4-4-1-1 / 3-4-1-2, LM/RM belong in the wide midfield row (`r === 2`)
+        const isWideMidInFlatFour = r === 2 && grid[r].length >= 4 && ["LM", "RM"].includes(item.meta?.abbr);
+        if (isWideMidInFlatFour) continue;
+
         let swapTarget = null;
         for (const targetR of candidateAttRows) {
           const tIdx = grid[targetR].findIndex(cand => cand && cand.role && cand.role.roleTier === 2);
@@ -2696,7 +2783,11 @@ const reconcileLineRoleSwaps = (grid) => {
         let swapTarget = null;
         for (let deeperR = 2; deeperR < grid.length; deeperR++) {
           if (candidateAttRows.includes(deeperR)) continue;
-          const dIdx = grid[deeperR].findIndex(cand => cand && cand.role && cand.role.roleTier >= 3);
+          const dIdx = grid[deeperR].findIndex(cand => {
+            if (!cand?.role || cand.role.roleTier < 3) return false;
+            if (deeperR === 2 && grid[deeperR].length >= 4 && ["LM", "RM"].includes(cand.meta?.abbr)) return false;
+            return true;
+          });
           if (dIdx !== -1) {
             swapTarget = { r: deeperR, c: dIdx };
             break;
@@ -2712,17 +2803,49 @@ const reconcileLineRoleSwaps = (grid) => {
   }
 };
 
+const getRowLateralKey = (item, rIdx, rowLen) => {
+  const abbr = String(item?.meta?.abbr || '').toUpperCase().trim();
+  const pname = String(item?.meta?.pname || '').toUpperCase().trim();
+  const fp = item?.meta?.formationPlace;
+  const jn = item?.meta?.jerseyNum;
+  const tag = `${abbr} ${pname}`;
+
+  if (abbr === 'LB' || abbr === 'LWB' || tag.includes('LEFT BACK') || tag.includes('LEFT WINGBACK')) return -100;
+  if (abbr === 'LW' || abbr === 'LF' || tag.includes('LEFT WING') || tag.includes('LEFT FORWARD')) return -90;
+  if (abbr === 'LM' || tag.includes('LEFT MID')) return -80;
+  if (abbr === 'LAM' || tag.includes('LEFT ATTACKING MID')) return -60;
+  if (abbr === 'LCB' || abbr === 'LD' || tag.includes('LEFT CENTER BACK') || tag.includes('LEFT CENTRE BACK')) return -35;
+  if (abbr === 'LDM' || abbr === 'LCM' || tag.includes('LEFT DEFENSIVE MID') || tag.includes('LEFT CENTRAL MID')) return -25;
+  if (abbr === 'LS' || tag.includes('LEFT STRIKER')) return -20;
+
+  if (abbr === 'RS' || tag.includes('RIGHT STRIKER')) return 20;
+  if (abbr === 'RDM' || abbr === 'RCM' || tag.includes('RIGHT DEFENSIVE MID') || tag.includes('RIGHT CENTRAL MID')) return 25;
+  if (abbr === 'RCB' || abbr === 'RD' || tag.includes('RIGHT CENTER BACK') || tag.includes('RIGHT CENTRE BACK')) return 35;
+  if (abbr === 'RAM' || tag.includes('RIGHT ATTACKING MID')) return 60;
+  if (abbr === 'RM' || tag.includes('RIGHT MID')) return 80;
+  if (abbr === 'RW' || abbr === 'RF' || tag.includes('RIGHT WING') || tag.includes('RIGHT FORWARD')) return 90;
+  if (abbr === 'RB' || abbr === 'RWB' || tag.includes('RIGHT BACK') || tag.includes('RIGHT WINGBACK')) return 100;
+
+  if (item?.slot && typeof item.slot.col === 'number') {
+    const centeredCol = item.slot.col - ((rowLen - 1) / 2);
+    return centeredCol * 10;
+  }
+  const fpCenter = { 3: -95, 11: -85, 6: -20, 4: -30, 10: 0, 9: 0, 5: 30, 8: 20, 7: 85, 2: 95 };
+  if (fp && fpCenter[fp] !== undefined) return fpCenter[fp];
+  // Shirt-number lateral hint when both position side and formationPlace are absent
+  if (jn === 3 || jn === 11) return -45;
+  if (jn === 2 || jn === 7) return 45;
+  return (item?.idx ?? 0) * 0.01;
+};
+
 const sortRowsLeftToRight = (grid) => {
   return grid.map((rowItems, rIdx) => {
     if (rIdx === 0) return rowItems.map(x => x.player);
     const sorted = [...rowItems].sort((a, b) => {
-      const latA = getOptaLateralOrder(a);
-      const latB = getOptaLateralOrder(b);
-      if (Math.abs(latA - latB) > 2) return latA - latB;
-      const colA = a.slot ? a.slot.col : 0;
-      const colB = b.slot ? b.slot.col : 0;
-      if (colA !== colB) return colA - colB;
-      return a.idx - b.idx;
+      const latA = getRowLateralKey(a, rIdx, rowItems.length);
+      const latB = getRowLateralKey(b, rIdx, rowItems.length);
+      if (Math.abs(latA - latB) > 0.5) return latA - latB;
+      return (a.idx ?? 0) - (b.idx ?? 0);
     });
     return sorted.map(x => x.player);
   });
@@ -3116,8 +3239,11 @@ const TacticalPitch = memo(({ summary, home, away }) => {
   const awayPlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, false, away);
   const homePlayers = useFootballFormations(summary, pitchSize.width, HALF_HEIGHT, true, home);
 
-  if (!summary?.rosters) {
+  if (!summary) {
     return <WhitePillLoader className="py-16" />;
+  }
+  if (!Array.isArray(summary.rosters) || summary.rosters.length === 0) {
+    return <EmptyState icon={Users} title="Lineups Pending" message="Confirmed starting XIs will appear once announced." />;
   }
 
   return (
@@ -6142,7 +6268,7 @@ function App() {
   }, []);
 
   const fetchFootballMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
-    const ds = date.toISOString().split('T')[0].replace(/-/g, '');
+    const ds = toLocalIsoDate(date).replace(/-/g, '');
     const cachedEvents = [];
     if (!forceRefresh) {
       FOOTBALL_LEAGUES.forEach(l => {
@@ -6174,7 +6300,7 @@ function App() {
   }, [date]);
 
   const fetchCricketMatches = useCallback(async (isSilent = false, forceRefresh = false) => {
-    const selectedDateStr = date.toISOString().split('T')[0];
+    const selectedDateStr = toLocalIsoDate(date);
     const selectedDateObj = new Date(selectedDateStr);
     const isViewingToday = isSameDay(date, new Date());
 
@@ -6691,7 +6817,7 @@ function App() {
           <div className="flex-1 flex flex-col">
             <DateSelector dates={dates} selectedDate={date} onSelectDate={handleSelectDateSmooth} />
             <div
-              key={`${activeSport}-${date.toISOString().split('T')[0]}`}
+              key={`${activeSport}-${toLocalIsoDate(date)}`}
               className={`px-4 pb-36 ${dateDir >= 0 ? 'schedule-load-next' : 'schedule-load-prev'}`}
             >
               {loading && (activeSport === 'soccer' ? footballMatches.length === 0 : cricketMatches.length === 0) ? (
