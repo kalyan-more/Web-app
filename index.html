@@ -16,6 +16,14 @@
   <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png" />
   <link rel="manifest" href="./manifest.json" />
 
+  <!-- Network Preconnects for Instant Launch & Live Feeds -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin />
+  <link rel="preconnect" href="https://site.api.espn.com" crossorigin />
+  <link rel="preconnect" href="https://a.espncdn.com" crossorigin />
+  <link rel="preconnect" href="https://cricket-api-1-1yo0.onrender.com" crossorigin />
+  <link rel="dns-prefetch" href="https://flagcdn.com" />
+
   <!-- Tailwind CSS & React Runtime -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/react@18.2.0/umd/react.production.min.js'"></script>
@@ -87,6 +95,7 @@
       backdrop-filter: blur(22px) saturate(170%);
       border: 1px solid rgba(255, 255, 255, 0.14);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 14px 30px rgba(0, 0, 0, 0.55);
+      transform: translate3d(-50%, 0, 0);
     }
 
     .liquid-glass-sheet {
@@ -97,11 +106,16 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 -14px 36px rgba(0, 0, 0, 0.65);
     }
 
-    /* Distinct, silky Apple UIKit GPU-only transitions (pure translate3d + opacity for 60/120fps WebKit) */
+    /* Fast-paint containment for scrollable cards */
+    .card-perf {
+      contain: layout style;
+    }
+
+    /* Silky Apple UIKit GPU-only transitions (pure translate3d + opacity for 60/120fps WebKit) */
     @keyframes iosSheetSlideUp {
       0% {
-        opacity: 0.5;
-        transform: translate3d(0, 44px, 0);
+        opacity: 0.65;
+        transform: translate3d(0, 34px, 0);
       }
       100% {
         opacity: 1;
@@ -116,7 +130,7 @@
       }
       100% {
         opacity: 0;
-        transform: translate3d(0, 48px, 0);
+        transform: translate3d(0, 36px, 0);
       }
     }
 
@@ -131,35 +145,29 @@
     }
 
     @keyframes iosTabFadeIn {
-      0% { opacity: 0; transform: translate3d(0, 5px, 0); }
+      0% { opacity: 0.45; transform: translate3d(0, 4px, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
-    /* Section-specific transitions */
-    @keyframes sectionHomeEnter {
-      0% { opacity: 0; transform: translate3d(0, 8px, 0); }
+    @keyframes sectionSlideNext {
+      0% { opacity: 0.42; transform: translate3d(14px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
-    @keyframes sectionScoresEnter {
-      0% { opacity: 0; transform: translate3d(8px, 0, 0); }
+    @keyframes sectionSlidePrev {
+      0% { opacity: 0.42; transform: translate3d(-14px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
-    @keyframes sectionStandingsEnter {
-      0% { opacity: 0; transform: translate3d(0, 8px, 0); }
-      100% { opacity: 1; transform: translate3d(0, 0, 0); }
-    }
-
-    @keyframes sectionIntelEnter {
-      0% { opacity: 0; transform: translate3d(-8px, 0, 0); }
+    @keyframes sectionFadeSoft {
+      0% { opacity: 0.48; transform: translate3d(0, 5px, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes iosExpandIn {
       0% {
-        opacity: 0;
-        transform: translate3d(0, 10px, 0) scale3d(0.992, 0.992, 1);
+        opacity: 0.35;
+        transform: translate3d(0, 8px, 0) scale3d(0.992, 0.992, 1);
       }
       100% {
         opacity: 1;
@@ -167,33 +175,37 @@
       }
     }
 
-    @keyframes iosOpeningIcon {
+    /* Ready-synced launch splash: crisp entrance on frame 1, silky exit once React paints */
+    @keyframes iosOpeningIconIn {
       0% {
-        opacity: 0;
-        transform: scale3d(0.86, 0.86, 1);
-      }
-      22% {
         opacity: 0;
         transform: scale3d(0.88, 0.88, 1);
       }
-      55% {
-        opacity: 1;
-        transform: scale3d(1.01, 1.01, 1);
-      }
-      80% {
+      100% {
         opacity: 1;
         transform: scale3d(1, 1, 1);
       }
-      100% {
-        opacity: 0;
-        transform: scale3d(1.025, 1.025, 1);
-      }
     }
 
-    @keyframes iosOpeningOverlayFade {
-      0% { opacity: 1; }
-      74% { opacity: 1; }
-      100% { opacity: 0; }
+    .ios-opening-overlay {
+      opacity: 1;
+      transition: opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity;
+    }
+
+    .ios-opening-overlay.is-dismissing {
+      opacity: 0;
+    }
+
+    .ios-opening-icon {
+      animation: iosOpeningIconIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.20s ease-out;
+      will-change: transform, opacity;
+    }
+
+    .ios-opening-overlay.is-dismissing .ios-opening-icon {
+      opacity: 0;
+      transform: scale3d(1.04, 1.04, 1);
     }
 
     @keyframes whitePillBounce {
@@ -202,23 +214,34 @@
       100% { transform: translate3d(-18px, 0, 0) scaleX(0.92); }
     }
 
+    @keyframes bounceBar {
+      0% { transform: translate3d(-12px, 0, 0); }
+      50% { transform: translate3d(12px, 0, 0); }
+      100% { transform: translate3d(-12px, 0, 0); }
+    }
+
     @keyframes liveClockPulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.48; }
     }
 
-    .ios-opening-overlay {
-      animation: iosOpeningOverlayFade 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      will-change: opacity;
+    @keyframes loaderFadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
     }
 
-    .ios-opening-icon {
-      animation: iosOpeningIcon 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      will-change: transform, opacity;
+    .loader-fade-in {
+      opacity: 0;
+      animation: loaderFadeIn 0.16s ease-out 0.10s forwards;
     }
 
     .white-pill-bounce {
-      animation: whitePillBounce 1.45s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      animation: whitePillBounce 1.35s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      will-change: transform;
+    }
+
+    .animate-bounce-bar {
+      animation: bounceBar 1.75s cubic-bezier(0.37, 0, 0.63, 1) infinite;
       will-change: transform;
     }
 
@@ -228,55 +251,55 @@
     }
 
     .ios-sheet-up {
-      animation: iosSheetSlideUp 0.30s cubic-bezier(0.32, 0.72, 0, 1) both;
+      animation: iosSheetSlideUp 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
       will-change: transform, opacity;
       backface-visibility: hidden;
     }
 
     .ios-sheet-down {
-      animation: iosSheetSlideDown 0.19s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+      animation: iosSheetSlideDown 0.145s cubic-bezier(0.32, 0.72, 0, 1) forwards;
       will-change: transform, opacity;
       backface-visibility: hidden;
     }
 
     .ios-backdrop-in {
-      animation: iosBackdropFadeIn 0.22s ease-out both;
+      animation: iosBackdropFadeIn 0.18s ease-out both;
     }
 
     .ios-backdrop-out {
-      animation: iosBackdropFadeOut 0.18s ease-out forwards;
+      animation: iosBackdropFadeOut 0.14s ease-out forwards;
     }
 
     .ios-tab-fade {
-      animation: iosTabFadeIn 0.18s cubic-bezier(0.32, 0.72, 0, 1) both;
+      animation: iosTabFadeIn 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     @keyframes tabSlideNext {
-      0% { opacity: 0; transform: translate3d(22px, 0, 0); }
+      0% { opacity: 0.38; transform: translate3d(16px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes tabSlidePrev {
-      0% { opacity: 0; transform: translate3d(-22px, 0, 0); }
+      0% { opacity: 0.38; transform: translate3d(-16px, 0, 0); }
       100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     .tab-slide-next {
-      animation: tabSlideNext 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+      animation: tabSlideNext 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
       will-change: transform, opacity;
       backface-visibility: hidden;
     }
 
     .tab-slide-prev {
-      animation: tabSlidePrev 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+      animation: tabSlidePrev 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
       will-change: transform, opacity;
       backface-visibility: hidden;
     }
 
     @keyframes scheduleLoadNext {
       0% {
-        opacity: 0;
-        transform: translate3d(26px, 0, 0);
+        opacity: 0.35;
+        transform: translate3d(18px, 0, 0);
       }
       100% {
         opacity: 1;
@@ -286,8 +309,8 @@
 
     @keyframes scheduleLoadPrev {
       0% {
-        opacity: 0;
-        transform: translate3d(-26px, 0, 0);
+        opacity: 0.35;
+        transform: translate3d(-18px, 0, 0);
       }
       100% {
         opacity: 1;
@@ -295,52 +318,54 @@
       }
     }
 
-    .section-enter-home {
-      animation: sectionHomeEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
+    .section-slide-next {
+      animation: sectionSlideNext 0.19s cubic-bezier(0.22, 1, 0.36, 1) both;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
     }
 
-    .section-enter-scores {
-      animation: sectionScoresEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
+    .section-slide-prev {
+      animation: sectionSlidePrev 0.19s cubic-bezier(0.22, 1, 0.36, 1) both;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
     }
 
-    .section-enter-standings {
-      animation: sectionStandingsEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
-    }
-
-    .section-enter-intel {
-      animation: sectionIntelEnter 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
+    .section-fade-soft {
+      animation: sectionFadeSoft 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
     }
 
     .schedule-load-next {
-      animation: scheduleLoadNext 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+      animation: scheduleLoadNext 0.19s cubic-bezier(0.22, 1, 0.36, 1) both;
       will-change: transform, opacity;
       backface-visibility: hidden;
     }
 
     .schedule-load-prev {
-      animation: scheduleLoadPrev 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+      animation: scheduleLoadPrev 0.19s cubic-bezier(0.22, 1, 0.36, 1) both;
       will-change: transform, opacity;
       backface-visibility: hidden;
     }
 
     .ios-expand-in {
-      animation: iosExpandIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: iosExpandIn 0.20s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .ios-card-press {
       touch-action: manipulation;
-      transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease;
+      transition: transform 0.10s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.10s ease;
     }
     .ios-card-press:active {
-      transform: scale3d(0.978, 0.978, 1);
+      transform: scale3d(0.982, 0.982, 1);
     }
 
     button {
       touch-action: manipulation;
-      transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+      transition: transform 0.095s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
     }
     button:active {
-      transform: scale3d(0.964, 0.964, 1);
+      transform: scale3d(0.968, 0.968, 1);
     }
   </style>
 </head>
@@ -358,7 +383,7 @@
     }
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/@babel/standalone@7.24.7/babel.min.js'"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/@babel/standalone@7.24.7/babel.min.js'"></script>
   <script type="text/plain" id="sideline-jsx">
 const { useState, useEffect, useCallback, useMemo, useRef, useTransition, memo } = React;
 
@@ -1212,7 +1237,7 @@ const scheduleCachePersist = () => {
         localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify(obj));
       } catch {}
     }, 300);
-  }, 1200);
+  }, 2200);
 };
 
 const getCachedSync = (url) => {
@@ -1276,16 +1301,16 @@ const prewarmSportsAPIs = () => {
       });
       fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
       fetchWithCache(`${API_CRICKET_BASE}/live`, false, 25000).catch(() => {});
-    }, 250);
-  }, 1450);
+    }, 120);
+  }, 260);
 
   setTimeout(() => {
     runWhenIdle(() => {
       fetchWithCache(`${API_SOCCER_STANDINGS_BASE}/eng.1/standings`).catch(() => {});
       fetchWithCache(`${API_CRICKET_BASE}/standings`).catch(() => {});
       fetchWithCache(`${API_SOCCER_SCORE_BASE}/eng.1/news`).catch(() => {});
-    }, 400);
-  }, 3600);
+    }, 250);
+  }, 1050);
 };
 prewarmSportsAPIs();
 
@@ -3150,12 +3175,8 @@ const isInsideHorizontalScroller = (target, stopEl) => {
   let node = target;
   while (node && node !== stopEl && node !== document.body) {
     if (node.dataset && node.dataset.noSectionSwipe === 'true') return true;
-    if (node.nodeType === 1) {
-      const style = window.getComputedStyle ? window.getComputedStyle(node) : null;
-      const ox = style ? style.overflowX : '';
-      if ((ox === 'auto' || ox === 'scroll') && node.scrollWidth > node.clientWidth + 6) {
-        return true;
-      }
+    if (node.nodeType === 1 && node.classList && (node.classList.contains('overflow-x-auto') || node.classList.contains('ios-momentum'))) {
+      if (node.scrollWidth > node.clientWidth + 6) return true;
     }
     node = node.parentElement;
   }
@@ -3166,7 +3187,7 @@ const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
   const { onBoundaryPrev = null, onBoundaryNext = null, stopPropagation = false } = options;
   const contentRef = useRef(null);
   const [swipeDir, setSwipeDir] = useState(0);
-  const touchRef = useRef({ active: false, locked: false, startX: 0, startY: 0, dx: 0, rafId: null });
+  const touchRef = useRef({ active: false, locked: false, startX: 0, startY: 0, startTime: 0, dx: 0, rafId: null });
 
   const selectWithDir = useCallback((nextVal) => {
     const curIdx = items.indexOf(activeValue);
@@ -3182,7 +3203,12 @@ const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
     if (isInsideHorizontalScroller(e.target, e.currentTarget)) return;
     if (stopPropagation) e.stopPropagation();
     const t = e.touches[0];
-    touchRef.current = { active: true, locked: false, startX: t.clientX, startY: t.clientY, dx: 0, rafId: null };
+    if (contentRef.current) {
+      contentRef.current.style.transition = '';
+      contentRef.current.style.transform = '';
+      contentRef.current.style.opacity = '';
+    }
+    touchRef.current = { active: true, locked: false, startX: t.clientX, startY: t.clientY, startTime: performance.now(), dx: 0, rafId: null };
   }, [stopPropagation]);
 
   const onTouchMove = useCallback((e) => {
@@ -3193,8 +3219,8 @@ const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
     const dy = t.clientY - g.startY;
 
     if (!g.locked) {
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      if (Math.abs(dx) > Math.abs(dy) * 1.4) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.25) {
         g.locked = true;
       } else {
         g.active = false;
@@ -3211,11 +3237,11 @@ const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
         const curIdx = items.indexOf(activeValue);
         const canGoNext = curIdx < items.length - 1 || Boolean(onBoundaryNext);
         const canGoPrev = curIdx > 0 || Boolean(onBoundaryPrev);
-        const factor = (g.dx < 0 && !canGoNext) || (g.dx > 0 && !canGoPrev) ? 0.14 : 0.34;
-        const dragX = Math.max(-68, Math.min(68, g.dx * factor));
+        const factor = (g.dx < 0 && !canGoNext) || (g.dx > 0 && !canGoPrev) ? 0.12 : 0.36;
+        const dragX = Math.max(-64, Math.min(64, g.dx * factor));
         el.style.transition = 'none';
         el.style.transform = `translate3d(${dragX}px, 0, 0)`;
-        el.style.opacity = String(Math.max(0.76, 1 - Math.abs(dragX) / 240));
+        el.style.opacity = String(Math.max(0.78, 1 - Math.abs(dragX) / 260));
       });
     }
   }, [items, activeValue, onBoundaryNext, onBoundaryPrev, stopPropagation]);
@@ -3227,14 +3253,14 @@ const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
       cancelAnimationFrame(g.rafId);
       g.rafId = null;
     }
-    const { locked, dx, startX } = g;
+    const { locked, dx, startX, startTime } = g;
     g.active = false;
     g.locked = false;
 
     const el = contentRef.current;
     const resetEl = () => {
       if (!el) return;
-      el.style.transition = 'transform 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
+      el.style.transition = 'transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.13s ease';
       el.style.transform = '';
       el.style.opacity = '';
     };
@@ -3245,15 +3271,21 @@ const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
     }
     if (stopPropagation && e) e.stopPropagation();
 
+    const dt = Math.max(16, performance.now() - startTime);
+    const vx = dx / dt;
     const curIdx = items.indexOf(activeValue);
-    // Left-edge swipe-right can always trigger boundary prev (e.g., modal close)
-    if (dx > 72 && startX <= 26 && onBoundaryPrev && curIdx === 0) {
-      resetEl();
+
+    // Velocity-aware flick or distance threshold so fast thumb gestures respond immediately
+    const isNext = dx < -42 || (dx < -20 && vx < -0.34);
+    const isPrev = dx > 42 || (dx > 20 && vx > 0.34);
+
+    if (dx > 58 && startX <= 28 && onBoundaryPrev && curIdx === 0) {
+      if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
       onBoundaryPrev();
       return;
     }
 
-    if (dx < -48) {
+    if (isNext) {
       if (curIdx >= 0 && curIdx < items.length - 1) {
         if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
         setSwipeDir(1);
@@ -3264,13 +3296,13 @@ const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
         onBoundaryNext();
         return;
       }
-    } else if (dx > 48) {
+    } else if (isPrev) {
       if (curIdx > 0) {
         if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
         setSwipeDir(-1);
         onSelect(items[curIdx - 1]);
         return;
-      } else if (onBoundaryPrev && dx > 62) {
+      } else if (onBoundaryPrev && (dx > 54 || vx > 0.48)) {
         if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
         onBoundaryPrev();
         return;
@@ -3299,13 +3331,13 @@ const useSmoothDismiss = (onClose) => {
     setClosing(true);
     timerRef.current = setTimeout(() => {
       onClose();
-    }, 185);
+    }, 145);
   }, [closing, onClose]);
   return { closing, handleClose };
 };
 
 const WhitePillLoader = memo(({ className = "py-12" }) => (
-  <div className={`w-full flex items-center justify-center ${className}`}>
+  <div className={`w-full flex items-center justify-center loader-fade-in ${className}`}>
     <div className="w-[56px] h-[6px] rounded-full bg-white/10 overflow-hidden flex items-center justify-center relative">
       <div className="w-[20px] h-[6px] rounded-full bg-[#F5F5F7] shadow-[0_0_10px_rgba(255,255,255,0.45)] white-pill-bounce" />
     </div>
@@ -3354,8 +3386,8 @@ const DuelStat = memo(({ label, homeVal, awayVal }) => {
         <span className="text-[#F5F5F7] text-[18px] font-extrabold min-w-[65px] text-right tabular-nums">{awayVal}</span>
       </div>
       <div className="h-[4px] bg-[#000000] rounded-[2px] flex overflow-hidden">
-        <div className="h-full bg-[#F5F5F7] border-r border-[#000000] transition-all duration-300" style={{ width: `${hPerc}%` }} />
-        <div className="h-full bg-[#2C2C2E] transition-all duration-300" style={{ width: `${100 - hPerc}%` }} />
+        <div className="h-full bg-[#F5F5F7] border-r border-[#000000] transition-[width] duration-200 ease-out" style={{ width: `${hPerc}%` }} />
+        <div className="h-full bg-[#2C2C2E] transition-[width] duration-200 ease-out" style={{ width: `${100 - hPerc}%` }} />
       </div>
     </div>
   );
@@ -4179,7 +4211,7 @@ const NewsCard = memo(({ item }) => {
   const sourceLabel = item.source || 'ESPN';
 
   return (
-    <article className="liquid-glass rounded-[26px] overflow-hidden mb-4 ios-card-press w-full">
+    <article className="liquid-glass card-perf rounded-[26px] overflow-hidden mb-4 ios-card-press w-full">
       {heroImg && (
         <div className="relative w-full h-[168px] overflow-hidden bg-[#1C1C1E]">
           <img
@@ -4193,12 +4225,12 @@ const NewsCard = memo(({ item }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F13] via-black/20 to-transparent" />
           <div className="absolute top-3 left-4 right-4 flex items-center justify-between gap-2">
             <span
-              className="px-2.5 py-1 rounded-[8px] text-[10px] font-extrabold tracking-[0.7px] uppercase backdrop-blur-md"
+              className="px-2.5 py-1 rounded-[8px] text-[10px] font-extrabold tracking-[0.7px] uppercase"
               style={{ backgroundColor: 'rgba(12,12,16,0.78)', color: tag.color, border: `1px solid ${tag.color}40` }}
             >
               {tag.label}
             </span>
-            <span className="px-2.5 py-1 rounded-[8px] text-[10px] font-bold text-[#F5F5F7] bg-black/65 backdrop-blur-md tabular-nums">
+            <span className="px-2.5 py-1 rounded-[8px] text-[10px] font-bold text-[#F5F5F7] bg-black/80 tabular-nums">
               {getRelativeTime(item.published)}
             </span>
           </div>
@@ -4262,7 +4294,7 @@ const FootballMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideD
   const leagueLogo = getFootballLeagueLogo(match, leagueName);
 
   return (
-    <div onTouchStart={() => { if (match?.id) fetchWithCache(`${API_SOCCER_SCORE_BASE}/${match._leagueId || 'all'}/summary?event=${match.id}`).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
+    <div onTouchStart={() => { if (match?.id) fetchWithCache(`${API_SOCCER_SCORE_BASE}/${match._leagueId || 'all'}/summary?event=${match.id}`).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'soccer' })} className="bg-[#121212] card-perf rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h?.team, match._leagueId, null, 'soccer'); }}>
         <img src={getSafeFootballLogo(h?.team)} style={getDarkLogoStyle(h?.team)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h?.team?.shortDisplayName)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h?.team?.shortDisplayName || h?.team?.name}</span>
@@ -4304,7 +4336,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   const leagueLogo = getCricketLeagueLogo(match.league || match.series || match.title, match.league_logo);
 
   return (
-    <div onTouchStart={() => { if (match?.match_id) fetchWithCache(`${API_CRICKET_BASE}/match/${match.match_id}`, false, 10000).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
+    <div onTouchStart={() => { if (match?.match_id) fetchWithCache(`${API_CRICKET_BASE}/match/${match.match_id}`, false, 10000).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] card-perf rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
         <img src={getCricketLogo(h)} style={getCricketLogoStyle(h)} loading="lazy" decoding="async" onError={(e) => handleCricketImageError(e, h)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h.short_name || h.name}</span>
@@ -5400,17 +5432,21 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
       setDetailsLoading(false);
     }).catch(() => setDetailsLoading(false));
 
-    Promise.all([
-      fetchWithCache(`${API_CRICKET_BASE}/commentary/${id}`, isSilent).catch(() => null),
-      fetchWithCache(`${API_CRICKET_BASE}/ball-by-ball/${id}`, isSilent).catch(() => null)
-    ]).then(([textCommRes, commRes]) => {
-      const combined = textCommRes?.commentary || commRes?.timeline || [];
-      if (combined.length > 0) setMatchCommentary(combined);
-    });
+    const runSecondary = () => {
+      Promise.all([
+        fetchWithCache(`${API_CRICKET_BASE}/commentary/${id}`, isSilent).catch(() => null),
+        fetchWithCache(`${API_CRICKET_BASE}/ball-by-ball/${id}`, isSilent).catch(() => null)
+      ]).then(([textCommRes, commRes]) => {
+        const combined = textCommRes?.commentary || commRes?.timeline || [];
+        if (combined.length > 0) setMatchCommentary(combined);
+      });
 
-    fetchWithCache(`${API_CRICKET_BASE}/graphs/${id}`, isSilent).then(graphsRes => {
-      if (graphsRes?.graphs) setMatchGraphs(graphsRes.graphs);
-    }).catch(() => {});
+      fetchWithCache(`${API_CRICKET_BASE}/graphs/${id}`, isSilent).then(graphsRes => {
+        if (graphsRes?.graphs) setMatchGraphs(graphsRes.graphs);
+      }).catch(() => {});
+    };
+    if (isSilent) runSecondary();
+    else setTimeout(runSecondary, 140);
   }, [id]);
 
   useEffect(() => {
@@ -5958,7 +5994,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
                   <button
                     key={t.id}
                     onClick={() => cmSwipe.selectWithDir(t.id)}
-                    className={`flex-auto py-2.5 px-2 rounded-[12px] text-[11px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                    className={`flex-auto py-2.5 px-2 rounded-[12px] text-[11px] leading-none text-center whitespace-nowrap transition-colors duration-150 ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {t.label}
                   </button>
@@ -6115,7 +6151,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
               <button
                 key={t}
                 onClick={() => fmSwipe.selectWithDir(t)}
-                className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-colors duration-150 ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
               >
                 {capitalize(t)}
               </button>
@@ -6604,7 +6640,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   <button
                     key={t}
                     onClick={() => ctSwipe.selectWithDir(t)}
-                    className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                    className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-colors duration-150 ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {capitalize(t)}
                   </button>
@@ -6944,7 +6980,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                     <button
                       key={t}
                       onClick={() => ftSwipe.selectWithDir(t)}
-                      className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
+                      className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-colors duration-150 ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                     >
                       {capitalize(t)}
                     </button>
@@ -7021,6 +7057,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
 function App() {
   const [activeSport, setActiveSport] = useState('soccer');
   const [view, setView] = useState('scores');
+  const [viewDir, setViewDir] = useState(0);
   const [date, setDate] = useState(() => new Date());
   const [dateDir, setDateDir] = useState(1);
 
@@ -7041,16 +7078,41 @@ function App() {
   const [refreshTick, setRefreshTick] = useState(0);
   const scheduleContainerRef = useRef(null);
 
-  const [pullDistance, setPullDistance] = useState(0);
+  // Zero-rerender Pull-to-Refresh DOM refs (60/120fps drag without calling setState)
+  const pullWrapRef = useRef(null);
+  const pullIconRef = useRef(null);
+  const pullTextRef = useRef(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const setPullVisual = useCallback((dy, animate = false) => {
+    const wrap = pullWrapRef.current;
+    if (!wrap) return;
+    wrap.style.transition = animate
+      ? 'height 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease'
+      : 'none';
+    wrap.style.height = `${dy}px`;
+    wrap.style.opacity = dy > 4 ? '1' : '0';
+    const progress = Math.min(1, dy / 54);
+    if (pullIconRef.current) {
+      pullIconRef.current.style.transform = `translate3d(0,0,0) rotate(${progress * 270}deg)`;
+    }
+    if (pullTextRef.current) {
+      pullTextRef.current.textContent = progress >= 1 ? 'RELEASE TO REFRESH' : 'PULL TO REFRESH';
+    }
+  }, []);
+
   useEffect(() => {
-    const el = document.getElementById('sideline-opening');
-    if (!el) return;
-    const timer = setTimeout(() => {
-      if (el && el.parentNode) el.parentNode.removeChild(el);
-    }, 1500);
-    return () => clearTimeout(timer);
+    if (isRefreshing) {
+      setPullVisual(50, true);
+    } else {
+      setPullVisual(0, true);
+    }
+  }, [isRefreshing, setPullVisual]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof window.__dismissSidelineSplash === 'function') {
+      window.__dismissSidelineSplash();
+    }
   }, []);
 
   const [activeMatch, setActiveMatch] = useState(null);
@@ -7595,6 +7657,23 @@ function App() {
     return () => { document.body.style.overflow = ''; };
   }, [activeMatch, activeTeam]);
 
+  const mainViews = useMemo(
+    () => (favoritesList.length > 0 ? ['home', 'scores', 'standings', 'intel'] : ['scores', 'standings', 'intel']),
+    [favoritesList.length]
+  );
+
+  const navigateToView = useCallback((nextView) => {
+    if (nextView === view) return;
+    const curIdx = mainViews.indexOf(view);
+    const nextIdx = mainViews.indexOf(nextView);
+    if (curIdx !== -1 && nextIdx !== -1) {
+      setViewDir(nextIdx > curIdx ? 1 : -1);
+    } else {
+      setViewDir(0);
+    }
+    setView(nextView);
+  }, [mainViews, view]);
+
   const handleGoBack = useCallback(() => {
     if (activeTeam) {
       setActiveTeam(null);
@@ -7607,31 +7686,42 @@ function App() {
     if (navHistoryRef.current.length > 0) {
       const prev = navHistoryRef.current.pop();
       prevViewRef.current = prev;
-      startTransition(() => setView(prev));
+      navigateToView(prev);
       return true;
     }
     return false;
-  }, [activeMatch, activeTeam, startTransition]);
+  }, [activeMatch, activeTeam, navigateToView]);
 
-  const mainViews = useMemo(
-    () => (favoritesList.length > 0 ? ['home', 'scores', 'standings', 'intel'] : ['scores', 'standings', 'intel']),
-    [favoritesList.length]
-  );
   const mainSectionRef = useRef(null);
   const stepMainView = useCallback((delta) => {
     const idx = mainViews.indexOf(view);
     if (idx === -1) return;
     const nextIdx = idx + delta;
     if (nextIdx >= 0 && nextIdx < mainViews.length) {
-      startTransition(() => setView(mainViews[nextIdx]));
+      setViewDir(delta >= 0 ? 1 : -1);
+      setView(mainViews[nextIdx]);
     }
-  }, [mainViews, view, startTransition]);
+  }, [mainViews, view]);
+
+  const warmSportOrView = useCallback((targetSport, targetView) => {
+    const sp = targetSport || activeSport;
+    const vw = targetView || view;
+    if (vw === 'standings') {
+      if (sp === 'soccer') fetchWithCache(`${API_SOCCER_STANDINGS_BASE}/eng.1/standings`).catch(() => {});
+      else fetchWithCache(`${API_CRICKET_BASE}/standings`).catch(() => {});
+    } else if (vw === 'intel') {
+      if (sp === 'soccer') fetchWithCache(`${API_SOCCER_SCORE_BASE}/eng.1/news`, false, 5500).catch(() => {});
+      else fetchWithCache(API_CRICKET_NEWS_ESPN, false, 5000).catch(() => {});
+    } else if (vw === 'scores' && sp === 'cricket') {
+      fetchWithCache(CRICKET_SCHEDULE_URL, false, 25000).catch(() => {});
+    }
+  }, [activeSport, view]);
 
   const sportBarSwipeRef = useRef(null);
   const bottomPillSwipeRef = useRef(null);
 
   const gestureStateRef = useRef({});
-  gestureStateRef.current = { activeMatch, activeTeam, view, activeSport, handleGoBack, stepScoreDate, stepMainView, triggerForceRefresh };
+  gestureStateRef.current = { activeMatch, activeTeam, view, activeSport, handleGoBack, stepScoreDate, stepMainView, triggerForceRefresh, setPullVisual };
 
   useEffect(() => {
     const scheduleFrame = () => {
@@ -7643,19 +7733,19 @@ function App() {
         const st = gestureStateRef.current;
         if (g.mode === 'horiz' && !st.activeMatch && !st.activeTeam && !g.inHorizScroll && !g.inSportBar && !g.inBottomPill) {
           if (st.view === 'scores' && scheduleContainerRef.current) {
-            const dragX = Math.max(-72, Math.min(72, g.dx * 0.34));
+            const dragX = Math.max(-64, Math.min(64, g.dx * 0.36));
             scheduleContainerRef.current.style.transition = 'none';
             scheduleContainerRef.current.style.transform = `translate3d(${dragX}px, 0, 0)`;
-            scheduleContainerRef.current.style.opacity = String(Math.max(0.72, 1 - Math.abs(dragX) / 220));
+            scheduleContainerRef.current.style.opacity = String(Math.max(0.76, 1 - Math.abs(dragX) / 250));
           } else if ((st.view === 'home' || st.view === 'intel') && mainSectionRef.current) {
             const canDrag = (st.view === 'home' && g.dx < 0) || (st.view === 'intel' && g.dx > 0);
-            const dragX = Math.max(-68, Math.min(68, g.dx * (canDrag ? 0.32 : 0.12)));
+            const dragX = Math.max(-60, Math.min(60, g.dx * (canDrag ? 0.34 : 0.12)));
             mainSectionRef.current.style.transition = 'none';
             mainSectionRef.current.style.transform = `translate3d(${dragX}px, 0, 0)`;
-            mainSectionRef.current.style.opacity = String(Math.max(0.78, 1 - Math.abs(dragX) / 250));
+            mainSectionRef.current.style.opacity = String(Math.max(0.80, 1 - Math.abs(dragX) / 260));
           }
         } else if (g.mode === 'pull' && g.dy > 0) {
-          setPullDistance(g.dy);
+          st.setPullVisual(g.dy, false);
         }
       });
     };
@@ -7673,11 +7763,22 @@ function App() {
       const inHorizScroll = isInsideHorizontalScroller(e.target, document.body);
       const inSportBar = Boolean(sportBarSwipeRef.current && sportBarSwipeRef.current.contains(e.target));
       const inBottomPill = Boolean(bottomPillSwipeRef.current && bottomPillSwipeRef.current.contains(e.target));
+      if (scheduleContainerRef.current) {
+        scheduleContainerRef.current.style.transition = '';
+        scheduleContainerRef.current.style.transform = '';
+        scheduleContainerRef.current.style.opacity = '';
+      }
+      if (mainSectionRef.current) {
+        mainSectionRef.current.style.transition = '';
+        mainSectionRef.current.style.transform = '';
+        mainSectionRef.current.style.opacity = '';
+      }
       gestureRef.current = {
         active: true,
         mode: null,
         startX: t.clientX,
         startY: t.clientY,
+        startTime: performance.now(),
         dx: 0,
         dy: 0,
         atTop: scrollTop <= 2,
@@ -7698,8 +7799,8 @@ function App() {
       const dy = t.clientY - g.startY;
 
       if (!g.mode) {
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-        if (Math.abs(dx) > Math.abs(dy) * 1.45) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        if (Math.abs(dx) > Math.abs(dy) * 1.25) {
           g.mode = 'horiz';
         } else if (dy > 10 && g.atTop && Math.abs(dy) > Math.abs(dx) * 1.3) {
           g.mode = 'pull';
@@ -7715,7 +7816,7 @@ function App() {
           scheduleFrame();
         }
       } else if (g.mode === 'pull' && dy > 0) {
-        g.dy = Math.min(96, Math.pow(dy, 0.84));
+        g.dy = Math.min(92, Math.pow(dy, 0.84));
         scheduleFrame();
       }
     };
@@ -7728,22 +7829,27 @@ function App() {
         g.rafId = null;
       }
       const st = gestureStateRef.current;
-      const { mode, dx, dy, inHorizScroll, inSportBar, inBottomPill } = g;
+      const { mode, dx, dy, startTime, inHorizScroll, inSportBar, inBottomPill } = g;
       g.active = false;
       g.mode = null;
 
+      const dt = Math.max(16, performance.now() - (startTime || performance.now()));
+      const vx = dx / dt;
+      const isLeftFlick = dx < -42 || (dx < -20 && vx < -0.34);
+      const isRightFlick = dx > 42 || (dx > 20 && vx > 0.34);
+
       if (mainSectionRef.current) {
-        mainSectionRef.current.style.transition = 'transform 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
+        mainSectionRef.current.style.transition = 'transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.13s ease';
         mainSectionRef.current.style.transform = '';
         mainSectionRef.current.style.opacity = '';
       }
 
       if (mode === 'horiz') {
-        if (inSportBar && Math.abs(dx) > 36) {
-          startTransition(() => setActiveSport(dx < 0 ? 'cricket' : 'soccer'));
+        if (inSportBar && (Math.abs(dx) > 28 || Math.abs(vx) > 0.32)) {
+          setActiveSport(dx < 0 ? 'cricket' : 'soccer');
           return;
         }
-        if (inBottomPill && Math.abs(dx) > 36) {
+        if (inBottomPill && (Math.abs(dx) > 28 || Math.abs(vx) > 0.32)) {
           st.stepMainView(dx < 0 ? 1 : -1);
           return;
         }
@@ -7751,42 +7857,29 @@ function App() {
 
         const schedEl = scheduleContainerRef.current;
         if (st.view === 'scores') {
-          if (dx < -52) {
-            if (schedEl) {
-              schedEl.style.transition = 'transform 0.11s ease-out, opacity 0.10s ease-out';
-              schedEl.style.transform = 'translate3d(-34px, 0, 0)';
-              schedEl.style.opacity = '0';
-            }
-            setTimeout(() => {
-              if (schedEl) { schedEl.style.transition = ''; schedEl.style.transform = ''; schedEl.style.opacity = ''; }
-              st.stepScoreDate(1);
-            }, 90);
-          } else if (dx > 52) {
-            if (schedEl) {
-              schedEl.style.transition = 'transform 0.11s ease-out, opacity 0.10s ease-out';
-              schedEl.style.transform = 'translate3d(34px, 0, 0)';
-              schedEl.style.opacity = '0';
-            }
-            setTimeout(() => {
-              if (schedEl) { schedEl.style.transition = ''; schedEl.style.transform = ''; schedEl.style.opacity = ''; }
-              st.stepScoreDate(-1);
-            }, 90);
+          if (isLeftFlick) {
+            if (schedEl) { schedEl.style.transition = ''; schedEl.style.transform = ''; schedEl.style.opacity = ''; }
+            st.stepScoreDate(1);
+          } else if (isRightFlick) {
+            if (schedEl) { schedEl.style.transition = ''; schedEl.style.transform = ''; schedEl.style.opacity = ''; }
+            st.stepScoreDate(-1);
           } else if (schedEl) {
-            schedEl.style.transition = 'transform 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
-            schedEl.style.transform = 'translate3d(0, 0, 0)';
-            schedEl.style.opacity = '1';
+            schedEl.style.transition = 'transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.13s ease';
+            schedEl.style.transform = '';
+            schedEl.style.opacity = '';
           }
-        } else if (st.view === 'home' && dx < -52) {
+        } else if (st.view === 'home' && isLeftFlick) {
+          if (mainSectionRef.current) { mainSectionRef.current.style.transition = ''; mainSectionRef.current.style.transform = ''; mainSectionRef.current.style.opacity = ''; }
           st.stepMainView(1);
-        } else if (st.view === 'intel' && dx > 52) {
+        } else if (st.view === 'intel' && isRightFlick) {
+          if (mainSectionRef.current) { mainSectionRef.current.style.transition = ''; mainSectionRef.current.style.transform = ''; mainSectionRef.current.style.opacity = ''; }
           st.stepMainView(-1);
         }
       } else if (mode === 'pull') {
         if (dy >= 54) {
-          setPullDistance(0);
           st.triggerForceRefresh();
         } else {
-          setPullDistance(0);
+          st.setPullVisual(0, true);
         }
       }
     };
@@ -7820,10 +7913,10 @@ function App() {
   }, [view, activeSport, date, fetchFootballMatches, fetchCricketMatches]);
 
   const openMatchModal = useCallback((m) => {
-    setPullDistance(0);
+    setPullVisual(0, false);
     setActiveTeam(null);
     setActiveMatch(m);
-  }, []);
+  }, [setPullVisual]);
 
   const openTeamHub = useCallback((team, leagueId = null, existingStats = null, sportOverride = null, rank = null) => {
     if (!team) return;
@@ -7836,23 +7929,14 @@ function App() {
     });
   }, [activeSport]);
 
-  const pullVisibleHeight = isRefreshing ? 50 : pullDistance;
-  const pullProgress = Math.min(1, pullVisibleHeight / 54);
+  const sectionAnimClass = viewDir > 0 ? 'section-slide-next' : viewDir < 0 ? 'section-slide-prev' : 'section-fade-soft';
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes bounceBar { 0% { transform: translate3d(-12px, 0, 0); } 50% { transform: translate3d(12px, 0, 0); } 100% { transform: translate3d(-12px, 0, 0); } }
-        .animate-bounce-bar { animation: bounceBar 1.75s cubic-bezier(0.37, 0, 0.63, 1) infinite; will-change: transform; }
-      `}} />
-
       <div
-        style={{
-          height: `${pullVisibleHeight}px`,
-          opacity: pullVisibleHeight > 4 ? 1 : 0,
-          transition: pullDistance > 0 ? 'none' : 'height 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease'
-        }}
+        ref={pullWrapRef}
+        style={{ height: '0px', opacity: 0 }}
         className="w-full flex items-center justify-center overflow-hidden pointer-events-none shrink-0"
       >
         <div className="sport-bar-crisp px-4 py-2 rounded-full flex items-center gap-2.5">
@@ -7862,13 +7946,11 @@ function App() {
             </div>
           ) : (
             <>
-              <RefreshCw
-                size={13}
-                color={THEME.text}
-                style={{ transform: `translate3d(0,0,0) rotate(${pullProgress * 270}deg)` }}
-              />
-              <span className="text-[10px] font-extrabold tracking-[1px] text-[#F5F5F7] uppercase">
-                {pullProgress >= 1 ? 'Release to Refresh' : 'Pull to Refresh'}
+              <div ref={pullIconRef} className="flex items-center justify-center will-change-transform">
+                <RefreshCw size={13} color={THEME.text} />
+              </div>
+              <span ref={pullTextRef} className="text-[10px] font-extrabold tracking-[1px] text-[#F5F5F7] uppercase">
+                PULL TO REFRESH
               </span>
             </>
           )}
@@ -7878,24 +7960,22 @@ function App() {
       {/* SLEEK NON-BLURRED SPORT TOGGLE AT TOP */}
       <div ref={sportBarSwipeRef} className="flex sport-bar-crisp rounded-[22px] mx-4 mt-3 mb-3.5 p-1">
         <button
-          onClick={() => startTransition(() => {
-            setActiveSport('soccer');
-          })}
-          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-150 ${activeSport === 'soccer' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
+          onTouchStart={() => warmSportOrView('soccer', view)}
+          onClick={() => setActiveSport('soccer')}
+          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-colors duration-150 ${activeSport === 'soccer' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
         >
           ⚽ Football
         </button>
         <button
-          onClick={() => startTransition(() => {
-            setActiveSport('cricket');
-          })}
-          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-all duration-150 ${activeSport === 'cricket' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
+          onTouchStart={() => warmSportOrView('cricket', view)}
+          onClick={() => setActiveSport('cricket')}
+          className={`flex-1 py-3 rounded-[18px] text-[13px] transition-colors duration-150 ${activeSport === 'cricket' ? 'bg-[#242429] text-[#F5F5F7] font-extrabold shadow-sm border border-[rgba(255,255,255,0.12)]' : 'text-[#8E8E93] font-semibold border border-transparent'}`}
         >
           🏏 Cricket
         </button>
       </div>
 
-      <div ref={mainSectionRef} key={view === 'scores' ? `scores-${refreshTick}` : `${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col section-enter-${view}`}>
+      <div ref={mainSectionRef} key={view === 'scores' ? `scores-${refreshTick}` : `${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col ${sectionAnimClass}`}>
         {view === 'home' && (
           <div className="flex-1 px-4 pt-3 pb-40">
             
@@ -7969,19 +8049,19 @@ function App() {
         )}
       </div>
 
-      <div ref={bottomPillSwipeRef} className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
+      <div ref={bottomPillSwipeRef} className="fixed bottom-[35px] left-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
         {favoritesList.length > 0 && (
-          <button onClick={() => startTransition(() => setView('home'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+          <button onClick={() => navigateToView('home')} className="px-6 py-2.5 rounded-full">
             <Star size={26} color={view === 'home' ? THEME.text : THEME.muted} />
           </button>
         )}
-        <button onClick={() => startTransition(() => setView('scores'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+        <button onClick={() => navigateToView('scores')} className="px-6 py-2.5 rounded-full">
           <Activity size={26} color={view === 'scores' ? THEME.text : THEME.muted} />
         </button>
-        <button onClick={() => startTransition(() => setView('standings'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+        <button onTouchStart={() => warmSportOrView(activeSport, 'standings')} onClick={() => navigateToView('standings')} className="px-6 py-2.5 rounded-full">
           <Trophy size={26} color={view === 'standings' ? THEME.text : THEME.muted} />
         </button>
-        <button onClick={() => startTransition(() => setView('intel'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
+        <button onTouchStart={() => warmSportOrView(activeSport, 'intel')} onClick={() => navigateToView('intel')} className="px-6 py-2.5 rounded-full">
           <Zap size={26} color={view === 'intel' ? THEME.text : THEME.muted} />
         </button>
       </div>
@@ -8054,21 +8134,86 @@ root.render(
   </script>
   <script>
     (function bootSideline() {
+      const launchStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      let splashDismissed = false;
+      window.__dismissSidelineSplash = function() {
+        if (splashDismissed) return;
+        splashDismissed = true;
+        const el = document.getElementById('sideline-opening');
+        if (!el) return;
+        const elapsed = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - launchStart;
+        const waitMs = Math.max(0, 340 - elapsed);
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            el.classList.add('is-dismissing');
+            setTimeout(() => {
+              if (el && el.parentNode) el.parentNode.removeChild(el);
+            }, 260);
+          });
+        }, waitMs);
+      };
+      // Safety fallback if anything stalls
+      setTimeout(() => { if (!splashDismissed) window.__dismissSidelineSplash(); }, 2200);
+
+      function hashSource(str) {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return (h >>> 0).toString(36) + '_' + str.length;
+      }
+
       let started = false;
       function startApp() {
         if (started) return;
-        if (!window.React || !window.ReactDOM || !window.Babel) {
-          setTimeout(startApp, 80);
+        if (!window.React || !window.ReactDOM) {
+          requestAnimationFrame(startApp);
           return;
         }
+        const jsxEl = document.getElementById('sideline-jsx');
+        if (!jsxEl) return;
+        const jsxSource = jsxEl.textContent;
+        const cacheKey = 'sideline_compiled_v24_' + hashSource(jsxSource);
+
+        let compiled = null;
+        try {
+          compiled = localStorage.getItem(cacheKey);
+        } catch {}
+
+        if (compiled) {
+          started = true;
+          try {
+            new Function(compiled)();
+            return;
+          } catch {
+            try { localStorage.removeItem(cacheKey); } catch {}
+            started = false;
+          }
+        }
+
+        if (!window.Babel) {
+          setTimeout(startApp, 24);
+          return;
+        }
+
         started = true;
-        const jsxSource = document.getElementById('sideline-jsx').textContent;
-        const compiled = window.Babel.transform(jsxSource, { presets: ['react'] }).code;
+        compiled = window.Babel.transform(jsxSource, { presets: ['react'] }).code;
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith('sideline_compiled_') && k !== cacheKey) {
+              localStorage.removeItem(k);
+            }
+          }
+          localStorage.setItem(cacheKey, compiled);
+        } catch {}
         new Function(compiled)();
       }
-      if (document.readyState === 'complete' || document.readyState === 'interactive') requestAnimationFrame(startApp);
-      else window.addEventListener('DOMContentLoaded', startApp);
-      window.addEventListener('load', startApp);
+
+      if (document.readyState === 'complete' || document.readyState === 'interactive') startApp();
+      else document.addEventListener('DOMContentLoaded', startApp, { once: true });
+      window.addEventListener('load', startApp, { once: true });
     })();
   </script>
 </body>

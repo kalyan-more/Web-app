@@ -1,5 +1,6 @@
-const CACHE_NAME = 'sideline-pwa-v76';
+const CACHE_NAME = 'sideline-pwa-v77';
 const LOGO_CACHE_NAME = 'sideline-logos-swr-v3';
+const CDN_CACHE_NAME = 'sideline-cdn-runtime-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -20,7 +21,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== CACHE_NAME && k !== LOGO_CACHE_NAME)
+          .filter((k) => k !== CACHE_NAME && k !== LOGO_CACHE_NAME && k !== CDN_CACHE_NAME)
           .map((k) => caches.delete(k))
       )
     ).then(() => self.clients.claim())
@@ -32,7 +33,25 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Stale-while-revalidate for flagcdn.com and espncdn.com team/league logos
+  // Cache-first for immutable CDN runtime libraries (React, ReactDOM, Tailwind, Babel) -> near-0ms repeat launch
+  if (url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'unpkg.com' || url.hostname === 'cdn.tailwindcss.com') {
+    event.respondWith(
+      caches.open(CDN_CACHE_NAME).then((cdnCache) =>
+        cdnCache.match(req).then((cached) => {
+          if (cached) return cached;
+          return fetch(req).then((res) => {
+            if (res && (res.status === 200 || res.type === 'opaque')) {
+              cdnCache.put(req, res.clone());
+            }
+            return res;
+          });
+        })
+      )
+    );
+    return;
+  }
+
+  // Stale-while-revalidate for team/league logos
   if (url.hostname === 'flagcdn.com' || url.hostname.endsWith('.flagcdn.com') || url.hostname.endsWith('.espncdn.com') || url.hostname === 'a.espncdn.com' || url.hostname.endsWith('.hscicdn.com') || url.hostname.endsWith('.imgci.com')) {
     event.respondWith(
       caches.open(LOGO_CACHE_NAME).then((logoCache) =>
