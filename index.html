@@ -251,6 +251,28 @@
       animation: iosTabFadeIn 0.18s cubic-bezier(0.32, 0.72, 0, 1) both;
     }
 
+    @keyframes tabSlideNext {
+      0% { opacity: 0; transform: translate3d(22px, 0, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes tabSlidePrev {
+      0% { opacity: 0; transform: translate3d(-22px, 0, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .tab-slide-next {
+      animation: tabSlideNext 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+
+    .tab-slide-prev {
+      animation: tabSlidePrev 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+
     @keyframes scheduleLoadNext {
       0% {
         opacity: 0;
@@ -515,8 +537,66 @@ const CRICKET_COUNTRY_ALIASES = [
   { code: 'ck', keys: ['cook islands', 'cok'] }
 ];
 
-// Comprehensive Franchise & League Team Logo Map (IPL, WPL, BBL, WBBL, PSL, SA20, CPL, The Hundred, BPL, MLC, ILT20, etc.)
+// Comprehensive Official Original Cricket Team Logo Map (ICC International + IPL + WPL + BBL/WBBL + PSL + SA20 + CPL + The Hundred + ILT20 + MLC)
 const CRICKET_FRANCHISE_LOGOS = {
+  // ICC Full & Associate National Teams (Official Board Crests on ESPN CDN)
+  "england": "https://a.espncdn.com/i/teamlogos/cricket/500/1.png",
+  "eng": "https://a.espncdn.com/i/teamlogos/cricket/500/1.png",
+  "australia": "https://a.espncdn.com/i/teamlogos/cricket/500/2.png",
+  "aus": "https://a.espncdn.com/i/teamlogos/cricket/500/2.png",
+  "south africa": "https://a.espncdn.com/i/teamlogos/cricket/500/3.png",
+  "rsa": "https://a.espncdn.com/i/teamlogos/cricket/500/3.png",
+  "sa": "https://a.espncdn.com/i/teamlogos/cricket/500/3.png",
+  "west indies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "west indies women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "wi": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "wi women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "windies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "new zealand": "https://a.espncdn.com/i/teamlogos/cricket/500/5.png",
+  "nz": "https://a.espncdn.com/i/teamlogos/cricket/500/5.png",
+  "india": "https://a.espncdn.com/i/teamlogos/cricket/500/6.png",
+  "ind": "https://a.espncdn.com/i/teamlogos/cricket/500/6.png",
+  "pakistan": "https://a.espncdn.com/i/teamlogos/cricket/500/7.png",
+  "pak": "https://a.espncdn.com/i/teamlogos/cricket/500/7.png",
+  "sri lanka": "https://a.espncdn.com/i/teamlogos/cricket/500/8.png",
+  "sl": "https://a.espncdn.com/i/teamlogos/cricket/500/8.png",
+  "zimbabwe": "https://a.espncdn.com/i/teamlogos/cricket/500/9.png",
+  "zim": "https://a.espncdn.com/i/teamlogos/cricket/500/9.png",
+  "united states": "https://a.espncdn.com/i/teamlogos/cricket/500/11.png",
+  "united states of america": "https://a.espncdn.com/i/teamlogos/cricket/500/11.png",
+  "usa": "https://a.espncdn.com/i/teamlogos/cricket/500/11.png",
+  "bermuda": "https://a.espncdn.com/i/teamlogos/cricket/500/12.png",
+  "netherlands": "https://a.espncdn.com/i/teamlogos/cricket/500/15.png",
+  "ned": "https://a.espncdn.com/i/teamlogos/cricket/500/15.png",
+  "canada": "https://a.espncdn.com/i/teamlogos/cricket/500/17.png",
+  "can": "https://a.espncdn.com/i/teamlogos/cricket/500/17.png",
+  "hong kong": "https://a.espncdn.com/i/teamlogos/cricket/500/19.png",
+  "hk": "https://a.espncdn.com/i/teamlogos/cricket/500/19.png",
+  "hkg": "https://a.espncdn.com/i/teamlogos/cricket/500/19.png",
+  "papua new guinea": "https://a.espncdn.com/i/teamlogos/cricket/500/20.png",
+  "png": "https://a.espncdn.com/i/teamlogos/cricket/500/20.png",
+  "bangladesh": "https://a.espncdn.com/i/teamlogos/cricket/500/25.png",
+  "ban": "https://a.espncdn.com/i/teamlogos/cricket/500/25.png",
+  "kenya": "https://a.espncdn.com/i/teamlogos/cricket/500/26.png",
+  "ken": "https://a.espncdn.com/i/teamlogos/cricket/500/26.png",
+  "united arab emirates": "https://a.espncdn.com/i/teamlogos/cricket/500/27.png",
+  "uae": "https://a.espncdn.com/i/teamlogos/cricket/500/27.png",
+  "namibia": "https://a.espncdn.com/i/teamlogos/cricket/500/28.png",
+  "nam": "https://a.espncdn.com/i/teamlogos/cricket/500/28.png",
+  "ireland": "https://a.espncdn.com/i/teamlogos/cricket/500/29.png",
+  "ire": "https://a.espncdn.com/i/teamlogos/cricket/500/29.png",
+  "scotland": "https://a.espncdn.com/i/teamlogos/cricket/500/30.png",
+  "sco": "https://a.espncdn.com/i/teamlogos/cricket/500/30.png",
+  "nepal": "https://a.espncdn.com/i/teamlogos/cricket/500/32.png",
+  "nep": "https://a.espncdn.com/i/teamlogos/cricket/500/32.png",
+  "uganda": "https://a.espncdn.com/i/teamlogos/cricket/500/34.png",
+  "uga": "https://a.espncdn.com/i/teamlogos/cricket/500/34.png",
+  "oman": "https://a.espncdn.com/i/teamlogos/cricket/500/37.png",
+  "oma": "https://a.espncdn.com/i/teamlogos/cricket/500/37.png",
+  "afghanistan": "https://a.espncdn.com/i/teamlogos/cricket/500/40.png",
+  "afg": "https://a.espncdn.com/i/teamlogos/cricket/500/40.png",
+
+  // IPL & WPL
   "chennai super kings": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
   "csk": "https://a.espncdn.com/i/teamlogos/cricket/500/335974.png",
   "mumbai indians": "https://a.espncdn.com/i/teamlogos/cricket/500/335978.png",
@@ -543,34 +623,40 @@ const CRICKET_FRANCHISE_LOGOS = {
   "srh": "https://a.espncdn.com/i/teamlogos/cricket/500/628333.png",
   "gujarat titans": "https://a.espncdn.com/i/teamlogos/cricket/500/1298769.png",
   "gt": "https://a.espncdn.com/i/teamlogos/cricket/500/1298769.png",
-  "gujarat giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1298769.png",
   "lucknow super giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1298768.png",
   "lsg": "https://a.espncdn.com/i/teamlogos/cricket/500/1298768.png",
-  "west indies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
-  "west indies women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
-  "wi": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
-  "wi women": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
-  "windies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
+  "up warriorz": "https://a.espncdn.com/i/teamlogos/cricket/500/1351399.png",
+  "upw": "https://a.espncdn.com/i/teamlogos/cricket/500/1351399.png",
+  "gujarat giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1351400.png",
+  "gujarat giants women": "https://a.espncdn.com/i/teamlogos/cricket/500/1351400.png",
+  "gg-w": "https://a.espncdn.com/i/teamlogos/cricket/500/1351400.png",
+
+  // BBL & WBBL
   "adelaide strikers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "adelaide strikers": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "as-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "asw": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
+  "str": "https://a.espncdn.com/i/teamlogos/cricket/500/660643.png",
   "brisbane heat women": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "brisbane heat": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "bh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "bhw": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
+  "hea": "https://a.espncdn.com/i/teamlogos/cricket/500/660647.png",
   "hobart hurricanes women": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "hobart hurricanes": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "hh-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "hhw": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
+  "hur": "https://a.espncdn.com/i/teamlogos/cricket/500/660649.png",
   "melbourne renegades women": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "melbourne renegades": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "mr-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "mrw": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
+  "ren": "https://a.espncdn.com/i/teamlogos/cricket/500/660651.png",
   "melbourne stars women": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "melbourne stars": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "ms-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "msw": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
+  "sta": "https://a.espncdn.com/i/teamlogos/cricket/500/660653.png",
   "perth scorchers women": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
   "perth scorchers": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
   "ps-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660655.png",
@@ -579,10 +665,101 @@ const CRICKET_FRANCHISE_LOGOS = {
   "sydney sixers": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
   "ss-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
   "ssw": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
+  "sys": "https://a.espncdn.com/i/teamlogos/cricket/500/660657.png",
   "sydney thunder women": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
   "sydney thunder": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
   "st-w": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
-  "stw": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png"
+  "stw": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+  "syt": "https://a.espncdn.com/i/teamlogos/cricket/500/660659.png",
+
+  // PSL
+  "islamabad united": "https://a.espncdn.com/i/teamlogos/cricket/500/953841.png",
+  "iu": "https://a.espncdn.com/i/teamlogos/cricket/500/953841.png",
+  "karachi kings": "https://a.espncdn.com/i/teamlogos/cricket/500/953843.png",
+  "kk": "https://a.espncdn.com/i/teamlogos/cricket/500/953843.png",
+  "lahore qalandars": "https://a.espncdn.com/i/teamlogos/cricket/500/953845.png",
+  "lq": "https://a.espncdn.com/i/teamlogos/cricket/500/953845.png",
+  "peshawar zalmi": "https://a.espncdn.com/i/teamlogos/cricket/500/953847.png",
+  "pz": "https://a.espncdn.com/i/teamlogos/cricket/500/953847.png",
+  "quetta gladiators": "https://a.espncdn.com/i/teamlogos/cricket/500/953849.png",
+  "qg": "https://a.espncdn.com/i/teamlogos/cricket/500/953849.png",
+  "multan sultans": "https://a.espncdn.com/i/teamlogos/cricket/500/1124081.png",
+  "ms": "https://a.espncdn.com/i/teamlogos/cricket/500/1124081.png",
+
+  // SA20
+  "durban's super giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1335267.png",
+  "durbans super giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1335267.png",
+  "dsg": "https://a.espncdn.com/i/teamlogos/cricket/500/1335267.png",
+  "joburg super kings": "https://a.espncdn.com/i/teamlogos/cricket/500/1335268.png",
+  "jsk": "https://a.espncdn.com/i/teamlogos/cricket/500/1335268.png",
+  "mi cape town": "https://a.espncdn.com/i/teamlogos/cricket/500/1335269.png",
+  "mict": "https://a.espncdn.com/i/teamlogos/cricket/500/1335269.png",
+  "paarl royals": "https://a.espncdn.com/i/teamlogos/cricket/500/1335270.png",
+  "pr": "https://a.espncdn.com/i/teamlogos/cricket/500/1335270.png",
+  "pretoria capitals": "https://a.espncdn.com/i/teamlogos/cricket/500/1335271.png",
+  "pc": "https://a.espncdn.com/i/teamlogos/cricket/500/1335271.png",
+  "sunrisers eastern cape": "https://a.espncdn.com/i/teamlogos/cricket/500/1335272.png",
+  "sec": "https://a.espncdn.com/i/teamlogos/cricket/500/1335272.png",
+
+  // CPL
+  "barbados royals": "https://a.espncdn.com/i/teamlogos/cricket/500/631823.png",
+  "br": "https://a.espncdn.com/i/teamlogos/cricket/500/631823.png",
+  "guyana amazon warriors": "https://a.espncdn.com/i/teamlogos/cricket/500/631825.png",
+  "gaw": "https://a.espncdn.com/i/teamlogos/cricket/500/631825.png",
+  "jamaica tallawahs": "https://a.espncdn.com/i/teamlogos/cricket/500/631827.png",
+  "st lucia kings": "https://a.espncdn.com/i/teamlogos/cricket/500/631829.png",
+  "saint lucia kings": "https://a.espncdn.com/i/teamlogos/cricket/500/631829.png",
+  "slk": "https://a.espncdn.com/i/teamlogos/cricket/500/631829.png",
+  "trinbago knight riders": "https://a.espncdn.com/i/teamlogos/cricket/500/631831.png",
+  "tkr": "https://a.espncdn.com/i/teamlogos/cricket/500/631831.png",
+  "st kitts and nevis patriots": "https://a.espncdn.com/i/teamlogos/cricket/500/857695.png",
+  "sknp": "https://a.espncdn.com/i/teamlogos/cricket/500/857695.png",
+
+  // The Hundred
+  "birmingham phoenix": "https://a.espncdn.com/i/teamlogos/cricket/500/1204493.png",
+  "bph": "https://a.espncdn.com/i/teamlogos/cricket/500/1204493.png",
+  "london spirit": "https://a.espncdn.com/i/teamlogos/cricket/500/1204494.png",
+  "lns": "https://a.espncdn.com/i/teamlogos/cricket/500/1204494.png",
+  "manchester originals": "https://a.espncdn.com/i/teamlogos/cricket/500/1204495.png",
+  "mnr": "https://a.espncdn.com/i/teamlogos/cricket/500/1204495.png",
+  "northern superchargers": "https://a.espncdn.com/i/teamlogos/cricket/500/1204496.png",
+  "nos": "https://a.espncdn.com/i/teamlogos/cricket/500/1204496.png",
+  "oval invincibles": "https://a.espncdn.com/i/teamlogos/cricket/500/1204497.png",
+  "ovi": "https://a.espncdn.com/i/teamlogos/cricket/500/1204497.png",
+  "southern brave": "https://a.espncdn.com/i/teamlogos/cricket/500/1204498.png",
+  "sob": "https://a.espncdn.com/i/teamlogos/cricket/500/1204498.png",
+  "trent rockets": "https://a.espncdn.com/i/teamlogos/cricket/500/1204499.png",
+  "trt": "https://a.espncdn.com/i/teamlogos/cricket/500/1204499.png",
+  "welsh fire": "https://a.espncdn.com/i/teamlogos/cricket/500/1204500.png",
+  "wef": "https://a.espncdn.com/i/teamlogos/cricket/500/1204500.png",
+
+  // ILT20
+  "abu dhabi knight riders": "https://a.espncdn.com/i/teamlogos/cricket/500/1326508.png",
+  "adkr": "https://a.espncdn.com/i/teamlogos/cricket/500/1326508.png",
+  "desert vipers": "https://a.espncdn.com/i/teamlogos/cricket/500/1326509.png",
+  "dvp": "https://a.espncdn.com/i/teamlogos/cricket/500/1326509.png",
+  "dubai capitals": "https://a.espncdn.com/i/teamlogos/cricket/500/1326510.png",
+  "dbc": "https://a.espncdn.com/i/teamlogos/cricket/500/1326510.png",
+  "gulf giants": "https://a.espncdn.com/i/teamlogos/cricket/500/1326511.png",
+  "mi emirates": "https://a.espncdn.com/i/teamlogos/cricket/500/1326512.png",
+  "mie": "https://a.espncdn.com/i/teamlogos/cricket/500/1326512.png",
+  "sharjah warriorz": "https://a.espncdn.com/i/teamlogos/cricket/500/1326513.png",
+  "sharjah warriors": "https://a.espncdn.com/i/teamlogos/cricket/500/1326513.png",
+  "shw": "https://a.espncdn.com/i/teamlogos/cricket/500/1326513.png",
+
+  // MLC
+  "los angeles knight riders": "https://a.espncdn.com/i/teamlogos/cricket/500/1363459.png",
+  "lakr": "https://a.espncdn.com/i/teamlogos/cricket/500/1363459.png",
+  "mi new york": "https://a.espncdn.com/i/teamlogos/cricket/500/1363460.png",
+  "miny": "https://a.espncdn.com/i/teamlogos/cricket/500/1363460.png",
+  "san francisco unicorns": "https://a.espncdn.com/i/teamlogos/cricket/500/1363461.png",
+  "sfu": "https://a.espncdn.com/i/teamlogos/cricket/500/1363461.png",
+  "seattle orcas": "https://a.espncdn.com/i/teamlogos/cricket/500/1363462.png",
+  "seo": "https://a.espncdn.com/i/teamlogos/cricket/500/1363462.png",
+  "texas super kings": "https://a.espncdn.com/i/teamlogos/cricket/500/1363463.png",
+  "tsk": "https://a.espncdn.com/i/teamlogos/cricket/500/1363463.png",
+  "washington freedom": "https://a.espncdn.com/i/teamlogos/cricket/500/1363464.png",
+  "waf": "https://a.espncdn.com/i/teamlogos/cricket/500/1363464.png"
 };
 
 const CRICKET_TEAM_COLORS = {
@@ -1303,13 +1480,62 @@ const getRelativeTime = (dateStr) => {
   return `${Math.floor(diff / 86400)}d ago`;
 };
 
-const categorizeNews = (headline, desc) => {
-  const txt = `${headline || ''} ${desc || ''}`.toLowerCase();
-  if (txt.includes('transfer') || txt.includes('sign') || txt.includes('deal') || txt.includes('bid') || txt.includes('auction')) return { label: 'Transfers', color: THEME.success };
-  if (txt.includes('injur') || txt.includes('surgery') || txt.includes('out') || txt.includes('ruled')) return { label: 'Injuries', color: THEME.danger };
-  if (txt.includes('manager') || txt.includes('coach') || txt.includes('sack') || txt.includes('captain') || txt.includes('squad')) return { label: 'Team News', color: THEME.warning };
-  if (txt.includes('tactics') || txt.includes('analysis') || txt.includes('var') || txt.includes('series')) return { label: 'Analysis', color: THEME.freekick };
-  return { label: 'Intel', color: THEME.accent };
+const NEWS_CATEGORY_RULES = [
+  {
+    label: 'Injuries',
+    color: THEME.danger,
+    strong: /\b(injur(?:y|ies|ed)|hamstring|acl|mcl|meniscus|ligament|groin|calf|achilles|concussion|fracture|broken (?:leg|foot|arm|finger|thumb|wrist|rib|ankle)|torn |surgery|operation|rehab|sidelined|ruled out (?:of|for|with)|injury (?:blow|update|crisis|scare|concern|return|list)|fitness (?:doubt|scare|concern|blow)|out for \d+ (?:days?|weeks?|months?)|limped off|stretchered off|misses? .* (?:injury|strain|sprain|knock))\b/i,
+    medium: /\b(sprain|strain|ankle|knee|shoulder|back spasm|fitness test|medical scan|physio|recovering from|knock to)\b/i
+  },
+  {
+    label: 'Transfers',
+    color: THEME.success,
+    strong: /\b(transfer(?:s|red)?|transfer (?:window|news|rumours?|rumors?|talk|deadline|target|saga|ban)|loan (?:move|deal|spell|signing)|free agent|release clause|buyout clause|contract extension|new (?:contract|deal)|(?:sign|signs|signed|signing) (?:for|with|from|on a|a \d|new)|ipl auction|wpl auction|psl draft|mega auction|retained list|retention list|trade deal|swap deal|personal terms|bid (?:for|rejected|accepted|worth)|linked with (?:a )?move|summer window|january window|eyes? move for|agrees? (?:deal|fee|terms) (?:for|with))\b/i,
+    medium: /\b(contract talks?|wage demands?|free transfer|departure|leaving the club|exit talks?|interested in signing|set to join|joins? on a)\b/i
+  },
+  {
+    label: 'Team News',
+    color: THEME.warning,
+    strong: /\b(sacked|fired as|dismissed as|appointed (?:as )?(?:manager|head coach|boss|captain)|new (?:manager|head coach|boss|captain|skipper)|steps? down as|resigns? as|named (?:captain|skipper|in squad)|squad (?:announced|named|revealed|selected|update)|starting xi|playing xi|line-?up|dropped (?:from|for)|recalled to|suspended for|banned for|match ban|red card ban|fined by|disciplinary|team news|selection dilemma|rested for|leaves? out)\b/i,
+    medium: /\b(manager|head coach|managerial|captaincy|selection|bench(?:ed)?|rotation|starting spot|press conference)\b/i
+  },
+  {
+    label: 'Match Report',
+    color: THEME.shot,
+    strong: /\b(match report|highlights|beats?|defeated|thrash(?:es|ed)?|stun(?:s|ned)?|edges? past|cruises? past|crushes?|downs?|sinks?|holds? .* to (?:a )?draw|draws? with|wins? by \d+|victory over|triumphs? over|hat-trick|brace|century|ton up|five-for|five-wicket|fifer|clean sheet|comeback win|penalty shootout|super over|bowled out for|all out for|trail by \d+|lead by \d+|stumps on day|clinches? (?:series|title|cup|spot|berth)|seals? (?:win|victory|series|qualification|title)|eliminated from|knocked out of|through to (?:the )?(?:final|semi|quarter|last 16))\b/i,
+    medium: /\b(matchwinner|winner in stoppage|late goal|dramatic win|first-innings lead|chases? down|wraps? up|whitewash|clean sweep|run out|defeats)\b/i
+  },
+  {
+    label: 'Analysis',
+    color: THEME.freekick,
+    strong: /\b(tactical|tactics|analysis|power rankings?|talking points?|key takeaways?|winners and losers|player ratings?|grades|match preview|series preview|predictions?|explained|breakdown|expected goals|\bxg\b|var (?:controversy|review|decision|call|check)|officiating|opinion|column|deep dive|stat(?:s|istic)? check|how .* (?:changed|fixed|built|tactically)|what .* means for)\b/i,
+    medium: /\b(preview|rankings?|debate|why |interview|q&a|feature|form guide|head-to-head)\b/i
+  }
+];
+
+const categorizeNews = (headline, desc, categories = []) => {
+  const h = String(headline || '').trim();
+  const d = String(desc || '').trim();
+  const catHints = (Array.isArray(categories) ? categories : [])
+    .map(c => (typeof c === 'string' ? c : (c?.description || c?.name || c?.type || '')))
+    .join(' ');
+
+  let best = { label: 'News', color: THEME.accent, score: 0 };
+
+  for (const rule of NEWS_CATEGORY_RULES) {
+    let score = 0;
+    if (rule.strong.test(h)) score += 6;
+    if (rule.medium.test(h)) score += 3;
+    if (rule.strong.test(d)) score += 3;
+    if (rule.medium.test(d)) score += 1;
+    if (catHints && rule.strong.test(catHints)) score += 2;
+
+    if (score > best.score) {
+      best = { label: rule.label, color: rule.color, score };
+    }
+  }
+
+  return best.score >= 3 ? { label: best.label, color: best.color } : { label: 'News', color: THEME.accent };
 };
 
 // ==========================================
@@ -1410,14 +1636,41 @@ const normalizeCricketTeamName = (name) => {
   return clean.replace(/\s+/g, ' ').trim();
 };
 
-const getCricketLogo = (team) => {
-  if (!team) return getFallbackLogo('T');
-  if (typeof team === 'string') return getCricketLogo({ name: team });
+const normalizeApiLogoUrl = (raw) => {
+  if (!raw || typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed || /default|placeholder|no[-_]?image/i.test(trimmed)) return '';
+  if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) return trimmed;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  if (trimmed.startsWith('/db/') || trimmed.startsWith('db/')) {
+    const cleanPath = trimmed.replace(/^\/+/, '');
+    return `https://img1.hscicdn.com/image/upload/f_auto,t_ds_square_w_160,q_50/lsci/${cleanPath}`;
+  }
+  return '';
+};
+
+const getCricketCountryFlagUrl = (searchName, rawLower, shortLower) => {
+  for (const { code, keys } of CRICKET_COUNTRY_ALIASES) {
+    for (const key of keys) {
+      if (key === searchName || key === shortLower || key === rawLower || new RegExp(`\\b${key}\\b`, 'i').test(searchName)) {
+        return `https://flagcdn.com/w160/${code.toLowerCase()}.png`;
+      }
+    }
+  }
+  return '';
+};
+
+const getCricketLogoCandidates = (team) => {
+  if (!team) return [getFallbackLogo('T')];
+  if (typeof team === 'string') return getCricketLogoCandidates({ name: team });
 
   const rawName = team.team_name || team.name || team.short_name || team.displayName || 'Team';
   const shortRaw = team.short_name || team.abbreviation || '';
-  const apiLogo = team.logo || team.team_logo || team.image_url || team.imageUrl || team.team_image || team.image_path || '';
-  const cacheKey = `${rawName}|${shortRaw}|${apiLogo}`;
+  const tid = String(team.team_id || team.id || '').trim();
+  const rawApiLogo = team.logo || team.team_logo || team.image_url || team.imageUrl || team.team_image || team.image_path || '';
+  const apiLogo = normalizeApiLogoUrl(rawApiLogo);
+
+  const cacheKey = `cand_v23|${tid}|${rawName}|${shortRaw}|${apiLogo}`;
   if (cricketLogoCache.has(cacheKey)) return cricketLogoCache.get(cacheKey);
 
   const tName = normalizeCricketTeamName(rawName);
@@ -1425,34 +1678,62 @@ const getCricketLogo = (team) => {
   const rawLower = String(rawName).toLowerCase().trim();
   const shortLower = String(shortRaw).toLowerCase().trim();
 
-  let resolved = null;
-  if (CRICKET_FRANCHISE_LOGOS[searchName]) resolved = CRICKET_FRANCHISE_LOGOS[searchName];
-  else if (CRICKET_FRANCHISE_LOGOS[rawLower]) resolved = CRICKET_FRANCHISE_LOGOS[rawLower];
-  else if (CRICKET_FRANCHISE_LOGOS[shortLower]) resolved = CRICKET_FRANCHISE_LOGOS[shortLower];
-  else if (CRICKET_TEAM_COLORS[searchName]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[searchName]);
-  else if (CRICKET_TEAM_COLORS[rawLower]) resolved = getFallbackLogo(rawName, CRICKET_TEAM_COLORS[rawLower]);
-  else if (WBBL_TEAM_BADGES[rawLower]) resolved = getFallbackLogo(rawName, WBBL_TEAM_BADGES[rawLower]);
-  else if (WBBL_TEAM_BADGES[searchName]) resolved = getFallbackLogo(rawName, WBBL_TEAM_BADGES[searchName]);
+  const candidates = [];
+  const pushUnique = (u) => {
+    if (u && !candidates.includes(u)) candidates.push(u);
+  };
 
-  if (!resolved) {
-    outer: for (const { code, keys } of CRICKET_COUNTRY_ALIASES) {
-      for (const key of keys) {
-        if (key === searchName || key === shortLower || key === rawLower || new RegExp(`\\b${key}\\b`, 'i').test(searchName)) {
-          resolved = `https://flagcdn.com/w160/${code.toLowerCase()}.png`;
-          break outer;
-        }
-      }
-    }
+  // 1. Original logo URL directly from the Render Cricket API
+  if (apiLogo) pushUnique(apiLogo);
+
+  // 2. Official ESPN CDN cricket logo via exact numeric team_id (works for every franchise, international, A-team, Women's & domestic club)
+  if (tid && /^\d+$/.test(tid)) {
+    pushUnique(`https://a.espncdn.com/i/teamlogos/cricket/500/${tid}.png`);
   }
 
-  if (!resolved) {
-    const isDefaultLogo = apiLogo && (String(apiLogo).includes('default') || String(apiLogo).includes('placeholder'));
-    if (apiLogo && !isDefaultLogo && String(apiLogo).startsWith('http')) resolved = apiLogo;
-    else resolved = getFallbackLogo(shortRaw || rawName);
-  }
+  // 3. Verified official original cricket team logo map (ICC boards, IPL, WPL, BBL/WBBL, PSL, SA20, CPL, The Hundred, ILT20, MLC)
+  const mappedLogo = CRICKET_FRANCHISE_LOGOS[rawLower] || CRICKET_FRANCHISE_LOGOS[searchName] || CRICKET_FRANCHISE_LOGOS[shortLower];
+  if (mappedLogo) pushUnique(mappedLogo);
 
-  cricketLogoCache.set(cacheKey, resolved);
-  return resolved;
+  // 4. Country flag fallback for national / A / Women's / U19 sides
+  const flagUrl = getCricketCountryFlagUrl(searchName, rawLower, shortLower);
+  if (flagUrl) pushUnique(flagUrl);
+
+  // 5. Final vector crest / monogram fallback
+  const wbblCrest = getWbblCrestUri(rawName);
+  if (wbblCrest) pushUnique(wbblCrest);
+  const customColors = WBBL_TEAM_BADGES[rawLower] || WBBL_TEAM_BADGES[searchName] || CRICKET_TEAM_COLORS[rawLower] || CRICKET_TEAM_COLORS[searchName] || null;
+  pushUnique(getFallbackLogo(shortRaw || rawName, customColors));
+
+  cricketLogoCache.set(cacheKey, candidates);
+  return candidates;
+};
+
+const getCricketLogo = (team) => getCricketLogoCandidates(team)[0];
+
+const getCricketLogoStyle = (team) => {
+  const raw = typeof team === 'string'
+    ? team
+    : (team?.team_name || team?.name || team?.short_name || team?.displayName || '');
+  if (/(new zealand|blackcaps|^nz$|white ferns)/i.test(String(raw || ''))) {
+    return { filter: 'brightness(1.25) contrast(1.06)' };
+  }
+  return undefined;
+};
+
+const handleCricketImageError = (e, team) => {
+  const img = e.target;
+  const candidates = getCricketLogoCandidates(team);
+  const curIdx = parseInt(img.dataset.logoIdx || '0', 10);
+  const nextIdx = curIdx + 1;
+  if (nextIdx < candidates.length) {
+    img.dataset.logoIdx = String(nextIdx);
+    img.src = candidates[nextIdx];
+    return;
+  }
+  img.onerror = null;
+  const fallbackName = typeof team === 'string' ? team : (team?.short_name || team?.name || team?.team_name || team?.displayName || 'T');
+  img.src = getFallbackLogo(fallbackName);
 };
 
 const getCricketLeagueLogo = (title, apiLogo = null) => {
@@ -2865,6 +3146,150 @@ const extractCricketKnockouts = (selectedLeague) => {
 // ⚡ CORE UI PRIMITIVES
 // ==========================================
 
+const isInsideHorizontalScroller = (target, stopEl) => {
+  let node = target;
+  while (node && node !== stopEl && node !== document.body) {
+    if (node.dataset && node.dataset.noSectionSwipe === 'true') return true;
+    if (node.nodeType === 1) {
+      const style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+      const ox = style ? style.overflowX : '';
+      if ((ox === 'auto' || ox === 'scroll') && node.scrollWidth > node.clientWidth + 6) {
+        return true;
+      }
+    }
+    node = node.parentElement;
+  }
+  return false;
+};
+
+const useSwipeSections = (items, activeValue, onSelect, options = {}) => {
+  const { onBoundaryPrev = null, onBoundaryNext = null, stopPropagation = false } = options;
+  const contentRef = useRef(null);
+  const [swipeDir, setSwipeDir] = useState(0);
+  const touchRef = useRef({ active: false, locked: false, startX: 0, startY: 0, dx: 0, rafId: null });
+
+  const selectWithDir = useCallback((nextVal) => {
+    const curIdx = items.indexOf(activeValue);
+    const nextIdx = items.indexOf(nextVal);
+    if (curIdx !== -1 && nextIdx !== -1 && curIdx !== nextIdx) {
+      setSwipeDir(nextIdx > curIdx ? 1 : -1);
+    }
+    onSelect(nextVal);
+  }, [items, activeValue, onSelect]);
+
+  const onTouchStart = useCallback((e) => {
+    if (!e.touches || e.touches.length !== 1) return;
+    if (isInsideHorizontalScroller(e.target, e.currentTarget)) return;
+    if (stopPropagation) e.stopPropagation();
+    const t = e.touches[0];
+    touchRef.current = { active: true, locked: false, startX: t.clientX, startY: t.clientY, dx: 0, rafId: null };
+  }, [stopPropagation]);
+
+  const onTouchMove = useCallback((e) => {
+    const g = touchRef.current;
+    if (!g.active || !e.touches || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - g.startX;
+    const dy = t.clientY - g.startY;
+
+    if (!g.locked) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.4) {
+        g.locked = true;
+      } else {
+        g.active = false;
+        return;
+      }
+    }
+    if (stopPropagation) e.stopPropagation();
+    g.dx = dx;
+    if (g.rafId === null) {
+      g.rafId = requestAnimationFrame(() => {
+        g.rafId = null;
+        const el = contentRef.current;
+        if (!el || !g.active) return;
+        const curIdx = items.indexOf(activeValue);
+        const canGoNext = curIdx < items.length - 1 || Boolean(onBoundaryNext);
+        const canGoPrev = curIdx > 0 || Boolean(onBoundaryPrev);
+        const factor = (g.dx < 0 && !canGoNext) || (g.dx > 0 && !canGoPrev) ? 0.14 : 0.34;
+        const dragX = Math.max(-68, Math.min(68, g.dx * factor));
+        el.style.transition = 'none';
+        el.style.transform = `translate3d(${dragX}px, 0, 0)`;
+        el.style.opacity = String(Math.max(0.76, 1 - Math.abs(dragX) / 240));
+      });
+    }
+  }, [items, activeValue, onBoundaryNext, onBoundaryPrev, stopPropagation]);
+
+  const onTouchEnd = useCallback((e) => {
+    const g = touchRef.current;
+    if (!g.active) return;
+    if (g.rafId !== null) {
+      cancelAnimationFrame(g.rafId);
+      g.rafId = null;
+    }
+    const { locked, dx, startX } = g;
+    g.active = false;
+    g.locked = false;
+
+    const el = contentRef.current;
+    const resetEl = () => {
+      if (!el) return;
+      el.style.transition = 'transform 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
+      el.style.transform = '';
+      el.style.opacity = '';
+    };
+
+    if (!locked) {
+      resetEl();
+      return;
+    }
+    if (stopPropagation && e) e.stopPropagation();
+
+    const curIdx = items.indexOf(activeValue);
+    // Left-edge swipe-right can always trigger boundary prev (e.g., modal close)
+    if (dx > 72 && startX <= 26 && onBoundaryPrev && curIdx === 0) {
+      resetEl();
+      onBoundaryPrev();
+      return;
+    }
+
+    if (dx < -48) {
+      if (curIdx >= 0 && curIdx < items.length - 1) {
+        if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
+        setSwipeDir(1);
+        onSelect(items[curIdx + 1]);
+        return;
+      } else if (onBoundaryNext) {
+        if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
+        onBoundaryNext();
+        return;
+      }
+    } else if (dx > 48) {
+      if (curIdx > 0) {
+        if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
+        setSwipeDir(-1);
+        onSelect(items[curIdx - 1]);
+        return;
+      } else if (onBoundaryPrev && dx > 62) {
+        if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
+        onBoundaryPrev();
+        return;
+      }
+    }
+
+    resetEl();
+  }, [items, activeValue, onSelect, onBoundaryNext, onBoundaryPrev, stopPropagation]);
+
+  const animClass = swipeDir > 0 ? 'tab-slide-next' : swipeDir < 0 ? 'tab-slide-prev' : 'ios-tab-fade';
+
+  return {
+    contentRef,
+    animClass,
+    selectWithDir,
+    bind: { onTouchStart, onTouchMove, onTouchEnd }
+  };
+};
+
 const useSmoothDismiss = (onClose) => {
   const [closing, setClosing] = useState(false);
   const timerRef = useRef(null);
@@ -3371,8 +3796,8 @@ const useFootballFormations = (summary, width, height, isHome, comp = null) =>
     const starters = getStartingEleven(teamRoster);
     const groupedRows = buildFormationGrid(starters, formationRows, isHome);
     const numRows = Math.max(1, formationRows.length - 1);
-    const topPad = 12;
-    const bottomPad = 42;
+    const topPad = isHome ? 18 : 16;
+    const bottomPad = isHome ? 66 : 56;
     const usableHeight = Math.max(220, height - topPad - bottomPad);
 
     return groupedRows.map((rowPlayers, rowIndex) => {
@@ -3605,16 +4030,16 @@ const TacticalPitch = memo(({ summary, home, away }) => {
         </div>
 
         <div className="absolute inset-0">
-          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-hidden">
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full">
             {awayPlayers.map(p => (
-              <div key={p.id} style={{ position: 'absolute', left: Math.max(4, Math.min(pitchSize.width - 88, p.x - 42)), top: p.y }}>
+              <div key={p.id} style={{ position: 'absolute', left: Math.max(6, Math.min(pitchSize.width - 90, p.x - 42)), top: p.y }}>
                 <PlayerJersey player={p.player} teamColor={aCol} accentColor={aAccent} />
               </div>
             ))}
           </div>
-          <div style={{ height: HALF_HEIGHT }} className="relative w-full overflow-hidden">
+          <div style={{ height: HALF_HEIGHT }} className="relative w-full">
             {homePlayers.map(p => (
-              <div key={p.id} style={{ position: 'absolute', left: Math.max(4, Math.min(pitchSize.width - 88, p.x - 42)), top: p.y }}>
+              <div key={p.id} style={{ position: 'absolute', left: Math.max(6, Math.min(pitchSize.width - 90, p.x - 42)), top: p.y }}>
                 <PlayerJersey player={p.player} teamColor={hCol} accentColor={hAccent} />
               </div>
             ))}
@@ -3724,7 +4149,7 @@ const formatSummaryParagraph = (rawDesc, rawStory = '', headline = '') => {
 };
 
 const NewsCard = memo(({ item }) => {
-  const tag = categorizeNews(item.headline, item.description);
+  const tag = categorizeNews(item.headline, item.description, item.categories);
   const summaryParagraph = useMemo(
     () => formatSummaryParagraph(item.description, item.story, item.headline),
     [item.description, item.story, item.headline]
@@ -3881,7 +4306,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
   return (
     <div onTouchStart={() => { if (match?.match_id) fetchWithCache(`${API_CRICKET_BASE}/match/${match.match_id}`, false, 10000).catch(() => {}); }} onClick={() => onOpen({ ...match, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] px-5 py-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer ios-card-press w-full">
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(h, null, null, 'cricket'); }}>
-        <img src={getCricketLogo(h)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
+        <img src={getCricketLogo(h)} style={getCricketLogoStyle(h)} loading="lazy" decoding="async" onError={(e) => handleCricketImageError(e, h)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Home" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{h.short_name || h.name}</span>
         <div className="h-[40px] flex flex-col items-center justify-start">
           <span className="text-[22px] font-extrabold text-[#F5F5F7] tabular-nums leading-tight">{hScore.runs}</span>
@@ -3909,7 +4334,7 @@ const CricketMatchCard = memo(({ match, selectedDate, onOpen, onOpenTeam, hideDa
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-start gap-1.5 min-w-0" onClick={(e) => { e.stopPropagation(); onOpenTeam(a, null, null, 'cricket'); }}>
-        <img src={getCricketLogo(a)} loading="lazy" decoding="async" onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
+        <img src={getCricketLogo(a)} style={getCricketLogoStyle(a)} loading="lazy" decoding="async" onError={(e) => handleCricketImageError(e, a)} className="w-[44px] h-[44px] object-contain shrink-0" alt="Away" />
         <span className="text-[11px] font-bold text-[#F5F5F7] text-center w-full px-1 break-words leading-tight">{a.short_name || a.name}</span>
         <div className="h-[40px] flex flex-col items-center justify-start">
           {aScore.runs ? (
@@ -3941,6 +4366,9 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
     }
   }, [stages, selectedStageId]);
 
+  const stageIds = useMemo(() => (stages || []).map(s => s.id), [stages]);
+  const koSwipe = useSwipeSections(stageIds, selectedStageId, setSelectedStageId, { stopPropagation: true });
+
   if (!stages || stages.length === 0) return null;
   const currentStage = stages.find(s => s.id === selectedStageId) || stages[0];
   const conciseYear = extractSeasonYear(seasonLabel);
@@ -3967,7 +4395,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
           return (
             <button
               key={s.id}
-              onClick={() => setSelectedStageId(s.id)}
+              onClick={() => koSwipe.selectWithDir(s.id)}
               className={`px-3 py-1.5 rounded-[12px] text-[11px] font-extrabold transition-colors shrink-0 flex items-center gap-1.5 ${active ? 'bg-[#F5F5F7] text-[#000000]' : 'text-[#8E8E93] hover:text-white'}`}
             >
               <span>{s.short}</span>
@@ -3981,7 +4409,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
         })}
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div ref={koSwipe.contentRef} key={currentStage.id} {...koSwipe.bind} className={`flex flex-col gap-2.5 ${koSwipe.animClass}`}>
         {currentStage.matches.map((m, idx) => {
           const clickable = Boolean(m.rawEvent && !m.isTBD);
           return (
@@ -4007,7 +4435,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
                   className={`flex items-center gap-3 min-w-0 flex-1 ${m.home.team && !m.home.isTBD ? 'cursor-pointer' : ''}`}
                   onClick={(e) => { if (m.home.team && !m.home.isTBD && onOpenTeam) { e.stopPropagation(); onOpenTeam(m.home.team, null, null, sport); } }}
                 >
-                  <img src={m.home.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, m.home.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                  <img src={m.home.logo} style={sport === 'cricket' ? getCricketLogoStyle(m.home.team || m.home.name) : getDarkLogoStyle(m.home.team || m.home.name)} loading="lazy" decoding="async" onError={(e) => sport === 'cricket' ? handleCricketImageError(e, m.home.team || m.home.name) : handleImageError(e, m.home.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
                   <span className={`text-[14px] font-bold break-words leading-snug ${m.home.isTBD ? 'text-[#8E8E93] italic' : m.home.winner ? 'text-[#F5F5F7]' : 'text-[#8E8E93]'}`}>
                     {m.home.name}
                   </span>
@@ -4022,7 +4450,7 @@ const KnockoutBracketSection = memo(({ stages, sport, leagueLogo, leagueTitle, s
                   className={`flex items-center gap-3 min-w-0 flex-1 ${m.away.team && !m.away.isTBD ? 'cursor-pointer' : ''}`}
                   onClick={(e) => { if (m.away.team && !m.away.isTBD && onOpenTeam) { e.stopPropagation(); onOpenTeam(m.away.team, null, null, sport); } }}
                 >
-                  <img src={m.away.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, m.away.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                  <img src={m.away.logo} style={sport === 'cricket' ? getCricketLogoStyle(m.away.team || m.away.name) : getDarkLogoStyle(m.away.team || m.away.name)} loading="lazy" decoding="async" onError={(e) => sport === 'cricket' ? handleCricketImageError(e, m.away.team || m.away.name) : handleImageError(e, m.away.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
                   <span className={`text-[14px] font-bold break-words leading-snug ${m.away.isTBD ? 'text-[#8E8E93] italic' : m.away.winner ? 'text-[#F5F5F7]' : 'text-[#8E8E93]'}`}>
                     {m.away.name}
                   </span>
@@ -4136,7 +4564,7 @@ const parseFootballStandingsCached = (leagueId, leagueName, json) => {
   return parsedGroups;
 };
 
-const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
+const FootballStandingsView = memo(({ onTeamPress, onOpenMatch, onSwipeEdge }) => {
   const now = useMemo(() => new Date(), []);
   const availableLeagues = useMemo(() => {
     const seenIds = new Set();
@@ -4212,17 +4640,36 @@ const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
     return () => { active = false; };
   }, [league]);
 
+  const leagueIds = useMemo(() => availableLeagues.map(l => l.id), [availableLeagues]);
+  const selectLeagueById = useCallback((lid) => {
+    const found = availableLeagues.find(l => l.id === lid);
+    if (found) setLeague(found);
+  }, [availableLeagues]);
+  const stdSwipe = useSwipeSections(leagueIds, league.id, selectLeagueById, {
+    onBoundaryPrev: onSwipeEdge ? () => onSwipeEdge(-1) : null,
+    onBoundaryNext: onSwipeEdge ? () => onSwipeEdge(1) : null
+  });
+  const leaguePillsRef = useRef(null);
+  useEffect(() => {
+    const el = leaguePillsRef.current?.querySelector('[data-active="true"]');
+    if (el && leaguePillsRef.current) {
+      const target = el.offsetLeft - (leaguePillsRef.current.clientWidth / 2) + (el.offsetWidth / 2);
+      leaguePillsRef.current.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    }
+  }, [league.id]);
+
   const cleanLeagueTitle = stripSeasonYear(league.name);
 
   return (
-    <div className="flex-1 p-4 pt-2.5 w-full">
-      <div className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
+    <div {...stdSwipe.bind} className="flex-1 p-4 pt-2.5 w-full">
+      <div ref={leaguePillsRef} data-no-section-swipe="true" className="mb-5 flex overflow-x-auto no-scrollbar ios-momentum">
         {availableLeagues.map(l => {
           const active = league.id === l.id;
           return (
             <button
               key={l.id}
-              onClick={() => setLeague(l)}
+              data-active={active}
+              onClick={() => stdSwipe.selectWithDir(l.id)}
               className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'liquid-glass'}`}
             >
               <img src={active ? (l.logoLight || l.logo) : l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.short || l.cleanName)} className="w-4 h-4 object-contain shrink-0" style={{ opacity: active ? 1 : 0.92 }} alt="" />
@@ -4234,6 +4681,7 @@ const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
         })}
       </div>
 
+      <div ref={stdSwipe.contentRef} key={league.id} className={stdSwipe.animClass}>
       {loading && groups.length === 0 ? (
         <WhitePillLoader className="mt-10 py-6" />
       ) : !isCurrentSeasonActive ? (
@@ -4346,11 +4794,12 @@ const FootballStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 });
 
-const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
+const CricketStandingsView = memo(({ onTeamPress, onOpenMatch, onSwipeEdge }) => {
   const stdUrl = `${API_CRICKET_BASE}/standings`;
   const schedUrl = `${API_CRICKET_BASE}/schedule?days_past=30&days_ahead=30`;
 
@@ -4461,17 +4910,36 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
     setKnockoutStages(extractCricketKnockouts(selectedLeague));
   }, [selectedLeague]);
 
+  const crLeagueIds = useMemo(() => data.map(l => l.id), [data]);
+  const selectCrLeagueById = useCallback((lid) => {
+    const found = data.find(l => l.id === lid);
+    if (found) setSelectedLeague(found);
+  }, [data]);
+  const crStdSwipe = useSwipeSections(crLeagueIds, selectedLeague?.id || '', selectCrLeagueById, {
+    onBoundaryPrev: onSwipeEdge ? () => onSwipeEdge(-1) : null,
+    onBoundaryNext: onSwipeEdge ? () => onSwipeEdge(1) : null
+  });
+  const crPillsRef = useRef(null);
+  useEffect(() => {
+    const el = crPillsRef.current?.querySelector('[data-active="true"]');
+    if (el && crPillsRef.current) {
+      const target = el.offsetLeft - (crPillsRef.current.clientWidth / 2) + (el.offsetWidth / 2);
+      crPillsRef.current.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    }
+  }, [selectedLeague?.id]);
+
   return (
-    <div className="flex-1 p-4 pt-2.5 w-full">
+    <div {...crStdSwipe.bind} className="flex-1 p-4 pt-2.5 w-full">
       {/* Tournament Selector Pills: Clean Title Only (No Duplicate Year/League Title) */}
       {data.length > 0 && (
-        <div className="mb-5 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
+        <div ref={crPillsRef} data-no-section-swipe="true" className="mb-5 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
           {data.map(l => {
             const active = selectedLeague?.id === l.id;
             return (
               <button
                 key={l.id}
-                onClick={() => setSelectedLeague(l)}
+                data-active={active}
+                onClick={() => crStdSwipe.selectWithDir(l.id)}
                 className={`px-4 py-2.5 rounded-[20px] flex items-center gap-2 mr-2.5 border shrink-0 transition-colors ${active ? 'bg-[#F5F5F7] border-[#F5F5F7]' : 'bg-[#121212] border-[rgba(255,255,255,0.08)]'}`}
               >
                 <img src={l.logo} loading="lazy" decoding="async" onError={(e) => handleImageError(e, l.cleanTitle)} className="w-4 h-4 object-contain rounded-sm shrink-0" style={{ opacity: active ? 1 : 0.75 }} alt="" />
@@ -4484,6 +4952,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
         </div>
       )}
 
+      <div ref={crStdSwipe.contentRef} key={selectedLeague?.id || 'empty'} className={crStdSwipe.animClass}>
       {loading && data.length === 0 ? (
         <WhitePillLoader className="mt-10 py-6" />
       ) : selectedLeague ? (
@@ -4551,7 +5020,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
                     >
                       <span className="w-[22px] text-center text-[12px] text-[#8E8E93] font-extrabold tabular-nums">{rank}</span>
                       <div className="flex-1 flex items-center ml-2 min-w-0">
-                        <img src={teamLogoUrl} loading="lazy" decoding="async" onError={(e) => handleImageError(e, tName)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
+                        <img src={teamLogoUrl} style={getCricketLogoStyle(item)} loading="lazy" decoding="async" onError={(e) => handleCricketImageError(e, item)} className="w-7 h-7 mr-3 object-contain shrink-0" alt="" />
                         <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{tName}</span>
                       </div>
                       <span className="w-[25px] text-center text-[12px] text-[#8E8E93] font-semibold tabular-nums">{played}</span>
@@ -4572,6 +5041,7 @@ const CricketStandingsView = memo(({ onTeamPress, onOpenMatch }) => {
           message="Standings are displayed only for tournaments currently taking place this season."
         />
       )}
+      </div>
     </div>
   );
 });
@@ -4908,6 +5378,11 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
   const [detailsLoading, setDetailsLoading] = useState(() => !matchDetails);
   const [activeTab, setActiveTab] = useState('info');
   const [activeInnings, setActiveInnings] = useState(0);
+  const cmTabIds = useMemo(() => CRICKET_MATCH_TABS.map(t => t.id), []);
+  const cmSwipe = useSwipeSections(cmTabIds, activeTab, setActiveTab, {
+    onBoundaryPrev: handleClose,
+    stopPropagation: true
+  });
   const autoSelectInningsRef = useRef(true);
 
   const fetchMatchHub = useCallback(async (isSilent = false) => {
@@ -5037,7 +5512,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
     return (
       <div className="flex justify-between px-5 pt-2 pb-4 w-full items-start shrink-0">
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(hTeam, null, null, 'cricket')}>
-          <img src={getCricketLogo(hTeam)} onError={(e) => handleImageError(e, hTeam.short_name || hTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
+          <img src={getCricketLogo(hTeam)} style={getCricketLogoStyle(hTeam)} onError={(e) => handleCricketImageError(e, hTeam)} className="w-[68px] h-[68px] object-contain" alt="" />
           <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{hTeam.short_name || hTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             <span className="text-[30px] font-extrabold text-[#F5F5F7] text-center tabular-nums leading-none">{hScore.runs || '-'}</span>
@@ -5052,7 +5527,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
           )}
         </div>
         <div className="w-[38%] flex flex-col items-center gap-1.5 cursor-pointer" onClick={() => onOpenTeam(aTeam, null, null, 'cricket')}>
-          <img src={getCricketLogo(aTeam)} onError={(e) => handleImageError(e, aTeam.short_name || aTeam.name)} className="w-[68px] h-[68px] object-contain" alt="" />
+          <img src={getCricketLogo(aTeam)} style={getCricketLogoStyle(aTeam)} onError={(e) => handleCricketImageError(e, aTeam)} className="w-[68px] h-[68px] object-contain" alt="" />
           <span className="text-[13px] font-bold text-[#F5F5F7] text-center mt-0.5">{aTeam.short_name || aTeam.name}</span>
           <div className="h-[46px] flex flex-col items-center justify-start">
             {aScore.runs ? (
@@ -5417,7 +5892,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               <span className="text-[10px] text-[#8E8E93] font-bold tabular-nums">{Math.floor(yMax / 2)}</span>
               <span className="text-[10px] text-[#8E8E93] font-bold tabular-nums">0</span>
             </div>
-            <div className="flex-1 overflow-x-auto flex items-end [&::-webkit-scrollbar]:hidden" style={{ height: GRAPH_HEIGHT }}>
+            <div data-no-section-swipe="true" className="flex-1 overflow-x-auto flex items-end [&::-webkit-scrollbar]:hidden" style={{ height: GRAPH_HEIGHT }}>
               {validOvers.map((ov, index) => {
                 const barHeight = Math.max((ov.runs_this_over / yMax) * DRAW_HEIGHT, 5);
                 const isWicket = ov.wickets_this_over > 0;
@@ -5482,7 +5957,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
                 return (
                   <button
                     key={t.id}
-                    onClick={() => setActiveTab(t.id)}
+                    onClick={() => cmSwipe.selectWithDir(t.id)}
                     className={`flex-auto py-2.5 px-2 rounded-[12px] text-[11px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {t.label}
@@ -5491,7 +5966,8 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
               })}
             </div>
 
-            <div key={`${activeTab}-${activeInnings}`} className="flex-1 overflow-y-auto ios-tab-fade [&::-webkit-scrollbar]:hidden">
+            <div {...cmSwipe.bind} className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+              <div ref={cmSwipe.contentRef} key={`${activeTab}-${activeInnings}`} className={cmSwipe.animClass}>
               {activeTab === 'info' && renderInfoTab()}
               {activeTab === 'scorecard' && renderScorecardTab()}
               {activeTab === 'summary' && renderSummaryTab()}
@@ -5529,6 +6005,7 @@ const CricketMatchModal = ({ match, selectedDate, onClose, onOpenTeam }) => {
                   </div>
                 )
               )}
+              </div>
             </div>
           </div>
         )}
@@ -5550,6 +6027,11 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
   const [summary, setSummary] = useState(() => match?.id ? getCachedSync(sumUrl) : null);
   const [corePlays, setCorePlays] = useState([]);
   const [tab, setTab] = useState('lineup');
+  const fmTabs = useMemo(() => ['lineup', 'commentary', 'stats'], []);
+  const fmSwipe = useSwipeSections(fmTabs, tab, setTab, {
+    onBoundaryPrev: handleClose,
+    stopPropagation: true
+  });
 
   const fetchActiveDetails = useCallback(async (isSilent = false) => {
     if (!match?.id) return;
@@ -5627,12 +6109,12 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
         </div>
 
         <div className="flex items-center gap-1 bg-[#1C1C1E] rounded-[16px] p-1 mx-4 mb-4 border border-[rgba(255,255,255,0.08)] shrink-0">
-          {['lineup', 'commentary', 'stats'].map(t => {
+          {fmTabs.map(t => {
             const active = tab === t;
             return (
               <button
                 key={t}
-                onClick={() => setTab(t)}
+                onClick={() => fmSwipe.selectWithDir(t)}
                 className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
               >
                 {capitalize(t)}
@@ -5641,7 +6123,8 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
           })}
         </div>
 
-        <div key={tab} className="flex-1 overflow-y-auto ios-tab-fade [&::-webkit-scrollbar]:hidden">
+        <div {...fmSwipe.bind} className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+          <div ref={fmSwipe.contentRef} key={tab} className={fmSwipe.animClass}>
           {tab === 'lineup' && (
             <div className="pb-10">
               <TacticalPitch summary={summary} home={hComp} away={aComp} />
@@ -5770,6 +6253,7 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
               </div>
             );
           })()}
+          </div>
         </div>
       </div>
     </div>
@@ -5783,6 +6267,11 @@ const FootballMatchModal = ({ match, onClose, onOpenTeam }) => {
 const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, onClose, onOpenMatch }) => {
   const { closing, handleClose } = useSmoothDismiss(onClose);
   const [teamTab, setTeamTab] = useState('squad');
+  const ctTabs = useMemo(() => ['squad', 'stats', 'matches'], []);
+  const ctSwipe = useSwipeSections(ctTabs, teamTab, setTeamTab, {
+    onBoundaryPrev: handleClose,
+    stopPropagation: true
+  });
   const [teamData, setTeamData] = useState(() => {
     const teamIdStr = team.team_id || team.id;
     const cachedProf = teamIdStr ? getCachedSync(`${API_CRICKET_BASE}/team/${teamIdStr}`) : null;
@@ -6050,7 +6539,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   </div>
                   <div className="flex items-center justify-between py-1">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                      <img src={getCricketLogo(h)} style={getCricketLogoStyle(h)} onError={(e) => handleCricketImageError(e, h)} className="w-6 h-6 object-contain shrink-0" alt="" />
                       <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{h.short_name || h.name}</span>
                     </div>
                     <div className="text-right">
@@ -6060,7 +6549,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   </div>
                   <div className="flex items-center justify-between py-1 mt-1">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-6 h-6 object-contain shrink-0" alt="" />
+                      <img src={getCricketLogo(a)} style={getCricketLogoStyle(a)} onError={(e) => handleCricketImageError(e, a)} className="w-6 h-6 object-contain shrink-0" alt="" />
                       <span className="text-[14px] font-bold text-[#F5F5F7] break-words leading-snug">{a.short_name || a.name}</span>
                     </div>
                     <div className="text-right">
@@ -6105,16 +6594,16 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
 
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex flex-col items-center px-5 shrink-0">
-            <img src={getCricketLogo(teamData)} onError={(e) => handleImageError(e, teamData.displayName)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
+            <img src={getCricketLogo(teamData)} style={getCricketLogoStyle(teamData)} onError={(e) => handleCricketImageError(e, teamData)} className="w-[68px] h-[68px] object-contain mb-2" alt="" />
             <h2 className="text-[22px] font-black text-[#F5F5F7] mb-4 text-center">{teamData.displayName}</h2>
 
             <div className="flex items-center gap-1 bg-[#1C1C1E] rounded-[16px] p-1 w-full mb-5 border border-[rgba(255,255,255,0.08)]">
-              {['squad', 'stats', 'matches'].map(t => {
+              {ctTabs.map(t => {
                 const active = teamTab === t;
                 return (
                   <button
                     key={t}
-                    onClick={() => setTeamTab(t)}
+                    onClick={() => ctSwipe.selectWithDir(t)}
                     className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                   >
                     {capitalize(t)}
@@ -6124,7 +6613,8 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
             </div>
           </div>
 
-          <div key={teamTab} className="flex-1 overflow-y-auto px-4 pb-16 ios-tab-fade [&::-webkit-scrollbar]:hidden">
+          <div {...ctSwipe.bind} className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+            <div ref={ctSwipe.contentRef} key={teamTab} className={ctSwipe.animClass}>
             {teamTab === 'stats' && renderCricketTeamStats()}
             {teamTab === 'squad' && (
               squadGroups.length === 0 ? (
@@ -6168,7 +6658,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                   return (
                     <div key={idx} onClick={() => onOpenMatch({ ...m, _sport: 'cricket' })} className="bg-[#121212] rounded-[24px] p-5 flex items-center justify-between mb-4 border border-[rgba(255,255,255,0.08)] cursor-pointer">
                       <div className="flex-1 flex flex-col items-center gap-1.5">
-                        <img src={getCricketLogo(h)} onError={(e) => handleImageError(e, h.short_name || h.name)} className="w-[44px] h-[44px] object-contain" alt="" />
+                        <img src={getCricketLogo(h)} style={getCricketLogoStyle(h)} onError={(e) => handleCricketImageError(e, h)} className="w-[44px] h-[44px] object-contain" alt="" />
                         <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{h.short_name || h.name}</span>
                       </div>
                       <div className="w-[120px] flex flex-col items-center justify-center">
@@ -6176,7 +6666,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                         <span className="text-[12px] text-[#8E8E93] font-bold text-center mt-1.5">{getFavFormattedDate(m.start_time, false)}</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center gap-1.5">
-                        <img src={getCricketLogo(a)} onError={(e) => handleImageError(e, a.short_name || a.name)} className="w-[44px] h-[44px] object-contain" alt="" />
+                        <img src={getCricketLogo(a)} style={getCricketLogoStyle(a)} onError={(e) => handleCricketImageError(e, a)} className="w-[44px] h-[44px] object-contain" alt="" />
                         <span className="text-[11px] font-bold text-[#F5F5F7] text-center break-words leading-tight">{a.short_name || a.name}</span>
                       </div>
                     </div>
@@ -6184,6 +6674,7 @@ const CricketTeamModal = ({ team, existingStats, favorites, onToggleFavorite, on
                 })
               )
             )}
+            </div>
           </div>
         </div>
       </div>
@@ -6199,6 +6690,11 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
   const { closing, handleClose } = useSmoothDismiss(onClose);
   const [teamData, setTeamData] = useState(null);
   const [teamTab, setTeamTab] = useState('squad');
+  const ftTabs = useMemo(() => ['squad', 'stats', 'matches'], []);
+  const ftSwipe = useSwipeSections(ftTabs, teamTab, setTeamTab, {
+    onBoundaryPrev: handleClose,
+    stopPropagation: true
+  });
 
   useEffect(() => {
     let active = true;
@@ -6442,12 +6938,12 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
               <h2 className="text-[22px] font-black text-[#F5F5F7] mb-4 text-center">{teamData.displayName}</h2>
 
               <div className="flex items-center gap-1 bg-[#1C1C1E] rounded-[16px] p-1 w-full mb-5 border border-[rgba(255,255,255,0.08)]">
-                {['squad', 'stats', 'matches'].map(t => {
+                {ftTabs.map(t => {
                   const active = teamTab === t;
                   return (
                     <button
                       key={t}
-                      onClick={() => setTeamTab(t)}
+                      onClick={() => ftSwipe.selectWithDir(t)}
                       className={`flex-auto py-2.5 px-2.5 rounded-[12px] text-[12px] leading-none text-center whitespace-nowrap transition-all ${active ? 'bg-[#2C2C2E] text-[#F5F5F7] font-extrabold shadow-sm' : 'text-[#8E8E93] font-bold'}`}
                     >
                       {capitalize(t)}
@@ -6457,7 +6953,8 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
               </div>
             </div>
 
-            <div key={teamTab} className="flex-1 overflow-y-auto px-4 pb-16 ios-tab-fade [&::-webkit-scrollbar]:hidden">
+            <div {...ftSwipe.bind} className="flex-1 overflow-y-auto px-4 pb-16 [&::-webkit-scrollbar]:hidden">
+              <div ref={ftSwipe.contentRef} key={teamTab} className={ftSwipe.animClass}>
               {teamTab === 'stats' && renderTeamSeasonStats()}
               {teamTab === 'squad' && (squadGroups.length === 0 ? (
                 <EmptyState icon={Users} title="Squad Pending" message="Roster data has not been published for this club yet." />
@@ -6508,6 +7005,7 @@ const FootballTeamModal = ({ team, leagueId, existingStats, standingRank, favori
                   })
                 )
               )}
+              </div>
             </div>
           </div>
         )}
@@ -7115,8 +7613,25 @@ function App() {
     return false;
   }, [activeMatch, activeTeam, startTransition]);
 
+  const mainViews = useMemo(
+    () => (favoritesList.length > 0 ? ['home', 'scores', 'standings', 'intel'] : ['scores', 'standings', 'intel']),
+    [favoritesList.length]
+  );
+  const mainSectionRef = useRef(null);
+  const stepMainView = useCallback((delta) => {
+    const idx = mainViews.indexOf(view);
+    if (idx === -1) return;
+    const nextIdx = idx + delta;
+    if (nextIdx >= 0 && nextIdx < mainViews.length) {
+      startTransition(() => setView(mainViews[nextIdx]));
+    }
+  }, [mainViews, view, startTransition]);
+
+  const sportBarSwipeRef = useRef(null);
+  const bottomPillSwipeRef = useRef(null);
+
   const gestureStateRef = useRef({});
-  gestureStateRef.current = { activeMatch, activeTeam, view, handleGoBack, stepScoreDate, triggerForceRefresh };
+  gestureStateRef.current = { activeMatch, activeTeam, view, activeSport, handleGoBack, stepScoreDate, stepMainView, triggerForceRefresh };
 
   useEffect(() => {
     const scheduleFrame = () => {
@@ -7126,16 +7641,19 @@ function App() {
         g.rafId = null;
         if (!g.active) return;
         const st = gestureStateRef.current;
-        if (g.mode === 'horiz' && g.dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) {
-          const clamped = Math.min(g.dx, 280);
-          g.targetSheet.style.transition = 'none';
-          g.targetSheet.style.transform = `translate3d(${clamped}px, 0, 0)`;
-          g.targetSheet.style.opacity = String(Math.max(0.55, 1 - clamped / 540));
-        } else if (g.mode === 'horiz' && !st.activeMatch && !st.activeTeam && st.view === 'scores' && !g.inHorizScroll && scheduleContainerRef.current) {
-          const dragX = Math.max(-72, Math.min(72, g.dx * 0.34));
-          scheduleContainerRef.current.style.transition = 'none';
-          scheduleContainerRef.current.style.transform = `translate3d(${dragX}px, 0, 0)`;
-          scheduleContainerRef.current.style.opacity = String(Math.max(0.72, 1 - Math.abs(dragX) / 220));
+        if (g.mode === 'horiz' && !st.activeMatch && !st.activeTeam && !g.inHorizScroll && !g.inSportBar && !g.inBottomPill) {
+          if (st.view === 'scores' && scheduleContainerRef.current) {
+            const dragX = Math.max(-72, Math.min(72, g.dx * 0.34));
+            scheduleContainerRef.current.style.transition = 'none';
+            scheduleContainerRef.current.style.transform = `translate3d(${dragX}px, 0, 0)`;
+            scheduleContainerRef.current.style.opacity = String(Math.max(0.72, 1 - Math.abs(dragX) / 220));
+          } else if ((st.view === 'home' || st.view === 'intel') && mainSectionRef.current) {
+            const canDrag = (st.view === 'home' && g.dx < 0) || (st.view === 'intel' && g.dx > 0);
+            const dragX = Math.max(-68, Math.min(68, g.dx * (canDrag ? 0.32 : 0.12)));
+            mainSectionRef.current.style.transition = 'none';
+            mainSectionRef.current.style.transform = `translate3d(${dragX}px, 0, 0)`;
+            mainSectionRef.current.style.opacity = String(Math.max(0.78, 1 - Math.abs(dragX) / 250));
+          }
         } else if (g.mode === 'pull' && g.dy > 0) {
           setPullDistance(g.dy);
         }
@@ -7145,11 +7663,16 @@ function App() {
     const onTouchStart = (e) => {
       if (!e.touches || e.touches.length !== 1) return;
       const st = gestureStateRef.current;
+      // Modals handle their own horizontal section swiping and first-tab swipe-to-dismiss
+      if (st.activeMatch || st.activeTeam) {
+        gestureRef.current.active = false;
+        return;
+      }
       const t = e.touches[0];
       const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      const horizScrollEl = e.target && typeof e.target.closest === 'function' ? e.target.closest('.ios-momentum') : null;
-      const inHorizScroll = Boolean(horizScrollEl && horizScrollEl.scrollWidth > horizScrollEl.clientWidth + 4);
-      const sheets = document.querySelectorAll('.ios-sheet-up');
+      const inHorizScroll = isInsideHorizontalScroller(e.target, document.body);
+      const inSportBar = Boolean(sportBarSwipeRef.current && sportBarSwipeRef.current.contains(e.target));
+      const inBottomPill = Boolean(bottomPillSwipeRef.current && bottomPillSwipeRef.current.contains(e.target));
       gestureRef.current = {
         active: true,
         mode: null,
@@ -7157,10 +7680,12 @@ function App() {
         startY: t.clientY,
         dx: 0,
         dy: 0,
-        atTop: scrollTop <= 2 && !st.activeMatch && !st.activeTeam,
+        atTop: scrollTop <= 2,
         inHorizScroll,
+        inSportBar,
+        inBottomPill,
         rafId: null,
-        targetSheet: sheets.length > 0 ? sheets[sheets.length - 1] : null
+        targetSheet: null
       };
     };
 
@@ -7186,8 +7711,7 @@ function App() {
 
       if (g.mode === 'horiz') {
         g.dx = dx;
-        if ((dx > 0 && g.targetSheet && (st.activeMatch || st.activeTeam)) ||
-            (!st.activeMatch && !st.activeTeam && st.view === 'scores' && !g.inHorizScroll)) {
+        if (!g.inHorizScroll && !g.inSportBar && !g.inBottomPill && (st.view === 'scores' || st.view === 'home' || st.view === 'intel')) {
           scheduleFrame();
         }
       } else if (g.mode === 'pull' && dy > 0) {
@@ -7204,21 +7728,29 @@ function App() {
         g.rafId = null;
       }
       const st = gestureStateRef.current;
-      const { mode, dx, dy, targetSheet, inHorizScroll } = g;
+      const { mode, dx, dy, inHorizScroll, inSportBar, inBottomPill } = g;
       g.active = false;
       g.mode = null;
 
-      if (targetSheet) {
-        targetSheet.style.transition = 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
-        targetSheet.style.transform = '';
-        targetSheet.style.opacity = '';
+      if (mainSectionRef.current) {
+        mainSectionRef.current.style.transition = 'transform 0.20s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease';
+        mainSectionRef.current.style.transform = '';
+        mainSectionRef.current.style.opacity = '';
       }
 
       if (mode === 'horiz') {
+        if (inSportBar && Math.abs(dx) > 36) {
+          startTransition(() => setActiveSport(dx < 0 ? 'cricket' : 'soccer'));
+          return;
+        }
+        if (inBottomPill && Math.abs(dx) > 36) {
+          st.stepMainView(dx < 0 ? 1 : -1);
+          return;
+        }
+        if (inHorizScroll) return;
+
         const schedEl = scheduleContainerRef.current;
-        if (st.activeMatch || st.activeTeam) {
-          if (dx > 72) st.handleGoBack();
-        } else if (st.view === 'scores' && !inHorizScroll) {
+        if (st.view === 'scores') {
           if (dx < -52) {
             if (schedEl) {
               schedEl.style.transition = 'transform 0.11s ease-out, opacity 0.10s ease-out';
@@ -7244,8 +7776,10 @@ function App() {
             schedEl.style.transform = 'translate3d(0, 0, 0)';
             schedEl.style.opacity = '1';
           }
-        } else if (dx > 82) {
-          st.handleGoBack();
+        } else if (st.view === 'home' && dx < -52) {
+          st.stepMainView(1);
+        } else if (st.view === 'intel' && dx > 52) {
+          st.stepMainView(-1);
         }
       } else if (mode === 'pull') {
         if (dy >= 54) {
@@ -7342,7 +7876,7 @@ function App() {
       </div>
 
       {/* SLEEK NON-BLURRED SPORT TOGGLE AT TOP */}
-      <div className="flex sport-bar-crisp rounded-[22px] mx-4 mt-3 mb-3.5 p-1">
+      <div ref={sportBarSwipeRef} className="flex sport-bar-crisp rounded-[22px] mx-4 mt-3 mb-3.5 p-1">
         <button
           onClick={() => startTransition(() => {
             setActiveSport('soccer');
@@ -7361,7 +7895,7 @@ function App() {
         </button>
       </div>
 
-      <div key={view === 'scores' ? `scores-${refreshTick}` : `${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col section-enter-${view}`}>
+      <div ref={mainSectionRef} key={view === 'scores' ? `scores-${refreshTick}` : `${activeSport}-${view}-${refreshTick}`} className={`flex-1 flex flex-col section-enter-${view}`}>
         {view === 'home' && (
           <div className="flex-1 px-4 pt-3 pb-40">
             
@@ -7424,9 +7958,9 @@ function App() {
 
         {view === 'standings' && (
           activeSport === 'soccer' ? (
-            <FootballStandingsView key={`std-s-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
+            <FootballStandingsView key={`std-s-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} onSwipeEdge={stepMainView} />
           ) : (
-            <CricketStandingsView key={`std-c-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} />
+            <CricketStandingsView key={`std-c-${refreshTick}`} onTeamPress={openTeamHub} onOpenMatch={openMatchModal} onSwipeEdge={stepMainView} />
           )
         )}
 
@@ -7435,7 +7969,7 @@ function App() {
         )}
       </div>
 
-      <div className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
+      <div ref={bottomPillSwipeRef} className="fixed bottom-[35px] left-1/2 -translate-x-1/2 rounded-full p-2 flex liquid-glass-pill z-40 shadow-2xl">
         {favoritesList.length > 0 && (
           <button onClick={() => startTransition(() => setView('home'))} className="px-6 py-2.5 rounded-full active:scale-95 transition-transform">
             <Star size={26} color={view === 'home' ? THEME.text : THEME.muted} />
