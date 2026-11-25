@@ -175,21 +175,10 @@
       }
     }
 
-    /* Ready-synced launch splash: crisp entrance on frame 1, silky exit once React paints */
-    @keyframes iosOpeningIconIn {
-      0% {
-        opacity: 0;
-        transform: scale3d(0.88, 0.88, 1);
-      }
-      100% {
-        opacity: 1;
-        transform: scale3d(1, 1, 1);
-      }
-    }
-
+    /* Smooth delayed launch splash: pure GPU transitions with zero animation/transition conflict */
     .ios-opening-overlay {
       opacity: 1;
-      transition: opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: opacity;
     }
 
@@ -198,14 +187,110 @@
     }
 
     .ios-opening-icon {
-      animation: iosOpeningIconIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
-      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.20s ease-out;
+      opacity: 0;
+      transform: scale3d(0.86, 0.86, 1);
+      transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.40s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+
+    .ios-opening-overlay.is-visible .ios-opening-icon {
+      opacity: 1;
+      transform: scale3d(1, 1, 1);
     }
 
     .ios-opening-overlay.is-dismissing .ios-opening-icon {
       opacity: 0;
-      transform: scale3d(1.04, 1.04, 1);
+      transform: scale3d(1.05, 1.05, 1);
+      transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Pull-to-refresh & WhitePillLoader guaranteed horizontal tracks (immune to JIT delay) */
+    .ptr-wrap {
+      width: 100%;
+      height: 0px;
+      opacity: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+      pointer-events: none;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .ptr-pill {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      height: 32px;
+      min-width: 84px;
+      padding: 0 16px;
+      margin-bottom: 4px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    .ptr-track {
+      position: relative;
+      width: 48px;
+      height: 5px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.16);
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transform: translateZ(0);
+    }
+
+    .ptr-thumb {
+      width: 18px;
+      height: 5px;
+      border-radius: 9999px;
+      background: #F5F5F7;
+      flex-shrink: 0;
+      animation: ptrPillBounce 1.25s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      will-change: transform;
+    }
+
+    @keyframes ptrPillBounce {
+      0% { transform: translate3d(-15px, 0, 0) scaleX(0.92); }
+      50% { transform: translate3d(15px, 0, 0) scaleX(1.06); }
+      100% { transform: translate3d(-15px, 0, 0) scaleX(0.92); }
+    }
+
+    .wpl-track {
+      position: relative;
+      width: 56px;
+      height: 6px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.10);
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transform: translateZ(0);
+    }
+
+    .wpl-thumb {
+      width: 20px;
+      height: 6px;
+      border-radius: 9999px;
+      background: #F5F5F7;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.45);
+      flex-shrink: 0;
+      animation: whitePillBounce 1.35s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+      will-change: transform;
     }
 
     @keyframes whitePillBounce {
@@ -3338,8 +3423,8 @@ const useSmoothDismiss = (onClose) => {
 
 const WhitePillLoader = memo(({ className = "py-12" }) => (
   <div className={`w-full flex items-center justify-center loader-fade-in ${className}`}>
-    <div className="w-[56px] h-[6px] rounded-full bg-white/10 overflow-hidden flex items-center justify-center relative">
-      <div className="w-[20px] h-[6px] rounded-full bg-[#F5F5F7] shadow-[0_0_10px_rgba(255,255,255,0.45)] white-pill-bounce" />
+    <div className="wpl-track">
+      <div className="wpl-thumb" />
     </div>
   </div>
 ));
@@ -7080,6 +7165,7 @@ function App() {
 
   // Zero-rerender Pull-to-Refresh DOM refs (60/120fps drag without calling setState)
   const pullWrapRef = useRef(null);
+  const pullPillRef = useRef(null);
   const pullIconRef = useRef(null);
   const pullTextRef = useRef(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -7088,11 +7174,18 @@ function App() {
     const wrap = pullWrapRef.current;
     if (!wrap) return;
     wrap.style.transition = animate
-      ? 'height 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease'
+      ? 'height 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease'
       : 'none';
     wrap.style.height = `${dy}px`;
-    wrap.style.opacity = dy > 4 ? '1' : '0';
+    wrap.style.opacity = dy > 6 ? String(Math.min(1, (dy - 6) / 26)) : '0';
     const progress = Math.min(1, dy / 54);
+    if (pullPillRef.current) {
+      pullPillRef.current.style.transition = animate
+        ? 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)'
+        : 'none';
+      const scale = dy <= 0 ? 0.88 : (0.88 + progress * 0.12);
+      pullPillRef.current.style.transform = `scale3d(${scale}, ${scale}, 1)`;
+    }
     if (pullIconRef.current) {
       pullIconRef.current.style.transform = `translate3d(0,0,0) rotate(${progress * 270}deg)`;
     }
@@ -7103,7 +7196,7 @@ function App() {
 
   useEffect(() => {
     if (isRefreshing) {
-      setPullVisual(50, true);
+      setPullVisual(48, true);
     } else {
       setPullVisual(0, true);
     }
@@ -7582,6 +7675,7 @@ function App() {
 
   const triggerForceRefresh = useCallback(async () => {
     if (isRefreshing) return;
+    const startedAt = Date.now();
     setIsRefreshing(true);
     try {
       if (view === 'home') {
@@ -7619,7 +7713,8 @@ function App() {
         setRefreshTick(t => t + 1);
       }
     } finally {
-      setTimeout(() => setIsRefreshing(false), 220);
+      const wait = Math.max(220, 440 - (Date.now() - startedAt));
+      setTimeout(() => setIsRefreshing(false), wait);
     }
   }, [isRefreshing, view, activeSport, fetchFavSchedule, fetchFootballMatches, fetchCricketMatches]);
 
@@ -7934,25 +8029,21 @@ function App() {
   return (
     <div className="min-h-screen bg-[#000000] text-[#F5F5F7] flex flex-col max-w-md mx-auto relative select-none overflow-x-hidden">
 
-      <div
-        ref={pullWrapRef}
-        style={{ height: '0px', opacity: 0 }}
-        className="w-full flex items-center justify-center overflow-hidden pointer-events-none shrink-0"
-      >
-        <div className="sport-bar-crisp px-4 py-2 rounded-full flex items-center gap-2.5">
+      <div ref={pullWrapRef} className="ptr-wrap">
+        <div ref={pullPillRef} className="sport-bar-crisp ptr-pill">
           {isRefreshing ? (
-            <div className="w-[44px] h-[5px] rounded-full bg-white/15 overflow-hidden flex items-center justify-center">
-              <div className="w-[16px] h-[5px] rounded-full bg-[#F5F5F7] white-pill-bounce" />
+            <div key="ptr-loading" className="ptr-track">
+              <div className="ptr-thumb" />
             </div>
           ) : (
-            <>
+            <div key="ptr-idle" className="flex flex-row items-center gap-2.5">
               <div ref={pullIconRef} className="flex items-center justify-center will-change-transform">
                 <RefreshCw size={13} color={THEME.text} />
               </div>
-              <span ref={pullTextRef} className="text-[10px] font-extrabold tracking-[1px] text-[#F5F5F7] uppercase">
+              <span ref={pullTextRef} className="text-[10px] font-extrabold tracking-[1px] text-[#F5F5F7] uppercase whitespace-nowrap">
                 PULL TO REFRESH
               </span>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -8134,26 +8225,43 @@ root.render(
   </script>
   <script>
     (function bootSideline() {
-      const launchStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      const nowMs = () => (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      const launchStart = nowMs();
+      const splashEl = document.getElementById('sideline-opening');
+      // Slight initial delay before icon glides in so iOS launch transition settles cleanly
+      if (splashEl) {
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            if (!splashEl.classList.contains('is-dismissing')) {
+              splashEl.classList.add('is-visible');
+            }
+          });
+        }, 120);
+      }
+
       let splashDismissed = false;
       window.__dismissSidelineSplash = function() {
         if (splashDismissed) return;
         splashDismissed = true;
         const el = document.getElementById('sideline-opening');
         if (!el) return;
-        const elapsed = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - launchStart;
-        const waitMs = Math.max(0, 340 - elapsed);
+        const elapsed = nowMs() - launchStart;
+        // Ensure smooth icon entrance (120ms delay + 460ms glide) + brief calm hold (~300ms) before lifting
+        const waitMs = Math.max(0, 880 - elapsed);
         setTimeout(() => {
           requestAnimationFrame(() => {
-            el.classList.add('is-dismissing');
-            setTimeout(() => {
-              if (el && el.parentNode) el.parentNode.removeChild(el);
-            }, 260);
+            requestAnimationFrame(() => {
+              el.classList.remove('is-visible');
+              el.classList.add('is-dismissing');
+              setTimeout(() => {
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+              }, 420);
+            });
           });
         }, waitMs);
       };
       // Safety fallback if anything stalls
-      setTimeout(() => { if (!splashDismissed) window.__dismissSidelineSplash(); }, 2200);
+      setTimeout(() => { if (!splashDismissed) window.__dismissSidelineSplash(); }, 2600);
 
       function hashSource(str) {
         let h = 2166136261;
@@ -8174,7 +8282,7 @@ root.render(
         const jsxEl = document.getElementById('sideline-jsx');
         if (!jsxEl) return;
         const jsxSource = jsxEl.textContent;
-        const cacheKey = 'sideline_compiled_v24_' + hashSource(jsxSource);
+        const cacheKey = 'sideline_compiled_v25_' + hashSource(jsxSource);
 
         let compiled = null;
         try {

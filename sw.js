@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sideline-pwa-v77';
+const CACHE_NAME = 'sideline-pwa-v78';
 const LOGO_CACHE_NAME = 'sideline-logos-swr-v3';
 const CDN_CACHE_NAME = 'sideline-cdn-runtime-v1';
 const ASSETS = [
